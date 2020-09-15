@@ -8,6 +8,7 @@ URL_schelude_groups = 'https://www.istu.edu/schedule/default?group=459303'
 URL_inst = 'https://www.istu.edu/schedule/'
 URL_groups = 'https://www.istu.edu/schedule/?subdiv=683'
 
+
 def get_html(url):
     """возвращает страницу по url"""
     response = requests.get(url)
@@ -57,51 +58,49 @@ def get_schedule(html):
 
     return schedule
 
-def inst(html):
+
+def get_institutes(html):
     '''Возвращает институты и ссылки на них'''
     soup = BeautifulSoup(html, 'html.parser')
     insts = soup.find(class_='content')
     inst = insts.find_all('li')
     inst_tags_list = []
     links = []
-    rd_inst = {}
+
     rd_inst_list = []
-    #Берём названия институтов
+    # Берём названия институтов
     for ins in inst:
         inst_tags_list.append(ins.find('a').text)
-    #Берём ссылки
+    # Берём ссылки
     for link in soup.find_all('a'):
         if '?subdiv' in str(link):
-            links.append('https://www.istu.edu/schedule/'+ link.get('href'))
-
+            links.append('https://www.istu.edu/schedule/' + link.get('href'))
 
     for i in range(len(inst_tags_list)):
+        rd_inst = {}
         rd_inst['name'] = inst_tags_list[i]
         rd_inst['link'] = links[i]
         rd_inst_list.append(rd_inst)
 
-
     return rd_inst_list
 
 
-
-def group(html):
+def get_groups(html):
     '''Возвращает группы и ссылки на них'''
     soup = BeautifulSoup(html, 'html.parser')
     groups = soup.find(class_='kurs-list')
     courses = groups.find_all('li')
     links = []
     groups_parse_list = []
-    rd_groups = {}
+
     rd_groups_list = []
 
-
-    #Получаем ссылки
+    # Получаем ссылки
     for link in soup.find_all('a'):
         if '?group=' in str(link):
-            links.append('https://www.istu.edu/schedule/'+ link.get('href'))
+            links.append('https://www.istu.edu/schedule/' + link.get('href'))
 
-    #Получаем курсы
+    # Получаем курсы
     for i in courses:
         if groups_parse_list == []:
             groups_parse_list.append(i.find('a').text)
@@ -112,13 +111,12 @@ def group(html):
                 groups_parse_list.append(i.find('a').text)
 
     for i in range(len(groups_parse_list)):
+        rd_groups = {}
         rd_groups['name'] = groups_parse_list[i]
         rd_groups['link'] = links[i]
-        rd_groups_list.append( rd_groups)
-
+        rd_groups_list.append(rd_groups)
 
     return rd_groups_list
-
 
 
 def count_course(html):
@@ -128,23 +126,24 @@ def count_course(html):
     count_courses = len(groups.find_all('ul'))
     course = []
     for i in range(1, count_courses + 1):
-        course.append("Курс" + " "+ str(i))
+        course.append(f'{i} курс')
 
     return course
 
 
 def main():
-    html_schelude_groups = get_html(url = URL_schelude_groups)
-    html_insts = get_html(url = URL_inst)
-    html_groups = get_html(url = URL_groups)
-    html_count_groups = get_html(url = URL_groups)
+    html_schelude_groups = get_html(url=URL_schelude_groups)
+    html_insts = get_html(url=URL_inst)
+    html_groups = get_html(url=URL_groups)
+    html_count_groups = get_html(url=URL_groups)
     schedule = get_schedule(html_schelude_groups)
-    dict_insts = inst(html_insts)
-    dict_groups = group(html_groups)
+    institutes = get_institutes(html_insts)
+    groups = get_groups(html_groups)
     course = count_course(html_count_groups)
+
     pprint(schedule)
-    pprint(dict_insts)
-    pprint(dict_groups)
+    pprint(institutes)
+    pprint(groups)
     pprint(course)
 
 
