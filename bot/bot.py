@@ -8,15 +8,18 @@ import os
 from functions.storage import MongodbService
 from functions.near_lesson import get_near_lesson
 from functions.logger import logger
-from functions.creating_schedule import creating_schedule_in_str
+from functions.creating_schedule import full_schedule_in_str
+from functions.find_week import find_week
 
 from flask import Flask, request
 import requests
 import json
 
-from functions.creating_buttons import make_keyboard_start_menu, make_inline_keyboard_choose_institute, \
-    make_inline_keyboard_choose_courses, make_inline_keyboard_choose_groups, make_inline_keyboard_notifications, \
-    make_inline_keyboard_set_notifications
+# from functions.creating_buttons import make_keyboard_start_menu, make_inline_keyboard_choose_institute, \
+#     make_inline_keyboard_choose_courses, make_inline_keyboard_choose_groups, make_inline_keyboard_notifications, \
+#     make_inline_keyboard_set_notifications
+
+from functions.creating_buttons import *
 
 TOKEN = os.environ.get('TOKEN')
 TIMER_URL = os.environ.get('TIMER_URL')
@@ -261,11 +264,14 @@ def text(message):
                              text='Расписание временно недоступно🚫😣\n'                                           'Попробуйте позже⏱')
             return
         schedule = schedule['schedule']
-        schedule_str = creating_schedule_in_str(schedule, week='even')
-
-
+        week = find_week()
+        schedule_str = full_schedule_in_str(schedule, week=week)
         bot.send_message(chat_id=chat_id,
-                         text=f'<b>Расписание {group}</b>\n{schedule_str}', parse_mode='HTML')
+                         text=f'<b>Расписание {group}</b>', parse_mode='HTML')
+
+        for schedule in schedule_str:
+            bot.send_message(chat_id=chat_id,
+                             text=f'{schedule}', parse_mode='HTML')
 
     elif 'Ближайшая пара' in data and user:
         lessons = [{'date': '5 сентября', 'time': '09:50', 'name': 'Физика', 'aud': 'К-313'},
