@@ -274,17 +274,43 @@ def text(message):
                              text=f'{schedule}', parse_mode='HTML')
 
     elif 'Ближайшая пара' in data and user:
-        lessons = [{'date': '5 сентября', 'time': '09:50', 'name': 'Физика', 'aud': 'К-313'},
-                   {'date': '5 сентября', 'time': '11:02', 'name': 'Матан', 'aud': 'Ж-310'}]
-
-        near_lesson = get_near_lesson(lessons)
+        try:
+            group = storage.get_user(chat_id=chat_id)['group']
+        except Exception as e:
+            logger.exception(e)
+            return
+        schedule = storage.get_schedule(group=group)
+        if not schedule:
+            bot.send_message(chat_id=chat_id,
+                             text='Временно недоступно🚫😣\n'                                           'Попробуйте позже⏱')
+            return
+        schedule = schedule['schedule']
+        week = find_week()
+        near_lesson = get_near_lesson(schedule=schedule, week=week)
 
         if not near_lesson:
             bot.send_message(chat_id=chat_id, text='Сегодня больше пар нет 😎')
             return
-        bot.send_message(chat_id=chat_id, text=f'Ближайшая пара {near_lesson["name"]}\n'
-                                               f'Аудитория {near_lesson["aud"]}\n'
-                                               f'Начало в {near_lesson["time"]}')
+        name = near_lesson['name']
+        if name == 'свободно':
+            bot.send_message(chat_id=chat_id, text='Сегодня больше пар нет 😎')
+            return
+
+        near_lessons_str = ''
+        aud = near_lesson['aud']
+        if aud:
+            aud = f'Аудитория: {aud}\n'
+        time = near_lesson['time']
+        info = near_lesson['info']
+        prep = near_lesson['prep']
+
+        near_lessons_str += f'<b>{time}</b>\n' \
+                            f'{aud}' \
+                            f'{name}\n' \
+                            f'{info} {prep}'
+
+        bot.send_message(chat_id=chat_id, text=f'<b>Ближайшая пара</b>\n'
+                                               f'{near_lessons_str}', parse_mode='HTML')
 
     elif 'Напоминания' in data and user:
         time = user['notifications']
