@@ -1,6 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
-
+import time
 from pprint import pprint
 
 # ССылки для разных источников парсинга
@@ -132,6 +132,8 @@ def count_course(html):
 
 
 def main():
+    timing = time.time()
+
     html_schelude_groups = get_html(url=URL_schelude_groups)
     html_insts = get_html(url=URL_inst)
     html_groups = get_html(url=URL_groups)
@@ -145,6 +147,24 @@ def main():
     pprint(institutes)
     pprint(groups)
     pprint(course)
+
+    while True:
+        if time.time() - timing > 3600.0:
+            timing = time.time()
+
+            html_schelude_groups = get_html(url=URL_schelude_groups)
+            html_insts = get_html(url=URL_inst)
+            html_groups = get_html(url=URL_groups)
+            html_count_groups = get_html(url=URL_groups)
+            schedule = get_schedule(html_schelude_groups)
+            institutes = get_institutes(html_insts)
+            groups = get_groups(html_groups)
+            course = count_course(html_count_groups)
+
+            pprint(schedule)
+            pprint(institutes)
+            pprint(groups)
+            pprint(course)
 
 
 if __name__ == '__main__':
