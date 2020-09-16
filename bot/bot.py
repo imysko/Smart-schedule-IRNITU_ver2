@@ -8,6 +8,7 @@ import os
 from functions.storage import MongodbService
 from functions.near_lesson import get_near_lesson
 from functions.logger import logger
+from functions.creating_schedule import creating_schedule_in_str
 
 from flask import Flask, request
 import requests
@@ -260,7 +261,11 @@ def text(message):
                              text='Расписание временно недоступно🚫😣\n'                                           'Попробуйте позже⏱')
             return
         schedule = schedule['schedule']
-        bot.send_message(chat_id=chat_id, text=f'<b>Расписание {group}</b>\n{schedule}', parse_mode='HTML')
+        schedule_str = creating_schedule_in_str(schedule, week='even')
+
+
+        bot.send_message(chat_id=chat_id,
+                         text=f'<b>Расписание {group}</b>\n{schedule_str}', parse_mode='HTML')
 
     elif 'Ближайшая пара' in data and user:
         lessons = [{'date': '5 сентября', 'time': '09:50', 'name': 'Физика', 'aud': 'К-313'},
