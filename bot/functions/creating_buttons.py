@@ -4,8 +4,8 @@ import json
 MAX_CALLBACK_RANGE = 41
 
 
-# Создаём основные кнопки
 def make_keyboard_start_menu():
+    """Создаём основные кнопки"""
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=False, resize_keyboard=True)
     btn1 = types.KeyboardButton('Расписание')
     btn2 = types.KeyboardButton('Ближайшая пара')
@@ -15,8 +15,8 @@ def make_keyboard_start_menu():
     return markup
 
 
-# Кнопки выбора института
 def make_inline_keyboard_choose_institute(institutes=[]):
+    """Кнопки выбора института"""
     markup = types.InlineKeyboardMarkup()
     for institute in institutes:
         name = institute['name']
@@ -33,8 +33,8 @@ def make_inline_keyboard_choose_institute(institutes=[]):
     return markup
 
 
-# Кнопки выбора курса
 def make_inline_keyboard_choose_courses(courses=[]):
+    """Кнопки выбора курса"""
     markup = types.InlineKeyboardMarkup()
     for course in courses:
         name = course['name']
@@ -47,8 +47,8 @@ def make_inline_keyboard_choose_courses(courses=[]):
     return markup
 
 
-# Кнопки выбора группы
 def make_inline_keyboard_choose_groups(groups=[]):
+    """Кнопки выбора группы"""
     markup = types.InlineKeyboardMarkup()
     for group in groups:
         name = group['name']
@@ -60,8 +60,8 @@ def make_inline_keyboard_choose_groups(groups=[]):
     return markup
 
 
-# Кнопка "Настройка уведомлений"
 def make_inline_keyboard_notifications(time=0):
+    """Кнопка 'Настройка уведомлений'"""
     markup = types.InlineKeyboardMarkup()
     data = json.dumps({"notification_btn": time})
     markup.add(types.InlineKeyboardButton(text='Настройки ⚙', callback_data=data))
@@ -70,8 +70,8 @@ def make_inline_keyboard_notifications(time=0):
     return markup
 
 
-# Кнопки настройки уведомлений
 def make_inline_keyboard_set_notifications(time=0):
+    """кнопки настройки уведомлений"""
     markup = types.InlineKeyboardMarkup()
     data_del = json.dumps({"del_notifications": time})
     if time != 0:
@@ -85,4 +85,13 @@ def make_inline_keyboard_set_notifications(time=0):
     # Кнопка Сохранить
     data_save = json.dumps({"save_notifications": time})
     markup.add(types.InlineKeyboardButton(text='Сохранить', callback_data=data_save))
+    return markup
+
+
+def make_inline_keyboard_choose_week():
+    """кнопки выбора четной , нечетной и текущей недели"""
+    markup = types.InlineKeyboardMarkup()
+    markup.add(types.InlineKeyboardButton(text='Четная', callback_data='odd'),
+               types.InlineKeyboardButton(text='Нечетная', callback_data='even'))
+    markup.add(types.InlineKeyboardButton(text='Текущая', callback_data='week_now'))
     return markup
