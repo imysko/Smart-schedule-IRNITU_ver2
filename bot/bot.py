@@ -286,31 +286,36 @@ def text(message):
             return
         schedule = schedule['schedule']
         week = find_week()
-        near_lesson = get_near_lesson(schedule=schedule, week=week)
+        near_lessons = get_near_lesson(schedule=schedule, week=week)
 
-        if not near_lesson:
-            bot.send_message(chat_id=chat_id, text='Сегодня больше пар нет 😎')
-            return
-        name = near_lesson['name']
-        if name == 'свободно':
+        # если пар нет
+        if not near_lessons:
             bot.send_message(chat_id=chat_id, text='Сегодня больше пар нет 😎')
             return
 
         near_lessons_str = ''
-        aud = near_lesson['aud']
-        if aud:
-            aud = f'Аудитория: {aud}\n'
-        time = near_lesson['time']
-        info = near_lesson['info']
-        prep = near_lesson['prep']
+        for near_lesson in near_lessons:
+            name = near_lesson['name']
+            if name == 'свободно':
+                bot.send_message(chat_id=chat_id, text='Сегодня больше пар нет 😎')
+                return
+            near_lessons_str += '-------------------------------------------\n'
+            aud = near_lesson['aud']
+            if aud:
+                aud = f'Аудитория: {aud}\n'
+            time = near_lesson['time']
+            info = near_lesson['info']
+            prep = near_lesson['prep']
 
-        near_lessons_str += f'<b>{time}</b>\n' \
-                            f'{aud}' \
-                            f'{name}\n' \
-                            f'{info} {prep}'
-
+            near_lessons_str += f'<b>{time}</b>\n' \
+                                f'{aud}' \
+                                f'{name}\n' \
+                                f'{info} {prep}\n'
+        near_lessons_str += '-------------------------------------------\n'
         bot.send_message(chat_id=chat_id, text=f'<b>Ближайшая пара</b>\n'
                                                f'{near_lessons_str}', parse_mode='HTML')
+
+
 
     elif 'Напоминания' in data and user:
         time = user['notifications']
