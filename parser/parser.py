@@ -2,6 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 from time import sleep
 from pprint import pprint
+from storage import MongodbService
 
 # ССылки для разных источников парсинга
 URL_schelude_groups = 'https://www.istu.edu/schedule/default?group=459303'
@@ -9,6 +10,7 @@ URL_inst = 'https://www.istu.edu/schedule/'
 URL_groups = 'https://www.istu.edu/schedule/?subdiv=683'
 PARSE_TIME_HOURS = 1  # время задержки парсинга (в часах)
 
+storage = MongodbService().get_instance()
 
 def get_html(url):
     """возвращает страницу по url"""
@@ -139,21 +141,23 @@ def parse():
         html_institutes = get_html(url=URL_inst)
         institutes = get_institutes(html=html_institutes)
         pprint(institutes)
+        storage.save_institutes(institutes)
+        pprint(institutes)
 
-        # парсим курсы
-        html_count_course = get_html(url=URL_groups)
-        course = count_course(html=html_count_course)
-        pprint(course)
-
-        # парсим группы
-        html_groups = get_html(url=URL_groups)
-        groups = get_groups(html=html_groups)
-        pprint(groups)
-
-        # парсим расписание групп
-        html_schedule_groups = get_html(url=URL_schelude_groups)
-        schedule = get_schedule(html=html_schedule_groups)
-        pprint(schedule)
+        # # парсим курсы
+        # html_count_course = get_html(url=URL_groups)
+        # course = count_course(html=html_count_course)
+        # pprint(course)
+        #
+        # # парсим группы
+        # html_groups = get_html(url=URL_groups)
+        # groups = get_groups(html=html_groups)
+        # pprint(groups)
+        #
+        # # парсим расписание групп
+        # html_schedule_groups = get_html(url=URL_schelude_groups)
+        # schedule = get_schedule(html=html_schedule_groups)
+        # pprint(schedule)
 
         # засыпаем
         sleep(PARSE_TIME_HOURS * 60 * 60)
