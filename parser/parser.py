@@ -12,6 +12,7 @@ PARSE_TIME_HOURS = 1  # время задержки парсинга (в час�
 
 storage = MongodbService().get_instance()
 
+
 def get_html(url):
     """возвращает страницу по url"""
     response = requests.get(url)
@@ -144,10 +145,16 @@ def parse():
         storage.save_institutes(institutes)
         pprint(institutes)
 
-        # # парсим курсы
-        # html_count_course = get_html(url=URL_groups)
-        # course = count_course(html=html_count_course)
-        # pprint(course)
+        # парсим курсы
+        courses = []
+        for institute in institutes:
+            html_count_course = get_html(url=institute['link'])
+            course = count_course(html=html_count_course)
+            institute_name = institute['name']
+            for name in course:
+                courses.append({'name': name, 'institute': institute_name})
+        storage.save_courses(courses=courses)
+        pprint(courses)
         #
         # # парсим группы
         # html_groups = get_html(url=URL_groups)

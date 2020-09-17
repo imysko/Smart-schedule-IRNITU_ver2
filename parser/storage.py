@@ -33,10 +33,12 @@ class MongodbService(object):
 
     def save_courses(self, courses: list):
         """сохраняет список курсов в коллекцию courses"""
+        self._db.courses.drop()  # очищаем старые записи в коллекции
         return self._db.courses.insert_many(courses)
 
     def save_groups(self, groups: list):
         """сохраняет список групп в коллекцию groups"""
+        self._db.groups.drop()  # очищаем старые записи в коллекции
         return self._db.groups.insert_many(groups)
 
     def get_institutes(self) -> list:
