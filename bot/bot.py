@@ -117,14 +117,13 @@ def handle_query(message):
                 logger.exception(e)
                 return
 
-        groups = storage.get_groups(data['course'])
-
         storage.save_or_update_user(chat_id=chat_id, course=data['course'])  # Записываем в базу курс пользователя
         user = storage.get_user(chat_id=chat_id)
 
         try:
             institute = user['institute']
             course = user['course']
+            groups = storage.get_groups(institute=institute, course=course)
             # Выводим сообщение со списком групп
             bot.edit_message_text(message_id=message_id, chat_id=chat_id,
                                   text=f'{institute}, {course}\nВыберите группу',
