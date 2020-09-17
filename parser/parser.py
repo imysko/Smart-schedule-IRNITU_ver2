@@ -1,12 +1,13 @@
 import requests
 from bs4 import BeautifulSoup
-import time
+from time import sleep
 from pprint import pprint
 
 # ССылки для разных источников парсинга
 URL_schelude_groups = 'https://www.istu.edu/schedule/default?group=459303'
 URL_inst = 'https://www.istu.edu/schedule/'
 URL_groups = 'https://www.istu.edu/schedule/?subdiv=683'
+PARSE_TIME_HOURS = 1  # время задержки парсинга (в часах)
 
 
 def get_html(url):
@@ -26,7 +27,7 @@ def get_schedule(html):
     for line, day in zip(lines, days):
         one_day = {}
         lessons = []
-        one_day['day'] = day.text
+        one_day['day'] = day.text.split(',')[0]  # берем только день недели (без даты)
         tails = line.find_all(class_='class-tails')
         for t in tails:
             time = t.find(class_='class-time').text
@@ -60,7 +61,7 @@ def get_schedule(html):
 
 
 def get_institutes(html):
-    '''Возвращает институты и ссылки на них'''
+    """Возвращает институты и ссылки на них"""
     soup = BeautifulSoup(html, 'html.parser')
     insts = soup.find(class_='content')
     inst = insts.find_all('li')
@@ -86,7 +87,7 @@ def get_institutes(html):
 
 
 def get_groups(html):
-    '''Возвращает группы и ссылки на них'''
+    """Возвращает группы и ссылки на них"""
     soup = BeautifulSoup(html, 'html.parser')
     groups = soup.find(class_='kurs-list')
     courses = groups.find_all('li')
@@ -120,7 +121,7 @@ def get_groups(html):
 
 
 def count_course(html):
-    '''Получаем кол-во курсов'''
+    """Получаем кол-во курсов"""
     soup = BeautifulSoup(html, 'html.parser')
     groups = soup.find(class_='kurs-list')
     count_courses = len(groups.find_all('ul'))
@@ -131,40 +132,35 @@ def count_course(html):
     return course
 
 
-def main():
-    timing = time.time()
-
-    html_schelude_groups = get_html(url=URL_schelude_groups)
-    html_insts = get_html(url=URL_inst)
-    html_groups = get_html(url=URL_groups)
-    html_count_groups = get_html(url=URL_groups)
-    schedule = get_schedule(html_schelude_groups)
-    institutes = get_institutes(html_insts)
-    groups = get_groups(html_groups)
-    course = count_course(html_count_groups)
-
-    pprint(schedule)
-    pprint(institutes)
-    pprint(groups)
-    pprint(course)
-
+def parse():
+    """старт бесконечного парсинга"""
     while True:
-        if time.time() - timing > 3600.0:
-            timing = time.time()
+        # парсим институты
+        html_institutes = get_html(url=URL_inst)
+        institutes = get_institutes(html=html_institutes)
+        pprint(institutes)
 
-            html_schelude_groups = get_html(url=URL_schelude_groups)
-            html_insts = get_html(url=URL_inst)
-            html_groups = get_html(url=URL_groups)
-            html_count_groups = get_html(url=URL_groups)
-            schedule = get_schedule(html_schelude_groups)
-            institutes = get_institutes(html_insts)
-            groups = get_groups(html_groups)
-            course = count_course(html_count_groups)
+        # парсим курсы
+        html_count_course = get_html(url=URL_groups)
+        course = count_course(html=html_count_course)
+        pprint(course)
 
-            pprint(schedule)
-            pprint(institutes)
-            pprint(groups)
-            pprint(course)
+        # парсим группы
+        html_groups = get_html(url=URL_groups)
+        groups = get_groups(html=html_groups)
+        pprint(groups)
+
+        # парсим расписание групп
+        html_schedule_groups = get_html(url=URL_schelude_groups)
+        schedule = get_schedule(html=html_schedule_groups)
+        pprint(schedule)
+
+        # засыпаем
+        sleep(PARSE_TIME_HOURS * 60 * 60)
+
+
+def main():
+    parse()
 
 
 if __name__ == '__main__':
