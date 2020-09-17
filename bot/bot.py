@@ -27,7 +27,7 @@ HOST_URL = os.environ.get('HOST_URL')
 
 bot = telebot.TeleBot(TOKEN, threaded=False)
 
-storage = MongodbService()  # .get_instance()
+storage = MongodbService().get_instance()
 
 app = Flask(__name__)
 
