@@ -10,6 +10,7 @@ def full_schedule_in_str(schedule: list, week: str) -> list:
             time = lesson['time']
             lesson_week = lesson['week']
 
+            # смотрим только на пары из нужной недели
             if lesson_week != week and lesson_week != 'all':
                 continue
 
