@@ -155,14 +155,13 @@ def inst_link(inst):
     for i in inst:
         #сохраняем словарь из списка
         dict_i = i
-        for k in i:
-            #передаём ссылку в get_groups
-            html_groups = get_html(url=i['link_inst'])
-            groups = get_groups(html=html_groups)
-            for x in groups:
-                #склеиваем и добавляем в список final_view
-                result = dict(dict_i, **x)
-                final_view.append(result)
+        #передаём ссылку в get_groups
+        html_groups = get_html(url=i['link_inst'])
+        groups = get_groups(html=html_groups)
+        for x in groups:
+        #склеиваем и добавляем в список final_view
+            result = dict(dict_i, **x)
+            final_view.append(result)
         # Здесь финальный вид парсера, осталось только в базу всё запихать
         print(final_view)
 
