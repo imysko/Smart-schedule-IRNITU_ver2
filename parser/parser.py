@@ -84,23 +84,11 @@ def get_institutes(html):
 
     for i in range(len(inst_tags_list)):
         rd_inst = {}
-        rd_inst['name'] = inst_tags_list[i]
-        rd_inst['link'] = links[i]
+        rd_inst['name_inst'] = inst_tags_list[i]
+        rd_inst['link_inst'] = links[i]
         rd_inst_list.append(rd_inst)
 
-    return rd_inst_list
-
-# Получаем курс группы
-def kurs(group):
-    now = datetime.datetime.now()
-    year = str(now.year)[2:4] # получение двух последних цифр года 2020 - 20; 2021 - 21...
-    month = now.month
-    group_year = re.findall('(\d+)', group) # получение года групп ИБб-18-1 = 18; ИБб-19-1 = 19...
-    if (month>8) and (month<=12):
-        course = int(year) + 1 - int(group_year[0])
-    elif (month>=1) and (month<7):
-        course = int(year) - int(group_year[0])
-    return course
+    inst_link(rd_inst_list)
 
 
 def get_groups(html):
@@ -131,8 +119,8 @@ def get_groups(html):
     for i in range(len(groups_parse_list)):
         rd_groups = {}
         rd_groups['course'] = kurs(group = groups_parse_list[i])
-        rd_groups['name'] = groups_parse_list[i]
-        rd_groups['link'] = links[i]
+        rd_groups['name_groups'] = groups_parse_list[i]
+        rd_groups['link_groups'] = links[i]
         rd_groups_list.append(rd_groups)
 
     return rd_groups_list
@@ -149,37 +137,41 @@ def count_course(html):
 
     return course
 
+def kurs(group):
+    '''Получаем курс группы'''
+    now = datetime.datetime.now()
+    year = str(now.year)[2:4] # получение двух последних цифр года 2020 - 20; 2021 - 21...
+    month = now.month
+    group_year = re.findall('(\d+)', group) # получение года групп ИБб-18-1 = 18; ИБб-19-1 = 19...
+    if (month>8) and (month<=12):
+        course = int(year) + 1 - int(group_year[0])
+    elif (month>=1) and (month<7):
+        course = int(year) - int(group_year[0])
+    return course
+
+def inst_link(inst):
+    '''Парсим по всем курсам'''
+    final_view = []
+    for i in inst:
+        #сохраняем словарь из списка
+        dict_i = i
+        for k in i:
+            #передаём ссылку в get_groups
+            html_groups = get_html(url=i['link_inst'])
+            groups = get_groups(html=html_groups)
+            for x in groups:
+                #склеиваем и добавляем в список final_view
+                result = dict(dict_i, **x)
+                final_view.append(result)
+        # Здесь финальный вид парсера, осталось только в базу всё запихать
+        print(final_view)
 
 def parse():
     """старт бесконечного парсинга"""
     while True:
-        # парсим институты
+        # передаём данные
         html_institutes = get_html(url=URL_inst)
         institutes = get_institutes(html=html_institutes)
-        pprint(institutes)
-#        storage.save_institutes(institutes)
-        pprint(institutes)
-
-        # парсим курсы
-        courses = []
-        for institute in institutes:
-            html_count_course = get_html(url=institute['link'])
-            course = count_course(html=html_count_course)
-            institute_name = institute['name']
-            for name in course:
-                courses.append({'name': name, 'institute': institute_name})
-#        storage.save_courses(courses=courses)
-        pprint(courses)
-        #
-        # парсим группы
-        html_groups = get_html(url=URL_groups)
-        groups = get_groups(html=html_groups)
-        pprint(groups)
-
-        # парсим расписание групп
-        html_schedule_groups = get_html(url=URL_schelude_groups)
-        schedule = get_schedule(html=html_schedule_groups)
-        #pprint(schedule)
 
         # засыпаем
         sleep(PARSE_TIME_HOURS * 60 * 60)
