@@ -52,7 +52,7 @@ class MongodbService(object):
 
     def get_groups(self, institute:str, course: str) -> list:
         """возвращает список групп на определённом курсе в определеннои институте"""
-        return list(self._db.groups.find(filter={'institute':institute, 'course': course}))
+        return list(self._db.groups.find(filter={'institute': {'$regex': f'{institute}*'}, 'course': course}))
 
     def save_or_update_user(self, chat_id: int, institute='', course='', group='', notifications=0):
         """сохраняет или изменяет данные пользователя (коллекция users)"""

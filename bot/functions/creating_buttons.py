@@ -38,7 +38,7 @@ def make_inline_keyboard_choose_courses(courses=[]):
     markup = types.InlineKeyboardMarkup()
     for course in courses:
         name = course['name']
-        data = json.dumps({"course": name})
+        data = '{"course":"' + name + '"}'
         markup.add(types.InlineKeyboardButton(text=name, callback_data=data))
 
     # Кнопка назад

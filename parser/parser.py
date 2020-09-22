@@ -4,7 +4,7 @@ from time import sleep
 from pprint import pprint
 import re
 import datetime
-#from storage import MongodbService
+from storage import MongodbService
 
 # ССылки для разных источников парсинга
 URL_schelude_groups = 'https://www.istu.edu/schedule/default?group=459303'
@@ -12,7 +12,7 @@ URL_inst = 'https://www.istu.edu/schedule/'
 URL_groups = 'https://www.istu.edu/schedule/?subdiv=683'
 PARSE_TIME_HOURS = 1  # время задержки парсинга (в часах)
 
-#storage = MongodbService().get_instance()
+storage = MongodbService().get_instance()
 
 
 def get_html(url):
@@ -90,17 +90,18 @@ def get_institutes(html):
 
     return rd_inst_list
 
+
 # Получаем курс группы
-def kurs(group):
+def kurs(group) -> str:
     now = datetime.datetime.now()
-    year = str(now.year)[2:4] # получение двух последних цифр года 2020 - 20; 2021 - 21...
+    year = str(now.year)[2:4]  # получение двух последних цифр года 2020 - 20; 2021 - 21...
     month = now.month
-    group_year = re.findall('(\d+)', group) # получение года групп ИБб-18-1 = 18; ИБб-19-1 = 19...
-    if (month>8) and (month<=12):
+    group_year = re.findall('(\d+)', group)  # получение года групп ИБб-18-1 = 18; ИБб-19-1 = 19...
+    if (month > 8) and (month <= 12):
         course = int(year) + 1 - int(group_year[0])
-    elif (month>=1) and (month<7):
+    elif (month >= 1) and (month < 7):
         course = int(year) - int(group_year[0])
-    return course
+    return f'{course} курс'
 
 
 def get_groups(html):
@@ -130,7 +131,7 @@ def get_groups(html):
 
     for i in range(len(groups_parse_list)):
         rd_groups = {}
-        rd_groups['course'] = kurs(group = groups_parse_list[i])
+        rd_groups['course'] = kurs(group=groups_parse_list[i])
         rd_groups['name'] = groups_parse_list[i]
         rd_groups['link'] = links[i]
         rd_groups_list.append(rd_groups)
@@ -157,7 +158,7 @@ def parse():
         html_institutes = get_html(url=URL_inst)
         institutes = get_institutes(html=html_institutes)
         pprint(institutes)
-#        storage.save_institutes(institutes)
+        storage.save_institutes(institutes)
         pprint(institutes)
 
         # парсим курсы
@@ -168,20 +169,27 @@ def parse():
             institute_name = institute['name']
             for name in course:
                 courses.append({'name': name, 'institute': institute_name})
-#        storage.save_courses(courses=courses)
+        storage.save_courses(courses=courses)
         pprint(courses)
-        #
+
         # парсим группы
-        html_groups = get_html(url=URL_groups)
-        groups = get_groups(html=html_groups)
-        pprint(groups)
+        all_groups = []
+        for institute in institutes:
+            html_groups = get_html(url=institute['link'])
+            groups = get_groups(html=html_groups)
+            for group in groups:
+                group['institute'] = institute['name']
+                all_groups.append(group)
+        storage.save_groups(all_groups)
+        pprint(all_groups)
 
         # парсим расписание групп
         html_schedule_groups = get_html(url=URL_schelude_groups)
         schedule = get_schedule(html=html_schedule_groups)
-        #pprint(schedule)
+        # pprint(schedule)
 
         # засыпаем
+        print('Waiting...')
         sleep(PARSE_TIME_HOURS * 60 * 60)
 
 
