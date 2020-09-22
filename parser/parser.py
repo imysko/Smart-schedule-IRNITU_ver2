@@ -1,6 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
-from time import sleep
+from time import sleep, time
 from pprint import pprint
 import re
 import datetime
@@ -154,6 +154,8 @@ def count_course(html):
 def parse():
     """старт бесконечного парсинга"""
     while True:
+        start_time = time() # начало парсинга
+
         # парсим институты
         html_institutes = get_html(url=URL_inst)
         institutes = get_institutes(html=html_institutes)
@@ -196,6 +198,7 @@ def parse():
             pprint(group_schedule)
 
         # засыпаем
+        print(f'--- {time() - start_time} seconds ---')
         print('Waiting...')
         sleep(PARSE_TIME_HOURS * 60 * 60)
 

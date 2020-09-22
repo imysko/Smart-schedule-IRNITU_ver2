@@ -28,7 +28,7 @@ class MongodbService(object):
 
     def save_institutes(self, institutes: list):
         """сохраняет список институтов в коллекцию institutes"""
-        self._db.institutes.drop() # очищаем старые записи в коллекции
+        self._db.institutes.drop()  # очищаем старые записи в коллекции
         return self._db.institutes.insert_many(institutes)
 
     def save_courses(self, courses: list):
@@ -54,7 +54,7 @@ class MongodbService(object):
         return list(self._db.groups.find(filter={'institute': institute, 'course': course}))
 
     def save_schedule(self, schedule: dict):
-        return self._db.schedule.insert_one(schedule)
+        return self._db.schedule.update_one(filter={'group': schedule['group']}, update={'$set': schedule}, upsert=True)
 
     def get_schedule(self, group):
         """возвращает расписание группы"""
