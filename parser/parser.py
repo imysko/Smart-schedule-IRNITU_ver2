@@ -157,8 +157,8 @@ def parse():
         # парсим институты
         html_institutes = get_html(url=URL_inst)
         institutes = get_institutes(html=html_institutes)
-        pprint(institutes)
         storage.save_institutes(institutes)
+        print('==========ИНСТИТУТЫ==========')
         pprint(institutes)
 
         # парсим курсы
@@ -170,6 +170,7 @@ def parse():
             for name in course:
                 courses.append({'name': name, 'institute': institute_name})
         storage.save_courses(courses=courses)
+        print('\n\n==========КУРСЫ==========')
         pprint(courses)
 
         # парсим группы
@@ -181,12 +182,18 @@ def parse():
                 group['institute'] = institute['name']
                 all_groups.append(group)
         storage.save_groups(all_groups)
+        print('\n\n==========ГРУППЫ==========')
         pprint(all_groups)
 
         # парсим расписание групп
-        html_schedule_groups = get_html(url=URL_schelude_groups)
-        schedule = get_schedule(html=html_schedule_groups)
-        # pprint(schedule)
+        print('\n\n==========РАСПИСАНИЕ==========')
+
+        for group in all_groups:
+            html_schedule_groups = get_html(url=group['link'])
+            schedule = get_schedule(html=html_schedule_groups)
+            group_schedule = {'group': group['name'], 'schedule': schedule}
+            storage.save_schedule(group_schedule)  # сохраняем по одной группе
+            pprint(group_schedule)
 
         # засыпаем
         print('Waiting...')
