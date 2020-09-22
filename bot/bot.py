@@ -1,8 +1,5 @@
-from pprint import pprint
-
 import telebot
-import json
-from time import sleep
+
 import os
 
 from functions.storage import MongodbService
@@ -10,19 +7,11 @@ from functions.near_lesson import get_near_lesson
 from functions.logger import logger
 from functions.creating_schedule import full_schedule_in_str
 from functions.find_week import find_week
-
-from flask import Flask, request
-import requests
-import json
-
-# from functions.creating_buttons import make_keyboard_start_menu, make_inline_keyboard_choose_institute, \
-#     make_inline_keyboard_choose_courses, make_inline_keyboard_choose_groups, make_inline_keyboard_notifications, \
-#     make_inline_keyboard_set_notifications
-
 from functions.creating_buttons import *
 
+from flask import Flask, request
+
 TOKEN = os.environ.get('TOKEN')
-TIMER_URL = os.environ.get('TIMER_URL')
 HOST_URL = os.environ.get('HOST_URL')
 
 bot = telebot.TeleBot(TOKEN, threaded=False)
@@ -313,9 +302,6 @@ def text(message):
         near_lessons_str += '-------------------------------------------\n'
         bot.send_message(chat_id=chat_id, text=f'<b>Ближайшая пара</b>\n'
                                                f'{near_lessons_str}', parse_mode='HTML')
-
-
-
     elif 'Напоминания' in data and user:
         time = user['notifications']
         if not time:

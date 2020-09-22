@@ -4,13 +4,13 @@ from time import sleep, time
 from pprint import pprint
 import re
 import datetime
+import os
 from storage import MongodbService
 
-# ССылки для разных источников парсинга
-URL_schelude_groups = 'https://www.istu.edu/schedule/default?group=459303'
-URL_inst = 'https://www.istu.edu/schedule/'
-URL_groups = 'https://www.istu.edu/schedule/?subdiv=683'
-PARSE_TIME_HOURS = 1  # время задержки парсинга (в часах)
+URL_INSTITUTES = os.getenv('URL_INSTITUTES',
+                           default='https://www.istu.edu/schedule/')  # Ссылка на страницу с институтами
+
+PARSE_TIME_HOURS = int(os.getenv('PARSE_TIME_HOURS', default=1))  # время задержки парсинга (в часах)
 
 storage = MongodbService().get_instance()
 
@@ -154,10 +154,10 @@ def count_course(html):
 def parse():
     """старт бесконечного парсинга"""
     while True:
-        start_time = time() # начало парсинга
+        start_time = time()  # начало парсинга
 
         # парсим институты
-        html_institutes = get_html(url=URL_inst)
+        html_institutes = get_html(url=URL_INSTITUTES)
         institutes = get_institutes(html=html_institutes)
         storage.save_institutes(institutes)
         print('==========ИНСТИТУТЫ==========')
