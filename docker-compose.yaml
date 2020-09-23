@@ -7,6 +7,8 @@ services:
   bot:
     build: bot/
     restart: always
+    ports:
+      - 0.0.0.0:8080:8080
     environment:
       - TOKEN= # токен telegram бота
       - HOST_URL= # URL сервера (если оставить HOST_URL пустымм, то бот запустится локально)
