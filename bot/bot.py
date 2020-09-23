@@ -1,6 +1,7 @@
 import telebot
 
 import os
+from time import sleep
 
 from functions.storage import MongodbService
 from functions.near_lesson import get_near_lesson
@@ -320,4 +321,6 @@ if __name__ == '__main__':
     logger.info('Бот запущен локально')
     bot.polling(none_stop=True, interval=0)
 else:
+    bot.remove_webhook()
+    sleep(1)
     bot.set_webhook(url=f'{HOST_URL}/telegram-bot/{TOKEN}')
