@@ -21,7 +21,7 @@ storage = MongodbService().get_instance()
 app = Flask(__name__)
 
 
-@app.route(f'/{TOKEN}', methods=["POST"])
+@app.route(f'/telegram-bot/{TOKEN}', methods=["POST"])
 def webhook():
     bot.process_new_updates([telebot.types.Update.de_json(request.stream.read().decode("utf-8"))])
     return 'ok', 200
@@ -270,7 +270,8 @@ def text(message):
         schedule = storage.get_schedule(group=group)
         if not schedule:
             bot.send_message(chat_id=chat_id,
-                             text='Временно недоступно🚫😣\n'                                           'Попробуйте позже⏱')
+                             text='Временно недоступно🚫😣\n'
+                                  'Попробуйте позже⏱')
             return
         schedule = schedule['schedule']
         week = find_week()
@@ -319,4 +320,4 @@ if __name__ == '__main__':
     logger.info('Бот запущен локально')
     bot.polling(none_stop=True, interval=0)
 else:
-    bot.set_webhook(url=f'{HOST_URL}/{TOKEN}')
+    bot.set_webhook(url=f'{HOST_URL}/telegram-bot/{TOKEN}')
