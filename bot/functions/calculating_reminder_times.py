@@ -20,17 +20,15 @@ def calculating_reminder_times(schedule, time: int) -> list:
             h = int(lesson_time[0])
             m = int(lesson_time[-1])
             if lesson['week'] == 'even' or lesson['week'] == 'all':
-                print('even')
                 # расчитываем время до начала (время пары - время напоминания) и добавляем в список
                 even[day['day']].append(str((timedelta(hours=h, minutes=m) - timedelta(minutes=time)))[:-3])
 
             if lesson['week'] == 'odd' or lesson['week'] == 'all':
                 odd[day['day']].append(str((timedelta(hours=h, minutes=m) - timedelta(minutes=time)))[:-3])
 
-    reminders.append(
-        {
-            'even': even,
-            'odd': odd
-        }
-    )
+    reminders = {
+        'even': even,
+        'odd': odd
+    }
+
     return reminders
