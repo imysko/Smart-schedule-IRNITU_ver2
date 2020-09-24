@@ -54,7 +54,7 @@ class MongodbService(object):
         """возвращает список групп на определённом курсе в определеннои институте"""
         return list(self._db.groups.find(filter={'institute': {'$regex': f'{institute}*'}, 'course': course}))
 
-    def save_or_update_user(self, chat_id: int, institute='', course='', group='', notifications=0):
+    def save_or_update_user(self, chat_id: int, institute='', course='', group='', notifications=0, reminders=[]):
         """сохраняет или изменяет данные пользователя (коллекция users)"""
         update = {'chat_id': chat_id, 'notifications': 0}
         if institute:
@@ -65,6 +65,8 @@ class MongodbService(object):
             update['group'] = group
         if notifications:
             update['notifications'] = notifications
+        if reminders:
+            update['reminders'] = reminders
 
         return self._db.users.update_one(filter={'chat_id': chat_id}, update={'$set': update}, upsert=True)
 

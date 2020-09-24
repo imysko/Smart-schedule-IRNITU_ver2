@@ -9,8 +9,10 @@ from functions.logger import logger
 from functions.creating_schedule import full_schedule_in_str
 from functions.find_week import find_week
 from functions.creating_buttons import *
+from functions.calculating_reminder_times import calculating_reminder_times
 
 from flask import Flask, request
+from pprint import pprint
 
 TOKEN = os.environ.get('TOKEN')
 HOST_URL = os.environ.get('HOST_URL')
@@ -210,7 +212,15 @@ def handle_query(message):
         data = json.loads(data)
         time = data['save_notifications']
 
-        storage.save_or_update_user(chat_id=chat_id, notifications=time)
+        group = storage.get_user(chat_id=chat_id)['group']
+
+        schedule = storage.get_schedule(group=group)['schedule']
+        if time > 0:
+            reminders = calculating_reminder_times(schedule=schedule, time=int(time))
+        else:
+            reminders = []
+
+        storage.save_or_update_user(chat_id=chat_id, notifications=time, reminders=reminders)
 
         try:
             bot.edit_message_text(message_id=message_id, chat_id=chat_id, text=get_notifications_status(time),
