@@ -30,10 +30,9 @@ class MongodbService(object):
         """сохраняет документ в указанную коллекцию"""
         return self._db[collection].insert_one(data)
 
-    def get_user(self, chat_id: int):
-        return self._db.users.find_one(filter={'chat_id': chat_id})
+    def get_users_with_reminders(self):
+        return list(self._db.users.find(filter={'reminders': {'$ne': []}}))
 
     def get_schedule(self, group):
         """возвращает расписание группы"""
         return self._db.schedule.find_one(filter={'group': group})
-

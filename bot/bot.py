@@ -219,7 +219,7 @@ def handle_query(message):
             reminders = calculating_reminder_times(schedule=schedule, time=int(time))
         else:
             reminders = []
-
+        pprint(reminders)
         storage.save_or_update_user(chat_id=chat_id, notifications=time, reminders=reminders)
 
         try:
