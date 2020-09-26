@@ -7,6 +7,7 @@ import datetime
 import os
 from storage import MongodbService
 
+
 URL_INSTITUTES = os.getenv('URL_INSTITUTES',
                            default='https://www.istu.edu/schedule/')  # Ссылка на страницу с институтами
 
