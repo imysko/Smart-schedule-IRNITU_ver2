@@ -56,7 +56,7 @@ class MongodbService(object):
 
     def save_or_update_user(self, chat_id: int, institute='', course='', group='', notifications=0, reminders=[]):
         """сохраняет или изменяет данные пользователя (коллекция users)"""
-        update = {'chat_id': chat_id, 'notifications': 0, 'reminders': []}
+        update = {'chat_id': chat_id, 'notifications': 0}
         if institute:
             update['institute'] = institute
         if course:
@@ -83,3 +83,17 @@ class MongodbService(object):
     def get_schedule(self, group):
         """возвращает расписание группы"""
         return self._db.schedule.find_one(filter={'group': group})
+
+    # ======================================== VK ======================================== #
+
+    def save_id_vk(self, user_id: list):
+        """сохраняет список id в коллекцию user_id"""
+        return self._db.user_id.insert_many(user_id)
+
+    def get_user_vk(self, user_id: int):
+        """проверяет есть ли id пользователя в db"""
+        return self._db.user_id.find_one(filter={'user_id': user_id})
+
+    def delete_user_or_userdata_vk(self, user_id: int):
+        """удаление пользователя или курса пользователя из базы данных"""
+        return self._db.user_id.delete_one(filter={'user_id': user_id})
