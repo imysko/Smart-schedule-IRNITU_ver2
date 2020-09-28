@@ -56,7 +56,7 @@ class MongodbService(object):
 
     def save_or_update_user(self, chat_id: int, institute='', course='', group='', notifications=0, reminders=[]):
         """сохраняет или изменяет данные пользователя (коллекция users)"""
-        update = {'chat_id': chat_id, 'notifications': 0}
+        update = {'chat_id': chat_id, 'notifications': 0, 'reminders': []}
         if institute:
             update['institute'] = institute
         if course:
