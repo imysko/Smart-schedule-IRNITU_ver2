@@ -39,7 +39,7 @@ class InnerFormWeeks(form.Form):
 
 class UserForm(form.Form):
     """создаём форму"""
-    chat_id = fields.StringField('chat_id', [validators.DataRequired()])  # поле с chat_id в базе
+    chat_id = fields.IntegerField('chat_id', [validators.DataRequired()])  # поле с chat_id в базе
     group = fields.SelectField('Группа', widget=Select2Widget())  # поле с group в базе
     notifications = fields.IntegerField('За сколько минут делать напоминания', default=0)  # поле с chat_id в базе
 
