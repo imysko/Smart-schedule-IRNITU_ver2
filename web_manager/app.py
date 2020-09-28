@@ -8,8 +8,10 @@ from wtforms import form, fields
 
 from flask_admin.form import Select2Widget
 from flask_admin.contrib.pymongo import ModelView, filters
-from flask_admin.model.fields import InlineFormField, InlineFieldList
-
+from flask_admin.model.fields import InlineFormField, InlineFieldList, FieldList
+import flask_admin.model.fields as f
+print(dir(f))
+print(dir(fields))
 # Create application
 app = Flask(__name__)
 
@@ -22,11 +24,27 @@ db = conn.Smart_schedule_IRNITU  # Наша база данных
 
 
 # TG User admin
+class InnerFormDays(form.Form):
+    """списки со временем напоминаний"""
+    понедельник = InlineFieldList(fields.StringField('Время'), 'понедельник')
+    вторник = InlineFieldList(fields.StringField('Время'), 'вторник')
+    среда = InlineFieldList(fields.StringField('Время'), 'среда')
+    четверг = InlineFieldList(fields.StringField('Время'), 'четверг')
+    пятница = InlineFieldList(fields.StringField('Время'), 'пятница')
+    суббота = InlineFieldList(fields.StringField('Время'), 'суббота')
+
+
+class InnerFormWeeks(form.Form):
+    even = InlineFormField(InnerFormDays, 'Четная неделя')
+    odd = InlineFormField(InnerFormDays, 'Нечетная неделя')
+
+
 class UserForm(form.Form):
     """создаём форму"""
     chat_id = fields.StringField('chat_id')  # поле с chat_id в базе
     group = fields.StringField('group')  # поле с group в базе
-    reminders = fields.StringField('reminders')  # поле с reminders в базе
+
+    reminders = InlineFormField(InnerFormWeeks)  # поле с reminders в базе
 
 
 class UserView(ModelView):
