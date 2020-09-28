@@ -1,25 +1,10 @@
-import pymongo
-
-from flask import Flask
-import flask_admin as admin
-
 from wtforms import form, fields, validators
 
 from flask_admin.form import Select2Widget
 from flask_admin.contrib.pymongo import ModelView, filters
 from flask_admin.model.fields import InlineFormField, InlineFieldList, FieldList
 
-
-# Create application
-app = Flask(__name__)
-
-# Create dummy secrey key so we can use sessions
-app.config['SECRET_KEY'] = '123456790'
-
-# Create models
-conn = pymongo.Connection()
-db = conn.Smart_schedule_IRNITU  # Наша база данных
-
+from app.storage import db
 
 # TG User admin
 class InnerFormDays(form.Form):
@@ -73,20 +58,3 @@ class UserView(ModelView):
         """выводим группы когда редактируем"""
         form = super(UserView, self).edit_form(obj)
         return self._feed_group_choices(form)
-
-
-# Flask views
-@app.route('/')
-def index():
-    return '<a href="/admin/">Click me to get to Admin!</a>'
-
-
-if __name__ == '__main__':
-    # Create admin
-    admin = admin.Admin(app, name='Example: PyMongo')
-
-    # Add views
-    admin.add_view(UserView(db.users, 'Users'))
-
-    # Start app
-    app.run(debug=True)
