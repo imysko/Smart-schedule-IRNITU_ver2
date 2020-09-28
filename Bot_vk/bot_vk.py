@@ -26,11 +26,18 @@ choice_institute = ''
 
 choice_course = ''
 
+choice_group = ''
+
 user_id = 0
 
 list_keyboard_main_2 = []
 
 all_groups =[]
+
+data_vk_dict = {}
+
+data_vk_list = []
+
 
 def parametres_for_buttons_start_menu_vk(text, color):
     '''Возвращает параметры кнопок'''
@@ -69,6 +76,7 @@ def make_inline_keyboard_choose_group_vk(groups=[]):
     global list_keyboard_main_2
     global all_groups
     overflow = 0
+    list_keyboard_main_2 = []
     list_keyboard_main = []
     list_keyboard = []
     for group in groups:
@@ -154,6 +162,12 @@ def sender_group(id, text):
             sender_group_page_2(user_id, 'ХЕЙ МУДИЛА')
             break
         elif message in all_groups:
+            global choice_group
+            global data_vk_dict
+            global data_vk_list
+            choice_group = message
+            data_vk_dict['group'] = choice_group
+            storage.save_data_vk(data_vk_list)
             sender_menu(user_id, 'Хайййййй')
 
 
@@ -169,6 +183,12 @@ def sender_group_page_2(id, text):
             sender_group(user_id, 'Мы тебя опустили')
             break
         elif message in all_groups:
+            global choice_group
+            global data_vk_dict
+            global data_vk_list
+            choice_group = message
+            data_vk_dict['group'] = choice_group
+            storage.save_data_vk(data_vk_list)
             sender_menu(user_id, 'Хайййййй')
 
 def sender_courses(id, text):
@@ -188,6 +208,7 @@ def sender_zero(id, text):
     keyboard = json.dumps(keyboard_zero, ensure_ascii=False).encode('utf-8')
     keyboard = str(keyboard.decode('utf-8'))
     authorize.method('messages.send', {'user_id': id, 'message': text, 'random_id': 0, 'keyboard': keyboard})
+
 
 def sender_institutes(id, text):
     '''Отправки сообщения + меню с институтами для регистрации'''
@@ -212,14 +233,15 @@ def sender_menu(id, text):
 
 def start(user_id, message):
     '''Проверяем есть пользователь в базе данных'''
-    if storage.get_user_vk(user_id):
+    if storage.get_user_vk(user_id) or message == '/start':
         storage.delete_user_or_userdata_vk(user_id) # удаляем пользователя
     # Запись в базу id
-    user_id_list = []
-    user_id_dict = {}
-    user_id_dict['user_id'] = id
-    user_id_list.append(user_id_dict)
-
+    global data_vk_dict
+    global data_vk_list
+    data_vk_dict = {}
+    data_vk_list = []
+    data_vk_dict['user_id'] = user_id
+    data_vk_list.append(data_vk_dict)
     sender_zero(user_id, 'Привет!\n')
     sender_zero(user_id, 'Для начала пройдите небольшую регистрацию😉\n')
 
@@ -227,9 +249,11 @@ def start(user_id, message):
     sender_institutes(user_id, 'Выберите институт!\n')
     global choice_institute
     choice_institute = listening()
+    data_vk_dict['institute'] = choice_institute
     sender_courses(user_id, 'Выберите курс!\n')
     global choice_course
     choice_course = listening()
+    data_vk_dict['course'] = choice_course
     sender_group(user_id, 'Выберите группу')
 
 
@@ -238,9 +262,10 @@ def listening():
     for event in longpoll.listen():
         if event.type == VkEventType.MESSAGE_NEW:
             if event.to_me:
+                id = event.user_id
                 message = event.text
-                if message == '/reg':
-                    reg(id, message)
+                if message == '/start':
+                    start(id, message)
                 elif message == '/help':
                     help()
                 elif message == '<-- Назад':
