@@ -189,6 +189,9 @@ def handle_query(message):
             return
         time -= 5
 
+        if time < 0:
+            time = 0
+
         try:
             bot.edit_message_reply_markup(message_id=message_id, chat_id=chat_id,
                                           reply_markup=make_inline_keyboard_set_notifications(time))

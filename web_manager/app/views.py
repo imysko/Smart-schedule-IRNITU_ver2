@@ -4,8 +4,10 @@ from flask.views import View
 from app.storage import db
 from app.forms import UserForm
 
+
 # Flask views
 class IndexView(View):
+    """отображение стартовой страницы"""
 
     def dispatch_request(self):
         return '<a href="/admin/">Click me to get to Admin!</a>'
