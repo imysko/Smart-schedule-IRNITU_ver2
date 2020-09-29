@@ -4,7 +4,7 @@ from vk_api.longpoll import VkLongPoll, VkEventType
 from functions.storage import MongodbService
 from vk_api.utils import get_random_id
 from vk_api import VkUpload
-from Bot_vk.functions import creating_buttons_vk
+#from Bot_vk.functions import creating_buttons_vk
 import vk_api
 import time
 import json
