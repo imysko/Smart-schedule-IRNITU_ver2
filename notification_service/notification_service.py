@@ -95,12 +95,14 @@ def search_for_reminders():
             reminders = storage.get_users_with_reminders()
             print(reminders)
 
-
             for reminder in reminders:
                 week = find_week()
-                # если время совпадает с текущим, добавляем в список на отправку
-                # не всегда у пользователя есть нужный день!!!!!!!!!!! нужно добавит проверку
-                if f'{hours_now}:{minutes_now}' in reminder['reminders'][week][day_now.lower()]:
+
+                # если у пользователя нет ткущего дня, то None
+                user_day_time = reminder['reminders'][week].get(day_now.lower())
+
+                # если время совпадает с текущим, добавляем в список на отправ
+                if user_day_time and f'{hours_now}:{minutes_now}' in user_day_time:
                     chat_id = reminder['chat_id']
                     group = reminder['group']
                     notifications = reminder['notifications']
