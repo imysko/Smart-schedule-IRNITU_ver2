@@ -85,12 +85,11 @@ def handle_query(message):
                                     institute=data['institute'])  # Записываем в базу институт пользователя
         try:
             # Выводим сообщение со списком курсов
-            bot.edit_message_text(message_id=message_id, chat_id=chat_id, text=f'{institute}\nВыберите курс',
+            bot.edit_message_text(message_id=message_id, chat_id=chat_id, text=f'Выберите курс',
                                   reply_markup=make_inline_keyboard_choose_courses(courses))
         except Exception as e:
             logger.exception(e)
             return
-
 
     # После того как пользователь выбрал курс или нажал кнопку назад при выборе курса
     elif 'course' in data:
@@ -118,7 +117,7 @@ def handle_query(message):
             groups = storage.get_groups(institute=institute, course=course)
             # Выводим сообщение со списком групп
             bot.edit_message_text(message_id=message_id, chat_id=chat_id,
-                                  text=f'{institute}, {course}\nВыберите группу',
+                                  text=f'Выберите группу',
                                   reply_markup=make_inline_keyboard_choose_groups(groups))
         except Exception as e:
             logger.exception(e)
@@ -141,7 +140,7 @@ def handle_query(message):
 
             try:
                 # Выводим сообщение со списком курсов
-                bot.edit_message_text(message_id=message_id, chat_id=chat_id, text=f'{institute}\nВыберите курс',
+                bot.edit_message_text(message_id=message_id, chat_id=chat_id, text=f'Выберите курс',
                                       reply_markup=make_inline_keyboard_choose_courses(courses))
                 return
             except Exception as e:
