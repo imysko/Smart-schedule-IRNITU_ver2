@@ -98,8 +98,12 @@ def search_for_reminders():
             for reminder in reminders:
                 week = find_week()
 
+                # если у пользователя пустой reminders то None
+                user_days = reminder['reminders'].get(week)
+                if not user_days:
+                    continue
                 # если у пользователя нет ткущего дня, то None
-                user_day_time = reminder['reminders'][week].get(day_now.lower())
+                user_day_time = user_days.get(day_now.lower())
 
                 # если время совпадает с текущим, добавляем в список на отправ
                 if user_day_time and f'{hours_now}:{minutes_now}' in user_day_time:
