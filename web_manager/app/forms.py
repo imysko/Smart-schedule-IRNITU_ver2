@@ -27,7 +27,10 @@ class UserForm(form.Form):
     chat_id = fields.IntegerField('chat_id', [validators.DataRequired()])  # поле с chat_id в базе
     group = fields.SelectField('Группа', widget=Select2Widget())  # поле с group в базе
     notifications = fields.IntegerField('За сколько минут делать напоминания', default=0)  # поле с chat_id в базе
-
     reminders = InlineFormField(InnerFormWeeks, 'Время напоминаний', default={})  # поле с reminders в базе
 
 
+class InstitutesForm(form.Form):
+    """создаём форму"""
+    name = fields.SelectField('name',widget=Select2Widget())
+    link = fields.StringField('link')

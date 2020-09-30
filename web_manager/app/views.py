@@ -2,7 +2,7 @@ from flask_admin.contrib.pymongo import ModelView, filters
 from flask.views import View
 
 from app.storage import db
-from app.forms import UserForm
+from app.forms import UserForm, InstitutesForm
 
 
 # Flask views
@@ -40,3 +40,24 @@ class UserView(ModelView):
         """выводим группы когда редактируем"""
         form = super(UserView, self).edit_form(obj)
         return self._feed_group_choices(form)
+
+
+class InstitutesView(ModelView):
+    column_list = ('name', 'link')  # что будет показываться на странице из формы (какие поля)
+    column_sortable_list = ('name')  # что сортируется
+    form = InstitutesForm
+
+    def _feed_institutes_choices(self, form):
+        """формируем список групп для выбора"""
+        institutes = db.institutes.find(fields=('name',))
+        form.name.choices = [institute['name'] for institute in institutes]
+        return form
+
+    def create_form(self):
+        """выводим группы когда создаём"""
+        form = super(InstitutesView, self).create_form()
+        return self._feed_institutes_choices(form)
+    def edit_form(self, obj):
+        """выводим группы когда редактируем"""
+        form = super(InstitutesView, self).edit_form(obj)
+        return self._feed_institutes_choices(form)

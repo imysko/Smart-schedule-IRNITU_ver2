@@ -1,7 +1,7 @@
 from flask import Flask
 import flask_admin as admin
 
-from app.views import UserView
+from app.views import UserView, InstitutesView
 from app.storage import db
 from app import views
 
@@ -20,3 +20,4 @@ admin = admin.Admin(app, name='Smart-schedule-IRNITU manager')
 
 # Добавляем views
 admin.add_view(UserView(db.users, 'Users'))
+admin.add_view(InstitutesView(db.institutes,'Institutes'))
