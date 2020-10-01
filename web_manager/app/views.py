@@ -102,7 +102,7 @@ class InstitutesView(ModelView):
 
     def _feed_institutes_choices(self, form):
         """формируем список групп для выбора"""
-        institutes = db.institutes.find(fields=('name',))
+        institutes = db.institutes.find()
         form.name.choices = [institute['name'] for institute in institutes]
         return form
 
