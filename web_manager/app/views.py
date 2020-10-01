@@ -5,9 +5,10 @@ from flask_admin import BaseView, expose
 
 from app.storage import db
 from app.forms import UserForm, InstitutesForm, BotSendMessageForm
+from app.bots import tg_bot
 
+from flask import redirect, url_for, request, flash
 
-from flask import redirect,  url_for, request, flash
 
 # Flask views
 class IndexView(View):
@@ -26,18 +27,30 @@ class AnalyticsView(BaseView):
 
 class BotSendMessageView(BaseView):
     """Отправка сообщений всем пользователям tg бота"""
+
     @expose('/', methods=['get', 'post'])
     def index(self):
         form = BotSendMessageForm()
         # если нажали кнопку "Отправить"
         if request.method == 'POST':
-            sent_message = True # Если сообщение было отправлено, то True
-            if sent_message:
+            text = request.form.get('text')
+
+            # отправляем сообщения
+            status, message, exceptions = tg_bot.send_message_to_all_users(text=text)
+
+            if status and not exceptions:
                 # Выводим сообщение об успехе
-                flash('Сообщение отправлено', category='success')
+                flash(message, category='success')
+
+            elif status and exceptions:
+                # Выводим сообщение об успехе
+                flash('Сообщения отправлены', category='success')
+                # Выводим предупрежение
+                flash(message, category='warning')
+
             else:
                 # Выводим сообщение об ошибке
-                flash('Сообщение не отправлено', category='error')
+                flash(message, category='error')
             return redirect(url_for('tg_bot.index'))
 
         return self.render('admin/tg_bot/send_message.html', form=form)
