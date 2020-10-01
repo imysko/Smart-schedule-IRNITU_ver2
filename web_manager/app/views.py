@@ -34,7 +34,14 @@ class BotSendMessageView(BaseView):
         # если нажали кнопку "Отправить"
         if request.method == 'POST':
             text = request.form.get('text')
+            template = request.form.get('template')
 
+            # Сотрим какой шаблон был выбран
+            if template == 'Важное сообщение':
+                text = '‼️Важное сообщение ‼️\n' + text
+            elif template == 'Информационное сообщение':
+                text = '⚠️⚠️⚠️Информационное сообщение⚠️⚠️⚠️\n' + text
+            
             # отправляем сообщения
             status, message, exceptions = tg_bot.send_message_to_all_users(text=text)
 
@@ -51,6 +58,8 @@ class BotSendMessageView(BaseView):
             else:
                 # Выводим сообщение об ошибке
                 flash(message, category='error')
+                # не обновляем форму
+                return self.render('admin/tg_bot/send_message.html', form=form)
             return redirect(url_for('tg_bot.index'))
 
         return self.render('admin/tg_bot/send_message.html', form=form)
