@@ -19,6 +19,6 @@ app.add_url_rule('/', view_func=IndexView.as_view('index'))
 admin = admin.Admin(app, name='Smart-schedule-IRNITU manager')
 
 # Добавляем views
-admin.add_view(UserView(db.users, 'Users'))
+admin.add_view(UserView(db.users, 'Users', category='База данных'))
 admin.add_view(AnalyticsView(name='Analytics', endpoint='analytics'))
-admin.add_view(InstitutesView(db.institutes, 'Institutes'))
+admin.add_view(InstitutesView(db.institutes, 'Institutes', category='База данных'))
