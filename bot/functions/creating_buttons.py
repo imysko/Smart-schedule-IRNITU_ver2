@@ -9,9 +9,10 @@ def make_keyboard_start_menu():
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=False, resize_keyboard=True)
     btn1 = types.KeyboardButton('Расписание')
     btn2 = types.KeyboardButton('Ближайшая пара')
-    btn3 = types.KeyboardButton('Напоминания')
+    btn3 = types.KeyboardButton('Расписание на сегодня')
+    btn4 = types.KeyboardButton('Напоминания')
     markup.add(btn1, btn2)
-    markup.add(btn3)
+    markup.add(btn3, btn4)
     return markup
 
 

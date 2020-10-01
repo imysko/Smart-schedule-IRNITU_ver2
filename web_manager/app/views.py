@@ -1,5 +1,7 @@
 from flask_admin.contrib.pymongo import ModelView, filters
 from flask.views import View
+import flask_admin as admin
+from flask_admin import BaseView, expose
 
 from app.storage import db
 from app.forms import UserForm
@@ -11,6 +13,13 @@ class IndexView(View):
 
     def dispatch_request(self):
         return '<a href="/admin/">Click me to get to Admin!</a>'
+
+
+# Create custom admin view
+class AnalyticsView(BaseView):
+    @expose('/')
+    def index(self):
+        return self.render('analytics_index.html')
 
 
 class UserView(ModelView):
