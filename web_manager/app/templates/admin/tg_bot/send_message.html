@@ -1,0 +1,13 @@
+{% extends 'admin/master.html' %}
+{% block body %}
+
+<form action="" method="post" class="form-contact">
+
+    {{ form.text.label }}
+    <p>{{ form.text() }}</p>
+    {{ form.submit() }}
+
+</form>
+
+
+{% endblock %}

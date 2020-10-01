@@ -1,9 +1,8 @@
-from wtforms import form, fields, validators
+from wtforms import form, fields, validators, SubmitField
 
 from flask_admin.form import Select2Widget
 
 from flask_admin.model.fields import InlineFormField, InlineFieldList, FieldList
-
 
 
 # TG User admin
@@ -32,5 +31,11 @@ class UserForm(form.Form):
 
 class InstitutesForm(form.Form):
     """создаём форму"""
-    name = fields.SelectField('name',widget=Select2Widget())
+    name = fields.SelectField('name', widget=Select2Widget())
     link = fields.StringField('link')
+
+
+# TG bot admin
+class BotSendMessageForm(form.Form):
+    text = fields.TextAreaField(label='Текст сообщения', validators=[validators.DataRequired()])
+    submit = SubmitField(label="Отправить")

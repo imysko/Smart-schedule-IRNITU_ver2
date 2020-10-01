@@ -4,8 +4,10 @@ import flask_admin as admin
 from flask_admin import BaseView, expose
 
 from app.storage import db
-from app.forms import UserForm, InstitutesForm
+from app.forms import UserForm, InstitutesForm, BotSendMessageForm
 
+
+from flask import redirect,  url_for, request, flash
 
 # Flask views
 class IndexView(View):
@@ -15,13 +17,33 @@ class IndexView(View):
         return '<a href="/admin/">Click me to get to Admin!</a>'
 
 
-# Create custom admin view
+# Create custom admin views
 class AnalyticsView(BaseView):
     @expose('/')
     def index(self):
-        return self.render('analytics_index.html')
+        return self.render('admin/analytics_index.html')
 
 
+class BotSendMessageView(BaseView):
+    """Отправка сообщений всем пользователям tg бота"""
+    @expose('/', methods=['get', 'post'])
+    def index(self):
+        form = BotSendMessageForm()
+        # если нажали кнопку "Отправить"
+        if request.method == 'POST':
+            sent_message = True # Если сообщение было отправлено, то True
+            if sent_message:
+                # Выводим сообщение об успехе
+                flash('Сообщение отправлено', category='success')
+            else:
+                # Выводим сообщение об ошибке
+                flash('Сообщение не отправлено', category='error')
+            return redirect(url_for('tg_bot.index'))
+
+        return self.render('admin/tg_bot/send_message.html', form=form)
+
+
+# Create Model Views
 class UserView(ModelView):
     """создаём отображение формы"""
 
