@@ -23,4 +23,5 @@ admin.add_view(UserView(db.users, 'Users', category='База данных'))
 admin.add_view(InstitutesView(db.institutes, 'Institutes', category='База данных'))
 
 admin.add_view(AnalyticsView(name='Analytics', endpoint='analytics'))
-admin.add_view(BotSendMessageView(name='TG bot', endpoint='tg_bot'))
+admin.add_view(BotSendMessageView(name='Отправка сообщений',
+                                  endpoint='tg_bot_send_messages', category='Телеграм бот'))

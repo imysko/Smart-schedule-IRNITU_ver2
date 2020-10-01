@@ -60,7 +60,7 @@ class BotSendMessageView(BaseView):
                 flash(message, category='error')
                 # не обновляем форму
                 return self.render('admin/tg_bot/send_message.html', form=form)
-            return redirect(url_for('tg_bot.index'))
+            return redirect(url_for('tg_bot_send_messages.index'))
 
         return self.render('admin/tg_bot/send_message.html', form=form)
 

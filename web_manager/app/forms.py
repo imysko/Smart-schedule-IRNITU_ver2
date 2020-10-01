@@ -40,4 +40,3 @@ class BotSendMessageForm(form.Form):
     choices = ['Без шаблона', 'Важное сообщение', 'Информационное сообщение']
     template = fields.SelectField('Шаблон (добавляет текст в начале сообщения)', choices=choices)
     text = fields.TextAreaField(label='Текст сообщения', validators=[validators.DataRequired()])
-    submit = SubmitField(label="Отправить")
