@@ -4,14 +4,14 @@ import flask_admin as admin
 from flask_admin import BaseView, expose
 
 from app.storage import db
-<<<<<<< Updated upstream
+#<<<<<<< Updated upstream
 from app.forms import UserForm, InstitutesForm, BotSendMessageForm
 from app.bots import tg_bot
 
 from flask import redirect, url_for, request, flash
-=======
+#=======
 from app.forms import UserForm, InstitutesForm, CoursesForm, InnerCourses
->>>>>>> Stashed changes
+#>>>>>>> Stashed changes
 
 
 # Flask views
@@ -133,11 +133,11 @@ class CoursesView(ModelView):
     def _feed_courses_choices(self, form):
 
         courses = db.courses.find(fields=('name',))
-        form.name.choices = ['1 курс','2 курс', '3 курс']
+        #form.name.choices = ['1 курс','2 курс', '3 курс']
         return form
 
     def create_form(self):
-        """выводим группы когда создаём"""
+
         form = super(CoursesView, self).create_form()
         return self._feed_courses_choices(form)
 

@@ -1,11 +1,7 @@
 from flask import Flask
 import flask_admin as admin
 
-<<<<<<< Updated upstream
-from app.views import UserView, InstitutesView, AnalyticsView, IndexView, BotSendMessageView
-=======
-from app.views import UserView, InstitutesView, AnalyticsView, IndexView, CoursesView
->>>>>>> Stashed changes
+from app.views import UserView, InstitutesView, AnalyticsView, IndexView, CoursesView, BotSendMessageView
 
 from app.storage import db
 
@@ -25,11 +21,9 @@ admin = admin.Admin(app, name='Smart-schedule-IRNITU manager')
 # Добавляем views
 admin.add_view(UserView(db.users, 'Users', category='База данных'))
 admin.add_view(InstitutesView(db.institutes, 'Institutes', category='База данных'))
-<<<<<<< Updated upstream
 
 admin.add_view(AnalyticsView(name='Analytics', endpoint='analytics'))
 admin.add_view(BotSendMessageView(name='Отправка сообщений',
                                   endpoint='tg_bot_send_messages', category='Телеграм бот'))
-=======
+
 admin.add_view(CoursesView(db.courses, 'Courses', category='База данных'))
->>>>>>> Stashed changes
