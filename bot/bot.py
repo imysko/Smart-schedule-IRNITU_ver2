@@ -6,7 +6,7 @@ from time import sleep
 from functions.storage import MongodbService
 from functions.near_lesson import get_near_lesson
 from functions.logger import logger
-from functions.creating_schedule import full_schedule_in_str
+from functions.creating_schedule import full_schedule_in_str, get_one_day_schedule_in_str
 from functions.find_week import find_week
 from functions.creating_buttons import *
 from functions.calculating_reminder_times import calculating_reminder_times
@@ -249,11 +249,19 @@ def text(message):
     chat_id = message.chat.id
     data = message.text
 
-    logger.info(f'Inline button data: {data}')
+    logger.info(f'Message data: {data}')
 
     user = storage.get_user(chat_id=chat_id)
 
-    if 'Расписание' in data and user:
+    if 'Расписание' == data and user:
+        try:
+            bot.send_message(chat_id=chat_id, text='Выберите период',
+                             reply_markup=make_keyboard_choose_schedule())
+        except Exception as e:
+            logger.exception(e)
+            return
+
+    elif ('На текущую неделю' == data or 'На следующую неделю' == data) and user:
         try:
             group = storage.get_user(chat_id=chat_id)['group']
         except Exception as e:
@@ -265,14 +273,41 @@ def text(message):
                              text='Расписание временно недоступно🚫😣\n'                                           'Попробуйте позже⏱')
             return
         schedule = schedule['schedule']
+
         week = find_week()
+
+        # меняем неделю
+        if data == 'На следующую неделю':
+            week = 'odd' if week == 'even' else 'even'
+
+        week_name = 'четная' if week == 'odd' else 'нечетная'
+
         schedule_str = full_schedule_in_str(schedule, week=week)
         bot.send_message(chat_id=chat_id,
-                         text=f'<b>Расписание {group}</b>', parse_mode='HTML')
+                         text=f'<b>Расписание {group}</b>\n'
+                              f'Неделя: {week_name}', parse_mode='HTML',
+                         reply_markup=make_keyboard_start_menu())
 
         for schedule in schedule_str:
             bot.send_message(chat_id=chat_id,
                              text=f'{schedule}', parse_mode='HTML')
+    elif 'Расписание на сегодня' == data and user:
+        try:
+            group = storage.get_user(chat_id=chat_id)['group']
+        except Exception as e:
+            logger.exception(e)
+            return
+        schedule = storage.get_schedule(group=group)
+        if not schedule:
+            bot.send_message(chat_id=chat_id,
+                             text='Расписание временно недоступно🚫😣\n'
+                                  'Попробуйте позже⏱', reply_markup=make_keyboard_start_menu())
+            return
+        schedule = schedule['schedule']
+        week = find_week()
+        schedule_one_day = get_one_day_schedule_in_str(schedule=schedule, week=week)
+        bot.send_message(chat_id=chat_id,
+                         text=f'{schedule_one_day}', parse_mode='HTML')
 
     elif 'Ближайшая пара' in data and user:
         try:
@@ -322,6 +357,9 @@ def text(message):
             time = 0
         bot.send_message(chat_id=chat_id, text=get_notifications_status(time),
                          reply_markup=make_inline_keyboard_notifications(time))
+
+    elif 'Основное меню' in data and user:
+        bot.send_message(chat_id, text='Основное меню', reply_markup=make_keyboard_start_menu())
 
     else:
         bot.send_message(chat_id, text='Я вас не понимаю 😞')

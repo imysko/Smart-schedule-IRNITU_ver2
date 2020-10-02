@@ -36,6 +36,19 @@ services:
       - MONGO_DB_PORT=27017 # порт mongoDB
       - MONGO_DB_DATABASE=Smart_schedule_IRNITU # название базы данных
 
+
+  web_manager:
+    build: web_manager/
+    restart: always
+    ports:
+      - 0.0.0.0:8081:8081
+    environment:
+      - TOKEN= # токен telegram бота
+      - MONGO_DB_ADDR=mongodb # адрес mongoDB
+      - MONGO_DB_PORT=27017 # порт mongoDB
+      - MONGO_DB_DATABASE=Smart_schedule_IRNITU # название базы данных
+
+
   mongodb:
     image: mongo:latest
     volumes:

@@ -9,9 +9,10 @@ def make_keyboard_start_menu():
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=False, resize_keyboard=True)
     btn1 = types.KeyboardButton('Расписание')
     btn2 = types.KeyboardButton('Ближайшая пара')
-    btn3 = types.KeyboardButton('Напоминания')
+    btn3 = types.KeyboardButton('Расписание на сегодня')
+    btn4 = types.KeyboardButton('Напоминания')
     markup.add(btn1, btn2)
-    markup.add(btn3)
+    markup.add(btn3, btn4)
     return markup
 
 
@@ -94,4 +95,15 @@ def make_inline_keyboard_choose_week():
     markup.add(types.InlineKeyboardButton(text='Четная', callback_data='odd'),
                types.InlineKeyboardButton(text='Нечетная', callback_data='even'))
     markup.add(types.InlineKeyboardButton(text='Текущая', callback_data='week_now'))
+    return markup
+
+
+def make_keyboard_choose_schedule():
+    """Создаём кнопки выбора расписания на текущую неделю и на слудующую"""
+    markup = types.ReplyKeyboardMarkup(one_time_keyboard=False, resize_keyboard=True)
+    btn1 = types.KeyboardButton('На текущую неделю')
+    btn2 = types.KeyboardButton('На следующую неделю')
+    btn3 = types.KeyboardButton('Основное меню')
+    markup.add(btn1, btn2)
+    markup.add(btn3)
     return markup

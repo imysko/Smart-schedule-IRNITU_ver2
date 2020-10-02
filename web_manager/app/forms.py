@@ -1,9 +1,8 @@
-from wtforms import form, fields, validators
+from wtforms import form, fields, validators, SubmitField
 
 from flask_admin.form import Select2Widget
 
 from flask_admin.model.fields import InlineFormField, InlineFieldList, FieldList
-
 
 
 # TG User admin
@@ -27,7 +26,19 @@ class UserForm(form.Form):
     chat_id = fields.IntegerField('chat_id', [validators.DataRequired()])  # поле с chat_id в базе
     group = fields.SelectField('Группа', widget=Select2Widget())  # поле с group в базе
     notifications = fields.IntegerField('За сколько минут делать напоминания', default=0)  # поле с chat_id в базе
-
     reminders = InlineFormField(InnerFormWeeks, 'Время напоминаний', default={})  # поле с reminders в базе
 
 
+class InstitutesForm(form.Form):
+    """создаём форму"""
+    name = fields.SelectField('name', widget=Select2Widget())
+    link = fields.StringField('link')
+
+
+# TG bot admin
+class BotSendMessageForm(form.Form):
+    choices = ['Без шаблона', 'Важное сообщение', 'Информационное сообщение']
+    template = fields.SelectField('Шаблон (добавляет текст в начале сообщения)', choices=choices)
+    text = fields.TextAreaField(label='Текст сообщения', validators=[validators.DataRequired()])
+    choices = ['Без клавиатуры', 'Основное меню']
+    keyboard = fields.SelectField('Клавиатура', choices=choices)

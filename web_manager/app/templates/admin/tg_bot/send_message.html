@@ -1,0 +1,19 @@
+{% extends 'admin/master.html' %}
+{% block body %}
+
+<h3>Отправка сообщений всем пользователем телеграм бота</h3>
+<form action="" method="post" class="form-contact">
+    <p>{{ form.template.label }} </p>
+    <p>{{ form.template() }}</p>
+
+    <p>{{ form.text.label }}</p>
+    <p>{{ form.text() }}</p>
+
+    <p>{{ form.keyboard.label }}</p>
+    <p>{{ form.keyboard() }}</p>
+
+    <button type="button submit" class="btn btn-default">Отправить</button>
+</form>
+
+
+{% endblock %}
