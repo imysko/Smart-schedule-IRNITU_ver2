@@ -33,6 +33,17 @@ class InstitutesForm(form.Form):
     name = fields.SelectField('name', widget=Select2Widget())
     link = fields.StringField('link')
 
+class InnerCourses(form.Form):
+
+    choices = ['1 курс', '2 курс', '3 курс', '4 курс', '5 курс', '6 курс']
+    courses = fields.SelectField('Курсы', choices=choices)
+    #courses = InlineFieldList(fields.StringField, 'Добавить курс')
+
+class CoursesForm(form.Form):
+
+    institute = fields.StringField('Institute')
+    name = fields.StringField('name')
+    add_course = InlineFormField(InnerCourses, 'Courses',  default={})
 
 # TG bot admin
 class BotSendMessageForm(form.Form):
@@ -43,13 +54,3 @@ class BotSendMessageForm(form.Form):
     keyboard = fields.SelectField('Клавиатура', choices=choices)
 
 
-class InnerCourses(form.Form):
-
-    choices = ['1 курс', '2 курс', '3 курс', '4 курс', '5 курс', '6 курс']
-    courses = fields.SelectField('Курсы', choices=choices)
-    #courses = InlineFieldList(fields.StringField, 'Добавить курс')
-
-class CoursesForm(form.Form):
-
-    institute = fields.StringField('Institute')
-    name = InlineFormField(InnerCourses, 'Courses',  default={})

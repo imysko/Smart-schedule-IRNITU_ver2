@@ -129,15 +129,13 @@ class InstitutesView(ModelView):
 class CoursesView(ModelView):
     column_list = ('institute', 'name')  # что будет показываться на странице из формы (какие поля)
     column_sortable_list = ('institute')  # что сортируется
+    form_excluded_columns = ('name')
     form = CoursesForm
     def _feed_courses_choices(self, form):
-
-        courses = db.courses.find(fields=('name',))
         #form.name.choices = ['1 курс','2 курс', '3 курс']
         return form
 
     def create_form(self):
-
         form = super(CoursesView, self).create_form()
         return self._feed_courses_choices(form)
 
