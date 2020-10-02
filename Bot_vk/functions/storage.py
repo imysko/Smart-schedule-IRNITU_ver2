@@ -100,3 +100,4 @@ class MongodbService(object):
     def delete_user_or_userdata_vk(self, user_id: int):
         """удаление пользователя или курса пользователя из базы данных"""
         return self._db.vk_data.remove({'user_id': user_id})
+
