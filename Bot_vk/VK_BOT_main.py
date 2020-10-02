@@ -15,22 +15,24 @@ import os
 
 token = os.environ.get('VK')
 authorize = vk_api.VkApi(token=token)
-longpoll= VkLongPoll(authorize)
+longpoll = VkLongPoll(authorize)
 MAX_CALLBACK_RANGE = 41
 storage = MongodbService().get_instance()
-bot = Bot(f"{os.environ.get('VK')}", debug="DEBUG") # TOKEN
+bot = Bot(f"{os.environ.get('VK')}", debug="DEBUG")  # TOKEN
 database: typing.Dict[int, str] = {}  # Наш прототип базы данных
+
 
 def parametres_for_buttons_start_menu_vk(text, color):
     '''Возвращает параметры кнопок'''
     return {
         "action": {
-        "type": "text",
-        "payload": "{\"button\": \"" + "1" + "\"}",
-        "label": f"{text}"
+            "type": "text",
+            "payload": "{\"button\": \"" + "1" + "\"}",
+            "label": f"{text}"
         },
         "color": f"{color}"
-        }
+    }
+
 
 def make_keyboard_start_menu():
     """Создаём основные кнопки"""
@@ -43,7 +45,7 @@ def make_keyboard_start_menu():
     return keyboard
 
 
-def make_keyboard_institutes(institutes =[]):
+def make_keyboard_institutes(institutes=[]):
     """Кнопки выбора института"""
     keyboard = {
         "one_time": False
@@ -62,6 +64,7 @@ def make_keyboard_institutes(institutes =[]):
     keyboard = str(keyboard.decode('utf-8'))
     return keyboard
 
+
 def make_keyboard_choose_course_vk(courses):
     '''Создаёт клавиатуру для выбора курса'''
     keyboard = {
@@ -78,72 +81,31 @@ def make_keyboard_choose_course_vk(courses):
     keyboard = str(keyboard.decode('utf-8'))
     return keyboard
 
+
 def make_keyboard_choose_group_vk(groups=[]):
-    '''Создаёт клавиатуру для выбора группы'''
-
+    """Кнопки выбора института"""
     keyboard = {
         "one_time": False
     }
-    global list_keyboard_main_2
-    global all_groups
-    overflow = 0
-    list_keyboard_main_2 = []
     list_keyboard_main = []
-    list_keyboard = []
     for group in groups:
-        if choice in group['institute']:
-            name = group['name']
-            all_groups.append(name)
-            overflow+=1
-            if overflow == 27:
-                list_keyboard_main.append(list_keyboard)
-                list_keyboard = []
-                list_keyboard.append(parametres_for_buttons_start_menu_vk('Далее', 'primary'))
-                list_keyboard_main.append(list_keyboard)
-            else:
-                if overflow < 28 :
-                    if len(list_keyboard) == 3:
-                        list_keyboard_main.append(list_keyboard)
-                        list_keyboard = []
-                        list_keyboard.append(parametres_for_buttons_start_menu_vk(f'{name}', 'primary'))
-                    else:
-                        list_keyboard.append(parametres_for_buttons_start_menu_vk(f'{name}', 'primary'))
-                else:
-                    list_keyboard = []
-                    list_keyboard.append(parametres_for_buttons_start_menu_vk(f'{name}', 'primary'))
-                    list_keyboard_main_2.append(list_keyboard)
-    if overflow < 28:
+        list_keyboard = []
+        list_keyboard.append(parametres_for_buttons_start_menu_vk(f'{group}', 'primary'))
         list_keyboard_main.append(list_keyboard)
-    else:
-        list_keyboard_main_2.append(list_keyboard)
     keyboard['buttons'] = list_keyboard_main
+    keyboard = json.dumps(keyboard, ensure_ascii=False).encode('utf-8')
+    keyboard = str(keyboard.decode('utf-8'))
     return keyboard
 
-def make_keyboard_choose_group_vk_page_2(groups=[]):
-    '''Создаёт клавиатуру для групп после переполнения первой'''
-    keyboard = {
-        "one_time": False
-    }
-    list_keyboard_main = []
-    list_keyboard = []
-    for group in groups:
-        if len(list_keyboard) == 3:
-            list_keyboard_main.append(list_keyboard)
-            list_keyboard = []
-        else:
-            list_keyboard.append(*group)
-    list_keyboard_main.append(list_keyboard)
-    list_keyboard_main.append([parametres_for_buttons_start_menu_vk('Назад', 'primary')])
-    keyboard['buttons'] = list_keyboard_main
-    return keyboard
 
 def sep_space(name):
     '''Обрезает длину института, если тот больше 40 символов'''
     dlina = abs(len(name) - MAX_CALLBACK_RANGE)
-    name = name[:len(name) - dlina-5]
+    name = name[:len(name) - dlina - 5]
     return name
 
-def name_institutes(institutes = []):
+
+def name_institutes(institutes=[]):
     '''Храним список всех институтов'''
     list_institutes = []
     for i in institutes:
@@ -151,7 +113,17 @@ def name_institutes(institutes = []):
         list_institutes.append(name)
     return list_institutes
 
-def name_groups(groups = []):
+
+def name_courses(courses=[]):
+    '''Храним список всех институтов'''
+    list_courses = []
+    for i in courses:
+        name = i['name']
+        list_courses.append(name)
+    return list_courses
+
+
+def name_groups(groups=[]):
     '''Храним список всех групп'''
     list_groups = []
     for i in groups:
@@ -159,45 +131,83 @@ def name_groups(groups = []):
         list_groups.append(name)
     return list_groups
 
+
 def listening():
     '''Ждёт сообщение'''
     for event in longpoll.listen():
-        print(dir(event))
         if event.type == VkEventType.MESSAGE_NEW:
             if event.to_me:
                 id = event.user_id
                 message = event.text
                 return message
 
-@bot.on.message(text='Хай')
-async def wrapper(ans: Message):
+
+@bot.on.message(text='/start')
+async def start(ans: Message):
     '''Начало регистрации'''
+    chat_id = ans.from_id
+    # Проверяем есть пользователь в базе данных
+    if storage.get_user(chat_id):
+        storage.delete_user_or_userdata(chat_id)  # Удаляем пользвателя из базы данных
     await ans('Привет\n')
     await ans('Для начала пройдите небольшую регистрацию😉\n')
     await ans('Выберите институт.', keyboard=make_keyboard_institutes(storage.get_institutes()))
-    x = listening()
-    while True:
-        inst = listening()
-        institutes = name_institutes(storage.get_institutes())
-        if inst in institutes:
-            await ans('Выберите курс.', keyboard=make_keyboard_choose_course_vk(storage.get_courses(inst)))
-            break
-        else:
-            await ans('Я тебя не понял, выбери институт и не еби мозгу\n')
 
-    while True:
-        group = listening()
-        groups = name_groups(storage.get_groups())
-        if group in groups:
-            await ans('Выберите курс.', keyboard=make_keyboard_choose_course_vk(storage.get_courses(inst)))
-            break
+
+@bot.on.message()
+async def wrapper(ans: Message):
+    chat_id = ans.from_id
+    message = ans.text
+    user = storage.get_user(chat_id)
+    #Если пользователя нет в базе данных
+    if not user:
+        institutes = name_institutes(storage.get_institutes())
+        #Смотрим выбра ли пользователь институт
+        if message in institutes:
+            #Если да, то записываем в бд
+            storage.save_or_update_user(chat_id=chat_id, institute=message)
+            await ans('Найс\n')
+            await ans('Выберите курс.', keyboard=make_keyboard_choose_course_vk(storage.get_courses(message)))
         else:
-            await ans('Я тебя не понял, выбери институт и не еби мозгу\n')
+            await ans('Я вас не понимаю\n')
+        return
+    #Регистрация после выбора института
+    elif not 'course' in user.keys():
+        institute = user['institute']
+        course = storage.get_courses(institute)
+        #Если нажал кнопку курса
+        if message in name_courses(course):
+            #Записываем в базу данных выбранный курс
+            storage.save_or_update_user(chat_id=chat_id, course=message)
+            groups = storage.get_groups(institute=institute, course=message)
+            groups = name_groups(groups)
+            await ans('Выберите группу.', keyboard=make_keyboard_choose_group_vk(groups))
+            await ans('Найс2\n')
+        else:
+            await ans('Я вас не понимаю\n')
+        return
+    # Регистрация после выбора курса
+    elif not 'group' in user.keys():
+        institute = user['institute']
+        course = user['course']
+        groups = storage.get_groups(institute=institute, course=course)
+        groups = name_groups(groups)
+        # Если нажал кнопку группы
+        if message in groups:
+            # Записываем в базу данных выбранную группу
+            storage.save_or_update_user(chat_id=chat_id, group=message )
+            await ans('Конграт!\n')
+        else:
+            await ans('Я вас не понимаю\n')
+        return
+
+
+
 
 def main():
     '''Запуск бота'''
     bot.run_polling()
 
+
 if __name__ == "__main__":
     main()
-
