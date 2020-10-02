@@ -35,15 +35,21 @@ class BotSendMessageView(BaseView):
         if request.method == 'POST':
             text = request.form.get('text')
             template = request.form.get('template')
+            keyboard = request.form.get('keyboard')
 
             # Сотрим какой шаблон был выбран
             if template == 'Важное сообщение':
                 text = '‼️Важное сообщение ‼️\n' + text
             elif template == 'Информационное сообщение':
                 text = '⚠️⚠️⚠️Информационное сообщение⚠️⚠️⚠️\n' + text
-            
+
+            if keyboard == 'Основное меню':
+                keyboard = tg_bot.make_keyboard_start_menu()
+            else:
+                keyboard = None
+
             # отправляем сообщения
-            status, message, exceptions = tg_bot.send_message_to_all_users(text=text)
+            status, message, exceptions = tg_bot.send_message_to_all_users(text=text, keyboard=keyboard)
 
             if status and not exceptions:
                 # Выводим сообщение об успехе
