@@ -46,13 +46,29 @@ class MongodbService(object):
         """возвращает список институтов"""
         return list(self._db.institutes.find())
 
-    def get_courses(self, institute='') -> list:
-        """возвращает список курсов у определённого института"""
-        return list(self._db.courses.find(filter={'institute': {'$regex': f'{institute}*'}}))
 
-    def get_groups(self, institute:str, course: str) -> list:
-        """возвращает список групп на определённом курсе в определеннои институте"""
-        return list(self._db.groups.find(filter={'institute': {'$regex': f'{institute}*'}, 'course': course}))
+
+
+
+    def get_schedule(self, group):
+        """возвращает расписание группы"""
+        return self._db.schedule.find_one(filter={'group': group})
+
+    # ======================================== VK ======================================== #
+
+    def save_data_vk(self, data: list):
+        """сохраняет список id в коллекцию user_id"""
+        return self._db.vk_data.insert_many(data)
+
+    def get_user(self, chat_id: int):
+        return self._db.VK_users.find_one(filter={'chat_id': chat_id})
+
+    def delete_user_or_userdata(self, chat_id: int, delete_only_course: bool = False):
+        """удаление пользователя или курса пользователя из базы данных"""
+        if delete_only_course:
+            return self._db.VK_users.update_one(filter={'chat_id': chat_id}, update={'$unset': {'course': ''}},
+                                             upsert=True)
+        return self._db.VK_users.delete_one(filter={'chat_id': chat_id})
 
     def save_or_update_user(self, chat_id: int, institute='', course='', group='', notifications=0, reminders=[]):
         """сохраняет или изменяет данные пользователя (коллекция users)"""
@@ -68,36 +84,12 @@ class MongodbService(object):
         if reminders:
             update['reminders'] = reminders
 
-        return self._db.users.update_one(filter={'chat_id': chat_id}, update={'$set': update}, upsert=True)
+        return self._db.VK_users.update_one(filter={'chat_id': chat_id}, update={'$set': update}, upsert=True)
 
-    def get_user(self, chat_id: int):
-        return self._db.users.find_one(filter={'chat_id': chat_id})
+    def get_groups(self, institute: str, course: str) -> list:
+        """возвращает список групп на определённом курсе в определеннои институте"""
+        return list(self._db.groups.find(filter={'institute': {'$regex': f'{institute}*'}, 'course': course}))
 
-    def delete_user_or_userdata(self, chat_id: int, delete_only_course: bool = False):
-        """удаление пользователя или курса пользователя из базы данных"""
-        if delete_only_course:
-            return self._db.users.update_one(filter={'chat_id': chat_id}, update={'$unset': {'course': ''}},
-                                             upsert=True)
-        return self._db.users.delete_one(filter={'chat_id': chat_id})
-
-    def get_schedule(self, group):
-        """возвращает расписание группы"""
-        return self._db.schedule.find_one(filter={'group': group})
-
-    # ======================================== VK ======================================== #
-
-    def save_data_vk(self, data: list):
-        """сохраняет список id в коллекцию user_id"""
-        return self._db.vk_data.insert_many(data)
-
-    def get_user_vk(self, user_id: int):
-        """проверяет есть ли id пользователя в db"""
-        return self._db.user_id.find_one(filter={'user_id': user_id})
-
-    # def delete_user_or_userdata_vk(self, user_id: int):
-    #     """удаление пользователя или курса пользователя из базы данных"""
-    #     return self._db.vk_data.delete_one(filter={'user_id': user_id})
-    def delete_user_or_userdata_vk(self, user_id: int):
-        """удаление пользователя или курса пользователя из базы данных"""
-        return self._db.vk_data.remove({'user_id': user_id})
-
+    def get_courses(self, institute='') -> list:
+        """возвращает список курсов у определённого института"""
+        return list(self._db.courses.find(filter={'institute': {'$regex': f'{institute}*'}}))

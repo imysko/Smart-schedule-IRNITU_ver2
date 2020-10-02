@@ -45,7 +45,7 @@ class BotSendMessageView(BaseView):
             if template == 'Важное сообщение':
                 text = '‼️Важное сообщение ‼️\n' + text
             elif template == 'Информационное сообщение':
-                text = '⚠️⚠️⚠️Информационное сообщение⚠️⚠️⚠️\n' + text
+                text = '⚠️Информационное сообщение⚠️\n' + text
 
             if keyboard == 'Основное меню':
                 keyboard = tg_bot.make_keyboard_start_menu()
@@ -90,7 +90,7 @@ class UserView(ModelView):
 
     def _feed_group_choices(self, form):
         """формируем список групп для выбора"""
-        groups = db.groups.find(fields=('name',))
+        groups = db.groups.find()
         form.group.choices = [group['name'] for group in groups]
         return form
 
