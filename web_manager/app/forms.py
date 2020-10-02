@@ -15,7 +15,6 @@ class InnerFormDays(form.Form):
     пятница = InlineFieldList(fields.StringField(), 'пятница')
     суббота = InlineFieldList(fields.StringField(), 'суббота')
 
-
 class InnerFormWeeks(form.Form):
     even = InlineFormField(InnerFormDays, 'Четная неделя')
     odd = InlineFormField(InnerFormDays, 'Нечетная неделя')
@@ -42,3 +41,15 @@ class BotSendMessageForm(form.Form):
     text = fields.TextAreaField(label='Текст сообщения', validators=[validators.DataRequired()])
     choices = ['Без клавиатуры', 'Основное меню']
     keyboard = fields.SelectField('Клавиатура', choices=choices)
+
+
+class InnerCourses(form.Form):
+
+    choices = ['1 курс', '2 курс', '3 курс', '4 курс', '5 курс', '6 курс']
+    courses = fields.SelectField('Курсы', choices=choices)
+    #courses = InlineFieldList(fields.StringField, 'Добавить курс')
+
+class CoursesForm(form.Form):
+
+    institute = fields.StringField('Institute')
+    name = InlineFormField(InnerCourses, 'Courses',  default={})

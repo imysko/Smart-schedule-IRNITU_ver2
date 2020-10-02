@@ -1,7 +1,7 @@
 from flask import Flask
 import flask_admin as admin
 
-from app.views import UserView, InstitutesView, AnalyticsView, IndexView, BotSendMessageView
+from app.views import UserView, InstitutesView, AnalyticsView, IndexView, CoursesView, BotSendMessageView
 
 from app.storage import db
 
@@ -25,3 +25,5 @@ admin.add_view(InstitutesView(db.institutes, 'Institutes', category='База д
 admin.add_view(AnalyticsView(name='Analytics', endpoint='analytics'))
 admin.add_view(BotSendMessageView(name='Отправка сообщений',
                                   endpoint='tg_bot_send_messages', category='Телеграм бот'))
+
+admin.add_view(CoursesView(db.courses, 'Courses', category='База данных'))
