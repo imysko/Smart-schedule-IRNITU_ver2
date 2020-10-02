@@ -255,6 +255,14 @@ def text(message):
 
     if 'Расписание' == data and user:
         try:
+            bot.send_message(chat_id=chat_id, text='Выберите период',
+                             reply_markup=make_keyboard_choose_schedule())
+        except Exception as e:
+            logger.exception(e)
+            return
+
+    elif ('На текущую неделю' == data or 'На следующую неделю' == data) and user:
+        try:
             group = storage.get_user(chat_id=chat_id)['group']
         except Exception as e:
             logger.exception(e)
@@ -265,10 +273,20 @@ def text(message):
                              text='Расписание временно недоступно🚫😣\n'                                           'Попробуйте позже⏱')
             return
         schedule = schedule['schedule']
+
         week = find_week()
+
+        # меняем неделю
+        if data == 'На следующую неделю':
+            week = 'odd' if week == 'even' else 'even'
+
+        week_name = 'четная' if week == 'odd' else 'нечетная'
+
         schedule_str = full_schedule_in_str(schedule, week=week)
         bot.send_message(chat_id=chat_id,
-                         text=f'<b>Расписание {group}</b>', parse_mode='HTML')
+                         text=f'<b>Расписание {group}</b>\n'
+                              f'Неделя: {week_name}', parse_mode='HTML',
+                         reply_markup=make_keyboard_start_menu())
 
         for schedule in schedule_str:
             bot.send_message(chat_id=chat_id,
@@ -282,7 +300,8 @@ def text(message):
         schedule = storage.get_schedule(group=group)
         if not schedule:
             bot.send_message(chat_id=chat_id,
-                             text='Расписание временно недоступно🚫😣\n'                                           'Попробуйте позже⏱')
+                             text='Расписание временно недоступно🚫😣\n'
+                                  'Попробуйте позже⏱', reply_markup=make_keyboard_start_menu())
             return
         schedule = schedule['schedule']
         week = find_week()
@@ -338,6 +357,9 @@ def text(message):
             time = 0
         bot.send_message(chat_id=chat_id, text=get_notifications_status(time),
                          reply_markup=make_inline_keyboard_notifications(time))
+
+    elif 'Основное меню' in data and user:
+        bot.send_message(chat_id, text='Основное меню', reply_markup=make_keyboard_start_menu())
 
     else:
         bot.send_message(chat_id, text='Я вас не понимаю 😞')
