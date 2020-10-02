@@ -15,7 +15,6 @@ class InnerFormDays(form.Form):
     пятница = InlineFieldList(fields.StringField(), 'пятница')
     суббота = InlineFieldList(fields.StringField(), 'суббота')
 
-
 class InnerFormWeeks(form.Form):
     even = InlineFormField(InnerFormDays, 'Четная неделя')
     odd = InlineFormField(InnerFormDays, 'Нечетная неделя')
@@ -31,6 +30,7 @@ class UserForm(form.Form):
 
 class InstitutesForm(form.Form):
     """создаём форму"""
+<<<<<<< Updated upstream
     name = fields.SelectField('name', widget=Select2Widget())
     link = fields.StringField('link')
 
@@ -42,3 +42,16 @@ class BotSendMessageForm(form.Form):
     text = fields.TextAreaField(label='Текст сообщения', validators=[validators.DataRequired()])
     choices = ['Без клавиатуры', 'Основное меню']
     keyboard = fields.SelectField('Клавиатура', choices=choices)
+=======
+    name = fields.SelectField('name',widget=Select2Widget())
+    link = fields.StringField('link')
+
+class InnerCourses(form.Form):
+
+    courses = InlineFieldList(fields.StringField, 'Добавить курс')
+
+class CoursesForm(form.Form):
+
+    institute = fields.StringField('Institute')
+    name = InlineFormField(InnerCourses, 'Courses',  default={})
+>>>>>>> Stashed changes
