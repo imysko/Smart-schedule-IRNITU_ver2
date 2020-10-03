@@ -45,7 +45,7 @@ class BotSendMessageView(BaseView):
             if template == 'Важное сообщение':
                 text = '‼️Важное сообщение ‼️\n' + text
             elif template == 'Информационное сообщение':
-                text = '⚠️⚠️⚠️Информационное сообщение⚠️⚠️⚠️\n' + text
+                text = '⚠️Информационное сообщение⚠️\n' + text
 
             if keyboard == 'Основное меню':
                 keyboard = tg_bot.make_keyboard_start_menu()
@@ -90,7 +90,7 @@ class UserView(ModelView):
 
     def _feed_group_choices(self, form):
         """формируем список групп для выбора"""
-        groups = db.groups.find(fields=('name',))
+        groups = db.groups.find()
         form.group.choices = [group['name'] for group in groups]
         return form
 
@@ -129,15 +129,13 @@ class InstitutesView(ModelView):
 class CoursesView(ModelView):
     column_list = ('institute', 'name')  # что будет показываться на странице из формы (какие поля)
     column_sortable_list = ('institute')  # что сортируется
+    form_excluded_columns = ('name')
     form = CoursesForm
     def _feed_courses_choices(self, form):
-
-        courses = db.courses.find(fields=('name',))
         #form.name.choices = ['1 курс','2 курс', '3 курс']
         return form
 
     def create_form(self):
-
         form = super(CoursesView, self).create_form()
         return self._feed_courses_choices(form)
 
