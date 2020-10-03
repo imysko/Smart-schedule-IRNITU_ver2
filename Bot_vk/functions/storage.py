@@ -46,14 +46,6 @@ class MongodbService(object):
         """возвращает список институтов"""
         return list(self._db.institutes.find())
 
-
-
-
-
-    def get_schedule(self, group):
-        """возвращает расписание группы"""
-        return self._db.schedule.find_one(filter={'group': group})
-
     # ======================================== VK ======================================== #
 
     def save_data_vk(self, data: list):
@@ -67,7 +59,7 @@ class MongodbService(object):
         """удаление пользователя или курса пользователя из базы данных"""
         if delete_only_course:
             return self._db.VK_users.update_one(filter={'chat_id': chat_id}, update={'$unset': {'course': ''}},
-                                             upsert=True)
+                                                upsert=True)
         return self._db.VK_users.delete_one(filter={'chat_id': chat_id})
 
     def save_or_update_user(self, chat_id: int, institute='', course='', group='', notifications=0, reminders=[]):
@@ -93,3 +85,7 @@ class MongodbService(object):
     def get_courses(self, institute='') -> list:
         """возвращает список курсов у определённого института"""
         return list(self._db.courses.find(filter={'institute': {'$regex': f'{institute}*'}}))
+
+    def get_schedule(self, group):
+        """возвращает расписание группы"""
+        return self._db.schedule.find_one(filter={'group': group})

@@ -23,7 +23,7 @@ def full_schedule_in_str(schedule: list, week: str) -> list:
                 continue
 
             if name == 'свободно':
-                lessons_str += f'<b>{time}</b>\n' \
+                lessons_str += f'{time}\n' \
                                f'{name}'
 
             else:
@@ -34,13 +34,13 @@ def full_schedule_in_str(schedule: list, week: str) -> list:
                 info = lesson['info']
                 prep = lesson['prep']
 
-                lessons_str += f'<b>{time}</b>\n' \
+                lessons_str += f'{time}\n' \
                                f'{aud}' \
                                f'{name}\n' \
                                f'{info} {prep}'
             lessons_str += '\n-------------------------------------------\n'
 
-        schedule_str.append(f'\n<b>{day}</b>\n'
+        schedule_str.append(f'\n{day}\n'
                             f'{lessons_str}')
 
     return schedule_str
@@ -64,7 +64,7 @@ def get_one_day_schedule_in_str(schedule: list, week: str) -> str:
                     continue
 
                 if name == 'свободно':
-                    lessons_str += f'<b>{time}</b>\n' \
+                    lessons_str += f'{time}\n' \
                                    f'{name}'
 
                 else:
@@ -75,10 +75,10 @@ def get_one_day_schedule_in_str(schedule: list, week: str) -> str:
                     info = lesson['info']
                     prep = lesson['prep']
 
-                    lessons_str += f'<b>{time}</b>\n' \
+                    lessons_str += f'{time}\n' \
                                    f'{aud}' \
                                    f'{name}\n' \
                                    f'{info} {prep}'
                 lessons_str += '\n-------------------------------------------\n'
 
-            return f'\n<b>{day}</b>\n{lessons_str}'
+            return f'\n{day}\n{lessons_str}'
