@@ -42,7 +42,6 @@ class InnerCourses(form.Form):
 class CoursesForm(form.Form):
 
     institute = fields.StringField('Institute')
-    name = fields.StringField('name')
     add_course = InlineFormField(InnerCourses, 'Courses',  default={})
 
 # TG bot admin
