@@ -26,7 +26,8 @@ MAX_CALLBACK_RANGE = 41
 storage = MongodbService().get_instance()
 bot = Bot(f"{os.environ.get('VK')}", debug="DEBUG")  # TOKEN
 
-content_types = {'text': ['Расписание', 'Ближайшая пара', 'Расписание на сегодня', 'Напоминание']}
+content_types = {'text': ['Расписание', 'Ближайшая пара', 'Расписание на сегодня', 'Назад']}
+content_notification = {'text': ['Напоминание', 'Настройки', '<==Назад']}
 
 
 def parametres_for_buttons_start_menu_vk(text, color):
@@ -58,7 +59,7 @@ def make_inline_keyboard_notifications():
     keyboard.add_row()
     keyboard.add_button(Text(label='Настройки'), color="primary")
     keyboard.add_row()
-    keyboard.add_button(Text(label='Назад'), color="primary")
+    keyboard.add_button(Text(label='<==Назад'), color="primary")
     return keyboard
 
 
@@ -227,6 +228,17 @@ def listening():
                 message = event.text
                 return message
 
+def data_number_wait():
+    while True:
+        data = listening()
+        if data.isdigit():
+            return data
+        elif '<==Назад' in data:
+            return data
+        else:
+            return 0
+
+
 
 @bot.on.message(text='/start')
 async def start(ans: Message):
@@ -245,7 +257,7 @@ async def scheduler(ans: Message):
     chat_id = ans.from_id
     data = ans.text
     user = storage.get_user(chat_id=chat_id)
-    listening()
+    # listening()
 
     if 'Расписание' == data and user:
         await ans('Выберите период\n', keyboard=make_keyboard_choose_schedule())
@@ -323,33 +335,50 @@ async def scheduler(ans: Message):
         near_lessons_str += '-------------------------------------------\n'
         await ans(f'Ближайшая пара\n'f'{near_lessons_str}')
 
+@bot.on.message(text=content_notification['text'])
+async def scheduler(ans: Message):
+    chat_id = ans.from_id
+    data = ans.text
+    user = storage.get_user(chat_id=chat_id)
 
-    elif 'Напоминание' in data and user:
+    if 'Напоминание' in data and user:
         time = user['notifications']
         if time:
-            await ans('У вас установлены напоминания: ' + str(time) + ' минут', keyboard=make_inline_keyboard_notifications())
-            # time = 0
-            # await ans(f'{time} '+'min', keyboard=make_inline_keyboard_notifications())
+            await ans('У вас уже установлено напоминание: ' + f'{time}' + ' минут',
+                      keyboard=make_inline_keyboard_notifications())
         else:
-            await ans('У вас не установлены напоминания', keyboard=make_inline_keyboard_notifications())
-            data = listening()
-            if 'Настройки' in data:
-                while True:
-                    await ans('Впишите число кратное 5, например: 5, 10 ,15 и т.д...')
-                    data = listening()
-                    if data == 'Назад':
-                        await ans('Можете посмотреть расписание!', keyboard=make_keyboard_start_menu())
-                        break
-                    else:
-                        try:
-                            if int(data) % 5 == 0:
-                                time = int(data)
-                                storage.save_or_update_user(chat_id=chat_id, notifications=time)
-                                await ans(f'Напоминание установлено: '+f'{time} '+'минут',  keyboard=make_keyboard_start_menu())
-                                break
+            await ans('У вас не установлено напоминание ', keyboard=make_inline_keyboard_notifications())
+        return
 
-                        except:
-                            continue
+    # elif 'Настройки' in data and user:
+    #     await ans('Укажите за сколько минут до начала пары должно приходить сообщение [кратное 5]')
+    #     data = listening()
+    #     while data.isdigit() or ('<==Назад' in data):
+    #         await ans('Укажите за сколько минут до начала пары должно приходить сообщение [кратное 5]')
+    # 
+    #         if '<==Назад' in data:
+    #             await ans('Можете посмотреть расписание', keyboard=make_keyboard_start_menu())
+    #             return
+    #         elif data.isdigit():
+    #             if int(data)%5==0:
+    #                 time = int(data)
+    #                 storage.save_or_update_user(chat_id=chat_id, notifications=time)
+    #                 await ans('Вы успешно устновили напоминание: ' + f'{time}' + ' минут', keyboard=make_keyboard_start_menu())
+    #                 return
+    #             else:
+    #                 await ans('Вы указали число не [кратное 5]')
+
+
+
+
+
+
+    elif '<==Назад' in data and user:
+        await ans('Можете посмотреть расписание', keyboard=make_keyboard_start_menu())
+
+    else:
+        await ans('Я вас не понимаю!')
+
 
 
     # elif 'Подтвердить' in data:
