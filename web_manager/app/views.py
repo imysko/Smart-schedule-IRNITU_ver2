@@ -5,12 +5,12 @@ from flask_admin import BaseView, expose
 
 from app.storage import db
 #<<<<<<< Updated upstream
-from app.forms import UserForm, InstitutesForm, BotSendMessageForm
+from app.forms import UserForm, InstitutesForm, GroupsForm, BotSendMessageForm
 from app.bots import tg_bot
 
 from flask import redirect, url_for, request, flash
 #=======
-from app.forms import UserForm, InstitutesForm, CoursesForm, InnerCourses
+from app.forms import UserForm, InstitutesForm, CoursesForm, GroupsForm, InnerCourses
 #>>>>>>> Stashed changes
 
 
@@ -143,3 +143,22 @@ class CoursesView(ModelView):
         """выводим группы когда редактируем"""
         form = super(CoursesView, self).edit_form(obj)
         return self._feed_courses_choices(form)
+
+class GroupsView(ModelView):
+    column_list = ('name', 'course','link','institute')  # что будет показываться на странице из формы (какие поля)
+    column_sortable_list = ('institute')  # что сортируется
+    form_excluded_columns = ('name')
+    form = GroupsForm
+
+    def _feed_groups_choices(self, form):
+        # form.name.choices = ['1 курс','2 курс', '3 курс']
+        return form
+
+    def create_form(self):
+        form = super(GroupsView, self).create_form()
+        return self._feed_groups_choices(form)
+
+    def edit_form(self, obj):
+        """выводим группы когда редактируем"""
+        form = super(GroupsView, self).edit_form(obj)
+        return self._feed_groups_choices(form)

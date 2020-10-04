@@ -45,6 +45,13 @@ class CoursesForm(form.Form):
     name = fields.StringField('name')
     add_course = InlineFormField(InnerCourses, 'Courses',  default={})
 
+class GroupsForm(form.Form):
+
+    name = fields.StringField('name')
+    institute = fields.StringField('Institute')
+    link = fields.StringField('link')
+    course = fields.StringField('course')
+
 # TG bot admin
 class BotSendMessageForm(form.Form):
     choices = ['Без шаблона', 'Важное сообщение', 'Информационное сообщение']
