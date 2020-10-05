@@ -3,7 +3,6 @@ from bs4 import BeautifulSoup
 from time import sleep, time
 from pprint import pprint
 import re
-import datetime
 import os
 from storage import MongodbService
 
@@ -18,7 +17,19 @@ storage = MongodbService().get_instance()
 def get_html(url):
     """возвращает страницу по url"""
     response = requests.get(url)
-    return response.text
+    html = response.text
+    # Если сайт недоступен или нашли пустую страницу
+    if "Страница не найдена" in html or response.status_code != 200:
+        # ждём и пробуем ещё раз
+        sleep(10)
+        response = requests.get(url)
+        # если сайт недоступен или нашли пустую страницу
+        if "Страница не найдена" in html or response.status_code != 200:
+            # выбрасываем исключение
+            raise Exception("Couldn't get html. Bad connection or URL\n"
+                            f"URL: {url}")
+    else:
+        return response.text
 
 
 def get_institutes(html):
@@ -122,8 +133,18 @@ def parse():
         start_time = time()  # начало парсинга
 
         # парсим институты
-        html_institutes = get_html(url=URL_INSTITUTES)
-        institutes = get_institutes(html=html_institutes)
+        try:
+            html_institutes = get_html(url=URL_INSTITUTES)
+        except Exception as e:
+            print(e)
+            sleep(60)
+            continue
+        try:
+            institutes = get_institutes(html=html_institutes)
+        except Exception as e:
+            print(e)
+            continue
+
         # сохраняем в БД
         storage.save_institutes(institutes)
         print('==========ИНСТИТУТЫ==========')
@@ -133,9 +154,18 @@ def parse():
         all_courses = []
         all_groups = []
         for institute in institutes:
-            html_courses_and_croups = get_html(url=institute['link'])
+            try:
+                html_courses_and_croups = get_html(url=institute['link'])
+            except Exception as e:
+                print(e)
+                continue
 
-            courses, groups = get_courses_and_groups(html=html_courses_and_croups)
+            try:
+                courses, groups = get_courses_and_groups(html=html_courses_and_croups)
+            except Exception as e:
+                print(e)
+                continue
+
 
             institute_name = institute['name']
             for name in courses:
@@ -156,15 +186,25 @@ def parse():
         print('\n\n==========РАСПИСАНИЕ==========')
 
         for group in all_groups:
-            html_schedule_groups = get_html(url=group['link'])
-            schedule = get_schedule(html=html_schedule_groups)
+            try:
+                html_schedule_groups = get_html(url=group['link'])
+            except Exception as e:
+                print(e)
+                continue
+
+            try:
+                schedule = get_schedule(html=html_schedule_groups)
+            except Exception as e:
+                print(e)
+                continue
+
             group_schedule = {'group': group['name'], 'schedule': schedule}
             storage.save_schedule(group_schedule)  # сохраняем по одной группе
             pprint(group_schedule)
 
         # засыпаем
         parse_time = time() - start_time
-        print(f'--- Parse time {parse_time} seconds ({parse_time / 60}) minutes---')
+        print(f'--- Parse time {parse_time} seconds ({parse_time / 60} minutes)---')
         print('Waiting...')
         sleep(PARSE_TIME_HOURS * 60 * 60)
 
