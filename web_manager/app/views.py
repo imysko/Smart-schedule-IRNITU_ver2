@@ -143,7 +143,7 @@ class CoursesView(ModelView):
         """выводим группы когда редактируем"""
         form = super(CoursesView, self).edit_form(obj)
         return self._feed_courses_choices(form)
-
+#
 class GroupsView(ModelView):
     column_list = ('name', 'course','link','institute')  # что будет показываться на странице из формы (какие поля)
     column_sortable_list = ('institute')  # что сортируется
