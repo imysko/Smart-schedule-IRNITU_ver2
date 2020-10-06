@@ -274,6 +274,11 @@ def text(message):
             return
         schedule = schedule['schedule']
 
+        if not schedule:
+            bot.send_message(chat_id=chat_id,
+                             text='Расписание временно недоступно🚫😣\n'                                           'Попробуйте позже⏱')
+            return
+
         week = find_week()
 
         # меняем неделю
@@ -304,6 +309,12 @@ def text(message):
                                   'Попробуйте позже⏱', reply_markup=make_keyboard_start_menu())
             return
         schedule = schedule['schedule']
+
+        if not schedule:
+            bot.send_message(chat_id=chat_id,
+                             text='Расписание временно недоступно🚫😣\n'                                           'Попробуйте позже⏱')
+            return
+
         week = find_week()
         schedule_one_day = get_one_day_schedule_in_str(schedule=schedule, week=week)
         bot.send_message(chat_id=chat_id,
