@@ -46,6 +46,13 @@ class ScheduleForm(form.Form):
     schedule = InlineFormField()
 
 
+class GroupsForm(form.Form):
+
+    name = fields.StringField('name')
+    institute = fields.StringField('Institute')
+    link = fields.StringField('link')
+    course = fields.StringField('course')
+#
 # TG bot admin
 class BotSendMessageForm(form.Form):
     choices = ['Без шаблона', 'Важное сообщение', 'Информационное сообщение']
