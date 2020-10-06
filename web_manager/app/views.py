@@ -4,15 +4,11 @@ import flask_admin as admin
 from flask_admin import BaseView, expose
 
 from app.storage import db
-#<<<<<<< Updated upstream
-from app.forms import UserForm, InstitutesForm, GroupsForm, BotSendMessageForm
 from app.bots import tg_bot
 
 from flask import redirect, url_for, request, flash
-#=======
-from app.forms import UserForm, InstitutesForm, CoursesForm, GroupsForm
-#InnerCourses
-#>>>>>>> Stashed changes
+from app.forms import UserForm, InstitutesForm, CoursesForm, GroupsForm, BotSendMessageForm
+
 
 
 # Flask views
