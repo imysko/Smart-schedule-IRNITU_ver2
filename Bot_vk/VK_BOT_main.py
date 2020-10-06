@@ -1,6 +1,7 @@
 import types
 from functions.calculating_reminder_times import calculating_reminder_times
 from vk_api import vk_api
+from vk_api.utils import get_random_id
 from vk_api.bot_longpoll import VkBotLongPoll, VkBotEventType
 from vk_api.keyboard import VkKeyboard, VkKeyboardColor
 from vk_api.longpoll import VkLongPoll, VkEventType
@@ -18,9 +19,18 @@ import typing
 from aiohttp import web
 import os
 
+API_VERSION = '5.124'
+GROUP_ID = '198983266'
 token = os.environ.get('VK')
-authorize = vk_api.VkApi(token=token)
-longpoll = VkLongPoll(authorize)
+authorize = vk_api.VkApi(token=token, api_version=API_VERSION)
+vk = authorize.get_api()
+longpoll = VkBotLongPoll(authorize, group_id=GROUP_ID)
+
+
+# authorize = vk_api.VkApi(token=token)
+# longpoll = VkLongPoll(authorize)
+
+CALLBACK_TYPES = ('show_snackbar', 'open_link', 'open_app')
 
 MAX_CALLBACK_RANGE = 41
 storage = MongodbService().get_instance()
@@ -234,6 +244,73 @@ def data_number_wait():
             return data
         else:
             return 0
+
+# @bot.on.message(text='/call')
+# async def start(ans: Message):
+#
+# # Настройки для обоих клавиатур
+#
+#     settings = dict(one_time=False, inline=True)
+#
+#     # №1. Клавиатура с 3 кнопками: "показать всплывающее сообщение", "открыть URL" и изменить меню (свой собственный тип)
+#     keyboard_1 = VkKeyboard(**settings)
+#     # pop-up кнопка
+#     keyboard_1.add_callback_button(label='Покажи pop-up сообщение', color=VkKeyboardColor.SECONDARY,
+#                                    payload={"type": "show_snackbar", "text": "Это исчезающее сообщение"})
+#     keyboard_1.add_line()
+#     # кнопка переключения на 2ое меню
+#     keyboard_1.add_callback_button(label='Добавить красного ', color=VkKeyboardColor.POSITIVE,
+#                                    payload={"type": "my_own_100500_type_edit"})
+#
+#     # №2. Клавиатура с одной красной callback-кнопкой. Нажатие изменяет меню на предыдущее.
+#     keyboard_2 = VkKeyboard(**settings)
+#     # кнопка переключения назад, на 1ое меню.
+#     keyboard_2.add_callback_button('Назад', color=VkKeyboardColor.NEGATIVE, payload={"type": "my_own_100500_type_edit"})
+#
+#
+#     f_toggle: bool = False
+#     for event in longpoll.listen():
+#         # отправляем меню 1го вида на любое текстовое сообщение от пользователя
+#         if event.type == VkBotEventType.MESSAGE_NEW:
+#             if event.obj.message['text'] != '':
+#                 if event.from_user:
+#                     # Если клиент пользователя не поддерживает callback-кнопки,
+#                     # нажатие на них будет отправлять текстовые
+#                     # сообщения. Т.е. они будут работать как обычные inline кнопки.
+#                     if 'callback' not in event.obj.client_info['button_actions']:
+#                         print(f'Клиент {event.obj.message["from_id"]} не поддерж. callback')
+#
+#                     vk.messages.send(
+#                         user_id=event.obj.message['from_id'],
+#                         random_id=get_random_id(),
+#                         peer_id=event.obj.message['from_id'],
+#                         keyboard=keyboard_1.get_keyboard(),
+#                         message=event.obj.message['text'])
+#         # обрабатываем клики по callback кнопкам
+#         elif event.type == VkBotEventType.MESSAGE_EVENT:
+#             # если это одно из 3х встроенных действий:
+#             if event.object.payload.get('type') in CALLBACK_TYPES:
+#                 # отправляем серверу указания как какую из кнопок обработать. Это заложено в
+#                 # payload каждой callback-кнопки при ее создании.
+#                 # Но можно сделать иначе: в payload положить свои собственные
+#                 # идентификаторы кнопок, а здесь по ним определить
+#                 # какой запрос надо послать. Реализован первый вариант.
+#                 r = vk.messages.sendMessageEventAnswer(
+#                     event_id=event.object.event_id,
+#                     user_id=event.object.user_id,
+#                     peer_id=event.object.peer_id,
+#                     event_data=json.dumps(event.object.payload))
+#             # если это наша "кастомная" (т.е. без встроенного действия) кнопка, то мы можем
+#             # выполнить edit сообщения и изменить его меню. Но при желании мы могли бы
+#             # на этот клик открыть ссылку/приложение или показать pop-up. (см.анимацию ниже)
+#             elif event.object.payload.get('type') == 'my_own_100500_type_edit':
+#                 last_id = vk.messages.edit(
+#                     peer_id=event.obj.peer_id,
+#                     message='ola',
+#                     conversation_message_id=event.obj.conversation_message_id,
+#                     keyboard=(keyboard_1 if f_toggle else keyboard_2).get_keyboard())
+#                 f_toggle = not f_toggle
+
 
 
 
