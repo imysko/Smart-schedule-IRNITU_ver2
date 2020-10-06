@@ -40,6 +40,11 @@ class CoursesForm(form.Form):
     choices = ['1 курс', '2 курс', '3 курс', '4 курс', '5 курс', '6 курс']
     name = fields.SelectField('Курсы', choices=choices)
 
+class ScheduleForm(form.Form):
+    group = fields.StringField('Group')
+    num = fields.FieldList('Номер пары')
+    schedule = InlineFormField()
+
 
 class GroupsForm(form.Form):
 

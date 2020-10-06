@@ -7,7 +7,7 @@ from app.storage import db
 from app.bots import tg_bot
 
 from flask import redirect, url_for, request, flash
-from app.forms import UserForm, InstitutesForm, CoursesForm, GroupsForm, BotSendMessageForm
+from app.forms import UserForm, InstitutesForm, CoursesForm, ScheduleForm, GroupsForm, BotSendMessageForm
 
 
 
@@ -101,6 +101,26 @@ class UserView(ModelView):
         form = super(UserView, self).edit_form(obj)
         return self._feed_group_choices(form)
 
+class ScheduleView(ModelView):
+    column_list = ('group', 'schedule')  # что будет показываться на странице из формы (какие поля)
+    column_sortable_list = ('group', 'schedule')  # что сортируется
+    form = ScheduleForm
+
+    def _feed_nums(self, form):
+        """формируем список групп для выбора"""
+        groups = db.schedule.find()
+        form.group.choices = [group['name'] for group in groups]
+        return form
+
+    def create_form(self):
+        """выводим группы когда создаём"""
+        form = super(UserView, self).create_form()
+        return self._feed_group_choices(form)
+
+    def edit_form(self, obj):
+        """выводим группы когда редактируем"""
+        form = super(UserView, self).edit_form(obj)
+        return self._feed_group_choices(form)
 
 class InstitutesView(ModelView):
     column_list = ('name', 'link')  # что будет показываться на странице из формы (какие поля)

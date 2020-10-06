@@ -3,10 +3,8 @@ from bs4 import BeautifulSoup
 from time import sleep, time
 from pprint import pprint
 import re
-import datetime
 import os
 from storage import MongodbService
-
 
 URL_INSTITUTES = os.getenv('URL_INSTITUTES',
                            default='https://www.istu.edu/schedule/')  # Ссылка на страницу с институтами
@@ -19,7 +17,70 @@ storage = MongodbService().get_instance()
 def get_html(url):
     """возвращает страницу по url"""
     response = requests.get(url)
-    return response.text
+    html = response.text
+    # Если сайт недоступен или нашли пустую страницу
+    if "Страница не найдена" in html or response.status_code != 200:
+        # ждём и пробуем ещё раз
+        sleep(10)
+        response = requests.get(url)
+        # если сайт недоступен или нашли пустую страницу
+        if "Страница не найдена" in html or response.status_code != 200:
+            # выбрасываем исключение
+            raise Exception("Couldn't get html. Bad connection or URL\n"
+                            f"URL: {url}")
+    else:
+        return response.text
+
+
+def get_institutes(html):
+    """Возвращает институты и ссылки на них"""
+    soup = BeautifulSoup(html, 'html.parser')
+    insts = soup.find(class_='content')
+    inst = insts.find_all('li')
+    inst_tags_list = []
+    links = []
+
+    rd_inst_list = []
+    # Берём названия институтов
+    for ins in inst:
+        inst_tags_list.append(ins.find('a').text)
+    # Берём ссылки
+    for link in soup.find_all('a'):
+        if '?subdiv' in str(link):
+            links.append('https://www.istu.edu/schedule/' + link.get('href'))
+
+    for i in range(len(inst_tags_list)):
+        rd_inst = {}
+        rd_inst['name'] = inst_tags_list[i]
+        rd_inst['link'] = links[i]
+        rd_inst_list.append(rd_inst)
+
+    return rd_inst_list
+
+
+def get_courses_and_groups(html):
+    """Получаем курсы и группы"""
+    soup = BeautifulSoup(html, 'html.parser')
+
+    # находим все курсы в html по регулярному выражению
+    courses = [course[5] + ' курс' for course in re.findall('Курс \d+', html)]
+
+    groups_list = soup.find(class_='kurs-list').find_all('ul')
+
+    groups = []
+    # проходимся по всем курсам
+    for course_groups, course in zip(groups_list, courses):
+        # проходимся по всем группам в курсе
+        for group in course_groups.find_all('li'):
+            link = 'https://www.istu.edu/schedule/' + group.find('a').get('href')
+            groups.append(
+                {
+                    'name': group.find('a').text,
+                    'link': link,
+                    'course': course,
+                }
+            )
+    return courses, groups
 
 
 def get_schedule(html):
@@ -66,124 +127,57 @@ def get_schedule(html):
     return schedule
 
 
-def get_institutes(html):
-    """Возвращает институты и ссылки на них"""
-    soup = BeautifulSoup(html, 'html.parser')
-    insts = soup.find(class_='content')
-    inst = insts.find_all('li')
-    inst_tags_list = []
-    links = []
-
-    rd_inst_list = []
-    # Берём названия институтов
-    for ins in inst:
-        inst_tags_list.append(ins.find('a').text)
-    # Берём ссылки
-    for link in soup.find_all('a'):
-        if '?subdiv' in str(link):
-            links.append('https://www.istu.edu/schedule/' + link.get('href'))
-
-    for i in range(len(inst_tags_list)):
-        rd_inst = {}
-        rd_inst['name'] = inst_tags_list[i]
-        rd_inst['link'] = links[i]
-        rd_inst_list.append(rd_inst)
-
-    return rd_inst_list
-
-
-# Получаем курс группы
-def kurs(group) -> str:
-    now = datetime.datetime.now()
-    year = str(now.year)[2:4]  # получение двух последних цифр года 2020 - 20; 2021 - 21...
-    month = now.month
-    group_year = re.findall('(\d+)', group)  # получение года групп ИБб-18-1 = 18; ИБб-19-1 = 19...
-    if (month > 8) and (month <= 12):
-        course = int(year) + 1 - int(group_year[0])
-    elif (month >= 1) and (month < 7):
-        course = int(year) - int(group_year[0])
-    return f'{course} курс'
-
-
-def get_groups(html):
-    """Возвращает группы и ссылки на них"""
-    soup = BeautifulSoup(html, 'html.parser')
-    groups = soup.find(class_='kurs-list')
-    courses = groups.find_all('li')
-    links = []
-    groups_parse_list = []
-
-    rd_groups_list = []
-
-    # Получаем ссылки
-    for link in soup.find_all('a'):
-        if '?group=' in str(link):
-            links.append('https://www.istu.edu/schedule/' + link.get('href'))
-
-    # Получаем курсы
-    for i in courses:
-        if groups_parse_list == []:
-            groups_parse_list.append(i.find('a').text)
-        else:
-            if i.find('a').text == groups_parse_list[-1]:
-                continue
-            else:
-                groups_parse_list.append(i.find('a').text)
-
-    for i in range(len(groups_parse_list)):
-        rd_groups = {}
-        rd_groups['course'] = kurs(group=groups_parse_list[i])
-        rd_groups['name'] = groups_parse_list[i]
-        rd_groups['link'] = links[i]
-        rd_groups_list.append(rd_groups)
-
-    return rd_groups_list
-
-
-def count_course(html):
-    """Получаем кол-во курсов"""
-    soup = BeautifulSoup(html, 'html.parser')
-    groups = soup.find(class_='kurs-list')
-    count_courses = len(groups.find_all('ul'))
-    course = []
-    for i in range(1, count_courses + 1):
-        course.append(f'{i} курс')
-
-    return course
-
-
 def parse():
     """старт бесконечного парсинга"""
     while True:
         start_time = time()  # начало парсинга
 
         # парсим институты
-        html_institutes = get_html(url=URL_INSTITUTES)
-        institutes = get_institutes(html=html_institutes)
+        try:
+            html_institutes = get_html(url=URL_INSTITUTES)
+        except Exception as e:
+            print(e)
+            sleep(60)
+            continue
+        try:
+            institutes = get_institutes(html=html_institutes)
+        except Exception as e:
+            print(e)
+            continue
+
+        # сохраняем в БД
         storage.save_institutes(institutes)
         print('==========ИНСТИТУТЫ==========')
         pprint(institutes)
 
-        # парсим курсы
-        courses = []
-        for institute in institutes:
-            html_count_course = get_html(url=institute['link'])
-            course = count_course(html=html_count_course)
-            institute_name = institute['name']
-            for name in course:
-                courses.append({'name': name, 'institute': institute_name})
-        storage.save_courses(courses=courses)
-        print('\n\n==========КУРСЫ==========')
-        pprint(courses)
-
-        # парсим группы
+        # парсим курсы и группы
+        all_courses = []
         all_groups = []
         for institute in institutes:
-            html_groups = get_html(url=institute['link'])
-            groups = get_groups(html=html_groups)
+            try:
+                html_courses_and_croups = get_html(url=institute['link'])
+            except Exception as e:
+                print(e)
+                continue
+
+            try:
+                courses, groups = get_courses_and_groups(html=html_courses_and_croups)
+            except Exception as e:
+                print(e)
+                continue
+
+
+            institute_name = institute['name']
+            for name in courses:
+                all_courses.append({'name': name, 'institute': institute_name})
+
             for group in groups:
                 group['institute'] = institute['name']
                 all_groups.append(group)
+        # сохраняем в БД
+        storage.save_courses(courses=all_courses)
+        print('\n\n==========КУРСЫ==========')
+        pprint(all_courses)
         storage.save_groups(all_groups)
         print('\n\n==========ГРУППЫ==========')
         pprint(all_groups)
@@ -192,21 +186,28 @@ def parse():
         print('\n\n==========РАСПИСАНИЕ==========')
 
         for group in all_groups:
-            html_schedule_groups = get_html(url=group['link'])
-            schedule = get_schedule(html=html_schedule_groups)
+            try:
+                html_schedule_groups = get_html(url=group['link'])
+            except Exception as e:
+                print(e)
+                continue
+
+            try:
+                schedule = get_schedule(html=html_schedule_groups)
+            except Exception as e:
+                print(e)
+                continue
+
             group_schedule = {'group': group['name'], 'schedule': schedule}
             storage.save_schedule(group_schedule)  # сохраняем по одной группе
             pprint(group_schedule)
 
         # засыпаем
-        print(f'--- {time() - start_time} seconds ---')
+        parse_time = time() - start_time
+        print(f'--- Parse time {parse_time} seconds ({parse_time / 60} minutes)---')
         print('Waiting...')
         sleep(PARSE_TIME_HOURS * 60 * 60)
 
 
-def main():
-    parse()
-
-
 if __name__ == '__main__':
-    main()
+    parse()
