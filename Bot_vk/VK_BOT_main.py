@@ -36,7 +36,7 @@ MAX_CALLBACK_RANGE = 41
 storage = MongodbService().get_instance()
 bot = Bot(f"{os.environ.get('VK')}", debug="DEBUG")  # TOKEN
 
-content_types = {'text': ['Расписание', 'Ближайшая пара', 'Расписание на сегодня']}
+content_types = {'text': ['Расписание', 'Ближайшая пара', 'Расписание на сегодня','На текущую неделю','На следующую неделю','Основное меню']}
 over = 0
 def parametres_for_buttons_start_menu_vk(text, color):
     '''Возвращает параметры кнопок'''
@@ -245,74 +245,6 @@ def data_number_wait():
         else:
             return 0
 
-# @bot.on.message(text='/call')
-# async def start(ans: Message):
-#
-# # Настройки для обоих клавиатур
-#
-#     settings = dict(one_time=False, inline=True)
-#
-#     # №1. Клавиатура с 3 кнопками: "показать всплывающее сообщение", "открыть URL" и изменить меню (свой собственный тип)
-#     keyboard_1 = VkKeyboard(**settings)
-#     # pop-up кнопка
-#     keyboard_1.add_callback_button(label='Покажи pop-up сообщение', color=VkKeyboardColor.SECONDARY,
-#                                    payload={"type": "show_snackbar", "text": "Это исчезающее сообщение"})
-#     keyboard_1.add_line()
-#     # кнопка переключения на 2ое меню
-#     keyboard_1.add_callback_button(label='Добавить красного ', color=VkKeyboardColor.POSITIVE,
-#                                    payload={"type": "my_own_100500_type_edit"})
-#
-#     # №2. Клавиатура с одной красной callback-кнопкой. Нажатие изменяет меню на предыдущее.
-#     keyboard_2 = VkKeyboard(**settings)
-#     # кнопка переключения назад, на 1ое меню.
-#     keyboard_2.add_callback_button('Назад', color=VkKeyboardColor.NEGATIVE, payload={"type": "my_own_100500_type_edit"})
-#
-#
-#     f_toggle: bool = False
-#     for event in longpoll.listen():
-#         # отправляем меню 1го вида на любое текстовое сообщение от пользователя
-#         if event.type == VkBotEventType.MESSAGE_NEW:
-#             if event.obj.message['text'] != '':
-#                 if event.from_user:
-#                     # Если клиент пользователя не поддерживает callback-кнопки,
-#                     # нажатие на них будет отправлять текстовые
-#                     # сообщения. Т.е. они будут работать как обычные inline кнопки.
-#                     if 'callback' not in event.obj.client_info['button_actions']:
-#                         print(f'Клиент {event.obj.message["from_id"]} не поддерж. callback')
-#
-#                     vk.messages.send(
-#                         user_id=event.obj.message['from_id'],
-#                         random_id=get_random_id(),
-#                         peer_id=event.obj.message['from_id'],
-#                         keyboard=keyboard_1.get_keyboard(),
-#                         message=event.obj.message['text'])
-#         # обрабатываем клики по callback кнопкам
-#         elif event.type == VkBotEventType.MESSAGE_EVENT:
-#             # если это одно из 3х встроенных действий:
-#             if event.object.payload.get('type') in CALLBACK_TYPES:
-#                 # отправляем серверу указания как какую из кнопок обработать. Это заложено в
-#                 # payload каждой callback-кнопки при ее создании.
-#                 # Но можно сделать иначе: в payload положить свои собственные
-#                 # идентификаторы кнопок, а здесь по ним определить
-#                 # какой запрос надо послать. Реализован первый вариант.
-#                 r = vk.messages.sendMessageEventAnswer(
-#                     event_id=event.object.event_id,
-#                     user_id=event.object.user_id,
-#                     peer_id=event.object.peer_id,
-#                     event_data=json.dumps(event.object.payload))
-#             # если это наша "кастомная" (т.е. без встроенного действия) кнопка, то мы можем
-#             # выполнить edit сообщения и изменить его меню. Но при желании мы могли бы
-#             # на этот клик открыть ссылку/приложение или показать pop-up. (см.анимацию ниже)
-#             elif event.object.payload.get('type') == 'my_own_100500_type_edit':
-#                 last_id = vk.messages.edit(
-#                     peer_id=event.obj.peer_id,
-#                     message='ola',
-#                     conversation_message_id=event.obj.conversation_message_id,
-#                     keyboard=(keyboard_1 if f_toggle else keyboard_2).get_keyboard())
-#                 f_toggle = not f_toggle
-
-
-
 
 @bot.on.message(text='/start')
 async def start(ans: Message):
@@ -334,7 +266,6 @@ async def scheduler(ans: Message):
 
     if 'Расписание' == data and user:
         await ans('Выберите период\n', keyboard=make_keyboard_choose_schedule())
-        data = listening()
 
     if ('На текущую неделю' == data or 'На следующую неделю' == data) and user:
         group = storage.get_user(chat_id=chat_id)['group']
@@ -380,7 +311,9 @@ async def scheduler(ans: Message):
             return
         schedule = schedule['schedule']
         week = find_week()
+
         near_lessons = get_near_lesson(schedule=schedule, week=week)
+
 
         # если пар нет
         if not near_lessons:
@@ -408,26 +341,101 @@ async def scheduler(ans: Message):
         near_lessons_str += '-------------------------------------------\n'
         await ans(f'Ближайшая пара\n'f'{near_lessons_str}')
 
+    elif 'Основное меню' in data and user:
+        await ans('Wellcome to the main menu!', keyboard=make_keyboard_start_menu())
 
-    # elif 'Подтвердить' in data:
-    #     data = json.loads(data)
-    #     time = data['save_notifications']
-    #
-    #     group = storage.get_user(chat_id=chat_id)['group']
-    #
-    #     schedule = storage.get_schedule(group=group)['schedule']
-    #     if time > 0:
-    #         reminders = calculating_reminder_times(schedule=schedule, time=int(time))
-    #     else:
-    #         reminders = []
-    #     pprint(reminders)
-    #     storage.save_or_update_user(chat_id=chat_id, notifications=time, reminders=reminders)
 
-    # elif 'Основное меню' in data and user:
-    #     bot.send_message(chat_id, text='Основное меню', reply_markup=make_keyboard_start_menu())
-    #
-    # else:
-    #     bot.send_message(chat_id, text='Я вас не понимаю 😞')
+@bot.on.message(text="Напоминание", lower=True)
+    #Старт бранча с напоминанием
+async def wrapper(ans: Message):
+    chat_id = ans.from_id
+    user = storage.get_user(chat_id=chat_id)
+    time = user['notifications']
+    if time:
+        await ans('У вас уже установлено напоминание: ' + f'{time}' + ' минут')
+    elif time == 0:
+        await ans('У вас не установлено напоминание ')
+
+
+    #await ans('Если хотите изменить время напоминания, введите число в минутах [кратное 5]')
+    await bot.branch.add(ans.peer_id, "my_branch")
+
+@bot.branch.simple_branch("my_branch")
+async def branch(ans: Message):
+    print(2222222222222222)
+    if ans.text.lower() == "выйти":
+        print(33333333333333333333)
+        await ans("Окей, выхожу!")
+        await bot.branch.exit(ans.peer_id)
+
+    elif ans.text.lower() == "настройки":
+        print(1111111111111111)
+        settings = dict(one_time=False, inline=True)
+        # №1. Клавиатура с 3 кнопками: "показать всплывающее сообщение", "открыть URL" и изменить меню (свой собственный тип)
+        keyboard_1 = VkKeyboard(**settings)
+        # pop-up кнопка
+        keyboard_1.add_callback_button(label='-', color=VkKeyboardColor.SECONDARY,
+                                       payload={"type": "show_snackbar", "text": "Это исчезающее сообщение"})
+        keyboard_1.add_callback_button(label='off', color=VkKeyboardColor.SECONDARY,
+                                       payload={"type": "show_snackbar", "text": "Это исчезающее сообщение"})
+        keyboard_1.add_callback_button(label='+', color=VkKeyboardColor.SECONDARY,
+                                       payload={"type": "show_snackbar", "text": "Это исчезающее сообщение"})
+        keyboard_1.add_line()
+        # кнопка переключения на 2ое меню
+        keyboard_1.add_callback_button(label='Сохранить ', color=VkKeyboardColor.POSITIVE,
+                                       payload={"type": "my_own_100500_type_edit"})
+
+        # №2. Клавиатура с одной красной callback-кнопкой. Нажатие изменяет меню на предыдущее.
+        keyboard_2 = VkKeyboard(**settings)
+        # кнопка переключения назад, на 1ое меню.
+        keyboard_2.add_callback_button('Назад', color=VkKeyboardColor.NEGATIVE, payload={"type": "my_own_100500_type_edit"})
+
+
+        f_toggle: bool = False
+        for event in longpoll.listen():
+            # отправляем меню 1го вида на любое текстовое сообщение от пользователя
+            if event.type == VkBotEventType.MESSAGE_NEW:
+                if event.obj.message['text'] == '':
+                    if event.from_user:
+                        # Если клиент пользователя не поддерживает callback-кнопки,
+                        # нажатие на них будет отправлять текстовые
+                        # сообщения. Т.е. они будут работать как обычные inline кнопки.
+                        if 'callback' not in event.obj.client_info['button_actions']:
+                            print(f'Клиент {event.obj.message["from_id"]} не поддерж. callback')
+
+                        vk.messages.send(
+                            user_id=event.obj.message['from_id'],
+                            random_id=get_random_id(),
+                            peer_id=event.obj.message['from_id'],
+                            keyboard=keyboard_1.get_keyboard(),
+                            message='ХАЙЙЙЙЙЙЙЙЙЙЙЙЙЙЙЙЙ')
+
+            # # обрабатываем клики по callback кнопкам
+            # elif event.type == VkBotEventType.MESSAGE_EVENT:
+            #     # если это одно из 3х встроенных действий:
+            #     if event.object.payload.get('type') in CALLBACK_TYPES:
+            #         # отправляем серверу указания как какую из кнопок обработать. Это заложено в
+            #         # payload каждой callback-кнопки при ее создании.
+            #         # Но можно сделать иначе: в payload положить свои собственные
+            #         # идентификаторы кнопок, а здесь по ним определить
+            #         # какой запрос надо послать. Реализован первый вариант.
+            #         r = vk.messages.sendMessageEventAnswer(
+            #             event_id=event.object.event_id,
+            #             user_id=event.object.user_id,
+            #             peer_id=event.object.peer_id,
+            #             event_data=json.dumps(event.object.payload))
+            #     # если это наша "кастомная" (т.е. без встроенного действия) кнопка, то мы можем
+            #     # выполнить edit сообщения и изменить его меню. Но при желании мы могли бы
+            #     # на этот клик открыть ссылку/приложение или показать pop-up. (см.анимацию ниже)
+            #     elif event.object.payload.get('type') == 'my_own_100500_type_edit':
+            #         last_id = vk.messages.edit(
+            #             peer_id=event.obj.peer_id,
+            #             message='ola',
+            #             conversation_message_id=event.obj.conversation_message_id,
+            #             keyboard=(keyboard_1 if f_toggle else keyboard_2).get_keyboard())
+            #         f_toggle = not f_toggle
+
+    await ans("Ты в бранче. Пиши «выйти», чтобы выйти отсюда.")
 
 
 @bot.on.message()
@@ -483,39 +491,39 @@ async def wrapper(ans: Message):
                 await ans('Я вас не понимаю\n')
         return
 
-    elif 'Напоминание' in message and user:
-        await ans('Если хотите изменить время напоминания, введите число в минутах [кратное 5]')
-        time = user['notifications']
-        global over
-        if time:
-            await ans('У вас уже установлено напоминание: ' + f'{time}' + ' минут',
-                      keyboard=make_inline_keyboard_notifications())
-            over+=1
-        elif time==0:
-            await ans('У вас не установлено напоминание ', keyboard=make_inline_keyboard_notifications())
-            over+=1
-
-    elif over and message:
-        group = storage.get_user(chat_id=chat_id)['group']
-        schedule = storage.get_schedule(group=group)['schedule']
-        if message.isdigit():
-            if int(message)%5==0:
-                time = int(message)
-                storage.save_or_update_user(chat_id=chat_id, notifications=time)
-                if time > 0:
-                    reminders = calculating_reminder_times(schedule=schedule, time=int(time))
-                else:
-                    reminders = []
-                storage.save_or_update_user(chat_id=chat_id, notifications=time, reminders=reminders)
-                await ans('Вы установили напоминание '+f'{time}'+' минут', keyboard=make_keyboard_start_menu())
-                return
-        elif 'Назад' in message:
-            await ans('Можете посмотреть расписание ', keyboard=make_keyboard_start_menu())
-            over=0
-            return
-        else:
-            await ans('Я вас не понимаю, следуйте инструкции')
-        return
+    # elif 'Напоминание' in message and user:
+    #     await ans('Если хотите изменить время напоминания, введите число в минутах [кратное 5]')
+    #     time = user['notifications']
+    #     global over
+    #     if time:
+    #         await ans('У вас уже установлено напоминание: ' + f'{time}' + ' минут',
+    #                   keyboard=make_inline_keyboard_notifications())
+    #         over+=1
+    #     elif time==0:
+    #         await ans('У вас не установлено напоминание ', keyboard=make_inline_keyboard_notifications())
+    #         over+=1
+    #
+    # elif over and message:
+    #     group = storage.get_user(chat_id=chat_id)['group']
+    #     schedule = storage.get_schedule(group=group)['schedule']
+    #     if message.isdigit():
+    #         if int(message)%5==0:
+    #             time = int(message)
+    #             storage.save_or_update_user(chat_id=chat_id, notifications=time)
+    #             if time > 0:
+    #                 reminders = calculating_reminder_times(schedule=schedule, time=int(time))
+    #             else:
+    #                 reminders = []
+    #             storage.save_or_update_user(chat_id=chat_id, notifications=time, reminders=reminders)
+    #             await ans('Вы установили напоминание '+f'{time}'+' минут', keyboard=make_keyboard_start_menu())
+    #             return
+    #     elif 'Назад' in message:
+    #         await ans('Можете посмотреть расписание ', keyboard=make_keyboard_start_menu())
+    #         over=0
+    #         return
+    #     else:
+    #         await ans('Я вас не понимаю, следуйте инструкции')
+    #     return
 
 
     elif '<==Назад' in message and user:

@@ -3,7 +3,7 @@ import pytz
 import locale
 
 TZ_IRKUTSK = pytz.timezone('Asia/Irkutsk')
-locale.setlocale(locale.LC_TIME, 'ru_RU.UTF-8')  #
+locale.setlocale(locale.LC_TIME, 'ru_RU')  #
 
 
 def get_near_lesson(schedule: list, week: str) -> list:
