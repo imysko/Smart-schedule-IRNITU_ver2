@@ -2,9 +2,11 @@ from datetime import datetime
 import pytz
 import locale
 
-TZ_IRKUTSK = pytz.timezone('Asia/Irkutsk')
-locale.setlocale(locale.LC_TIME, 'ru_RU.UTF-8')
+import platform
 
+TZ_IRKUTSK = pytz.timezone('Asia/Irkutsk')
+locale_name = ('ru_RU.UTF-8' if platform.system() == 'Linux' else 'ru_RU')
+locale.setlocale(locale.LC_TIME, locale_name)
 
 def full_schedule_in_str(schedule: list, week: str) -> list:
     schedule_str = []
