@@ -42,7 +42,7 @@ class CoursesForm(form.Form):
 
 class ScheduleForm(form.Form):
     group = fields.StringField('Group')
-    num = fields.FieldList('Номер пары')
+    days = fields.FieldList('День')
     schedule = InlineFormField()
 
 
