@@ -1,4 +1,5 @@
-from flask import Flask
+
+ggit from flask import Flask
 import flask_admin as admin
 
 from app.views import UserView, InstitutesView, AnalyticsView, IndexView, CoursesView, GroupsView, BotSendMessageView

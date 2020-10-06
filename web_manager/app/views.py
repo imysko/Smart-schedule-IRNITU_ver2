@@ -10,7 +10,8 @@ from app.bots import tg_bot
 
 from flask import redirect, url_for, request, flash
 #=======
-from app.forms import UserForm, InstitutesForm, CoursesForm, GroupsForm, InnerCourses
+from app.forms import UserForm, InstitutesForm, CoursesForm, GroupsForm
+#InnerCourses
 #>>>>>>> Stashed changes
 
 
