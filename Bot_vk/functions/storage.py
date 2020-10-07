@@ -89,3 +89,4 @@ class MongodbService(object):
     def get_schedule(self, group):
         """возвращает расписание группы"""
         return self._db.schedule.find_one(filter={'group': group})
+

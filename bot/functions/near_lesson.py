@@ -1,13 +1,15 @@
 from datetime import datetime
-import pytz
+import platform
 import locale
+import pytz
 
 TZ_IRKUTSK = pytz.timezone('Asia/Irkutsk')
-locale.setlocale(locale.LC_TIME, 'ru_RU.UTF-8')  #
+locale_name = ('ru_RU.UTF-8' if platform.system() == 'Linux' else 'ru_RU')
+locale.setlocale(locale.LC_TIME, locale_name)
 
 
 def get_near_lesson(schedule: list, week: str) -> list:
-    """"Возвращает ближайшую пару"""
+    """Возвращает ближайшую пару"""
 
     day_now = datetime.now(TZ_IRKUTSK).strftime('%A')
     hours_now = int(datetime.now(TZ_IRKUTSK).strftime('%H'))
