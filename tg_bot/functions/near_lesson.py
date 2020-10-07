@@ -3,6 +3,8 @@ import platform
 import locale
 import pytz
 
+import platform
+
 TZ_IRKUTSK = pytz.timezone('Asia/Irkutsk')
 locale_name = ('ru_RU.UTF-8' if platform.system() == 'Linux' else 'ru_RU')
 locale.setlocale(locale.LC_TIME, locale_name)

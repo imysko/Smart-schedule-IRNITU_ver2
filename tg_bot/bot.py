@@ -10,6 +10,7 @@ from functions.creating_schedule import full_schedule_in_str, get_one_day_schedu
 from functions.find_week import find_week
 from functions.creating_buttons import *
 from functions.calculating_reminder_times import calculating_reminder_times
+from functions import creating_text as cr_text
 
 from flask import Flask, request
 from pprint import pprint
@@ -62,6 +63,8 @@ def registration(message):
 def help(message):
     chat_id = message.chat.id
     bot.send_message(chat_id=chat_id, text='Список команд:\n'
+                                           '/about - описание чат бота\n'
+                                           '/authors - Список авторов \n'
                                            '/reg - повторная регистрация')
 
 
@@ -129,8 +132,9 @@ def handle_query(message):
 
         # Если нажали кнопку назад
         if data['group'] == 'back':
+            # Удаляем информацию о курсе пользователя из базы данных
             storage.delete_user_or_userdata(chat_id=chat_id,
-                                            delete_only_course=True)  # Удаляем информацию о курсе пользователя из базы данных
+                                            delete_only_course=True)
             try:
                 institute = storage.get_user(chat_id=chat_id)['institute']
             except Exception as e:
@@ -225,22 +229,21 @@ def handle_query(message):
         storage.save_or_update_user(chat_id=chat_id, notifications=time, reminders=reminders)
 
         try:
-            bot.edit_message_text(message_id=message_id, chat_id=chat_id, text=get_notifications_status(time),
+            bot.edit_message_text(message_id=message_id, chat_id=chat_id, text=cr_text.get_notifications_status(time),
                                   reply_markup=make_inline_keyboard_notifications(time))
         except Exception as e:
             logger.exception(e)
             return
 
 
-def get_notifications_status(time):
-    """Статус напоминаний"""
-    if not time or time == 0:
-        notifications_status = 'Напоминания выключены ❌\n' \
-                               'Воспользуйтесь настройками, чтобы включить'
+def check_schedule(chat_id, schedule) -> bool:
+    if not schedule and not schedule['schedule']:
+        bot.send_message(chat_id=chat_id,
+                         text=cr_text.get_text_schedule_not_available(),
+                         reply_markup=make_keyboard_start_menu())
+        return False
     else:
-        notifications_status = f'Напоминания включены ✅\n' \
-                               f'Сообщение придёт за {time} мин до начала пары 😇'
-    return notifications_status
+        return True
 
 
 # ==================== Обработка текста ==================== #
@@ -268,16 +271,12 @@ def text(message):
             logger.exception(e)
             return
         schedule = storage.get_schedule(group=group)
-        if not schedule:
-            bot.send_message(chat_id=chat_id,
-                             text='Расписание временно недоступно🚫😣\n'                                           'Попробуйте позже⏱')
-            return
-        schedule = schedule['schedule']
 
-        if not schedule:
-            bot.send_message(chat_id=chat_id,
-                             text='Расписание временно недоступно🚫😣\n'                                           'Попробуйте позже⏱')
+        check_schedule = check_schedule(chat_id, schedule)
+        if not check_schedule:
             return
+
+        schedule = schedule['schedule']
 
         week = find_week()
 
@@ -305,14 +304,15 @@ def text(message):
         schedule = storage.get_schedule(group=group)
         if not schedule:
             bot.send_message(chat_id=chat_id,
-                             text='Расписание временно недоступно🚫😣\n'
-                                  'Попробуйте позже⏱', reply_markup=make_keyboard_start_menu())
+                             text=cr_text.get_text_schedule_not_available(),
+                             reply_markup=make_keyboard_start_menu())
             return
         schedule = schedule['schedule']
 
         if not schedule:
             bot.send_message(chat_id=chat_id,
-                             text='Расписание временно недоступно🚫😣\n'                                           'Попробуйте позже⏱')
+                             text=cr_text.get_text_schedule_not_available(),
+                             reply_markup=make_keyboard_start_menu())
             return
 
         week = find_week()
@@ -329,10 +329,16 @@ def text(message):
         schedule = storage.get_schedule(group=group)
         if not schedule:
             bot.send_message(chat_id=chat_id,
-                             text='Временно недоступно🚫😣\n'
-                                  'Попробуйте позже⏱')
+                             text=cr_text.get_text_schedule_not_available(),
+                             reply_markup=make_keyboard_start_menu())
             return
         schedule = schedule['schedule']
+
+        if not schedule:
+            bot.send_message(chat_id=chat_id,
+                             text=cr_text.get_text_schedule_not_available(),
+                             reply_markup=make_keyboard_start_menu())
+            return
         week = find_week()
         near_lessons = get_near_lesson(schedule=schedule, week=week)
 
@@ -366,7 +372,7 @@ def text(message):
         time = user['notifications']
         if not time:
             time = 0
-        bot.send_message(chat_id=chat_id, text=get_notifications_status(time),
+        bot.send_message(chat_id=chat_id, text=cr_text.get_notifications_status(time),
                          reply_markup=make_inline_keyboard_notifications(time))
 
     elif 'Основное меню' in data and user:

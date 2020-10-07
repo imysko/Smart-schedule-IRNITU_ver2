@@ -1,10 +1,10 @@
 FROM python:3.8
 
-RUN mkdir -p /usr/src/bot/
-WORKDIR /usr/src/bot/
+RUN mkdir -p /usr/src/tg_bot/
+WORKDIR /usr/src/tg_bot/
 
 
-COPY . /usr/src/bot/
+COPY . /usr/src/tg_bot/
 RUN pip install --no-cache-dir -r requirements.txt
 
 RUN apt update && \

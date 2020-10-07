@@ -4,8 +4,8 @@ volumes:
   mongodb_volume:
 
 services:
-  bot:
-    build: bot/
+  tg_bot:
+    build: tg_bot/
     restart: always
     ports:
       - 0.0.0.0:8080:8080
