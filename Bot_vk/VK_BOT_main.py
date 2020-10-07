@@ -100,7 +100,7 @@ def make_keyboard_institutes(institutes=[]):
     list_keyboard_main = []
     for institute in institutes:
         if len(institute['name']) >= MAX_CALLBACK_RANGE:
-            name = sep_space(institute['name'])
+            name = sep_space(institute['name']) + ' ...'
         else:
             name = institute['name']
         list_keyboard = []
@@ -341,6 +341,13 @@ async def wrapper(ans: Message):
     chat_id = ans.from_id
     message = ans.text
     user = storage.get_user(chat_id)
+
+    # Сохраняет в месседж полное название универ для корректного сравнения
+    institutes = name_institutes(storage.get_institutes())
+    for institute in institutes:
+        if message[:-5] in institute:
+            message = institute
+
     # Если пользователя нет в базе данных
     if not user:
         institutes = name_institutes(storage.get_institutes())
@@ -403,6 +410,7 @@ async def wrapper(ans: Message):
     elif '-' in message:
         time = user['notifications']
         if time == 0:
+            await ans('Хочешь уйти в минус?', keyboard=make_inline_keyboard_set_notifications(time))
             return
         time -= 5
         #Отнимаем и проверяем на положительность
