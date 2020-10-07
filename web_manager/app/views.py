@@ -102,27 +102,9 @@ class UserView(ModelView):
         return self._feed_group_choices(form)
 
 class ScheduleView(ModelView):
-    column_list = ('group', 'days', 'schedule')  # что будет показываться на странице из формы (какие поля)
-    column_sortable_list = ('group', 'days', 'schedule')  # что сортируется
+    column_list = ('group', 'schedule')  # что будет показываться на странице из формы (какие поля)
+    column_sortable_list = ('group', 'schedule')  # что сортируется
     form = ScheduleForm
-    #days = db.schedule.find({"schedule":$all})
-    #print([day['day'] for day in days])
-    def _feed_nums(self, form):
-        """формируем список групп для выбора"""
-        days = db.schedule.find()
-        print(days)
-        form.schedule = [day['day'] for day in days]
-        return form
-
-    def create_form(self):
-        """выводим группы когда создаём"""
-        form = super(ScheduleView, self).create_form()
-        return self._feed_nums(form)
-
-    def edit_form(self, obj):
-        """выводим группы когда редактируем"""
-        form = super(ScheduleView, self).edit_form(obj)
-        return self._feed_nums(form)
 
 class InstitutesView(ModelView):
     column_list = ('name', 'link')  # что будет показываться на странице из формы (какие поля)

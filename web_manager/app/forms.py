@@ -4,6 +4,9 @@ from flask_admin.form import Select2Widget
 
 from flask_admin.model.fields import InlineFormField, InlineFieldList, FieldList
 
+import flask_admin.model.fields as f
+
+print(dir(f))
 
 # TG User admin
 class InnerFormDays(form.Form):
@@ -40,10 +43,23 @@ class CoursesForm(form.Form):
     choices = ['1 курс', '2 курс', '3 курс', '4 курс', '5 курс', '6 курс']
     name = fields.SelectField('Курсы', choices=choices)
 
+class InnerFormLessons(form.Form):
+    name = fields.StringField()
+    time = fields.StringField()
+    week = fields.StringField()
+    aud = fields.StringField()
+    info = fields.StringField()
+    prep = fields.StringField()
+
+
+
+class InnerFormDays(form.Form):
+    day = fields.StringField()
+    lessons = InlineFieldList(InlineFormField(InnerFormLessons))#InlineFormField(InnerFormLessons)
+
 class ScheduleForm(form.Form):
     group = fields.StringField('Group')
-    days = fields.FieldList('День')
-    schedule = InlineFormField()
+    schedule = InlineFieldList(InlineFormField(InnerFormDays))
 
 
 class GroupsForm(form.Form):
