@@ -225,7 +225,6 @@ def handle_query(message):
             reminders = calculating_reminder_times(schedule=schedule, time=int(time))
         else:
             reminders = []
-        pprint(reminders)
         storage.save_or_update_user(chat_id=chat_id, notifications=time, reminders=reminders)
 
         try:
@@ -237,11 +236,18 @@ def handle_query(message):
 
 
 def check_schedule(chat_id, schedule) -> bool:
-    if not schedule and not schedule['schedule']:
+    """Проверяем есть ли у группы расписание"""
+    if not schedule:
         bot.send_message(chat_id=chat_id,
                          text=cr_text.get_text_schedule_not_available(),
                          reply_markup=make_keyboard_start_menu())
         return False
+    if not schedule['schedule']:
+        bot.send_message(chat_id=chat_id,
+                         text=cr_text.get_text_schedule_not_available(),
+                         reply_markup=make_keyboard_start_menu())
+        return False
+
     else:
         return True
 
@@ -272,8 +278,8 @@ def text(message):
             return
         schedule = storage.get_schedule(group=group)
 
-        check_schedule = check_schedule(chat_id, schedule)
-        if not check_schedule:
+        # Проверяем есть ли у группы пользователя расписание
+        if not check_schedule(chat_id=chat_id, schedule=schedule):
             return
 
         schedule = schedule['schedule']
@@ -302,18 +308,12 @@ def text(message):
             logger.exception(e)
             return
         schedule = storage.get_schedule(group=group)
-        if not schedule:
-            bot.send_message(chat_id=chat_id,
-                             text=cr_text.get_text_schedule_not_available(),
-                             reply_markup=make_keyboard_start_menu())
-            return
-        schedule = schedule['schedule']
 
-        if not schedule:
-            bot.send_message(chat_id=chat_id,
-                             text=cr_text.get_text_schedule_not_available(),
-                             reply_markup=make_keyboard_start_menu())
+        # Проверяем есть ли у группы пользователя расписание
+        if not check_schedule(chat_id=chat_id, schedule=schedule):
             return
+
+        schedule = schedule['schedule']
 
         week = find_week()
         schedule_one_day = get_one_day_schedule_in_str(schedule=schedule, week=week)
@@ -327,18 +327,12 @@ def text(message):
             logger.exception(e)
             return
         schedule = storage.get_schedule(group=group)
-        if not schedule:
-            bot.send_message(chat_id=chat_id,
-                             text=cr_text.get_text_schedule_not_available(),
-                             reply_markup=make_keyboard_start_menu())
-            return
-        schedule = schedule['schedule']
 
-        if not schedule:
-            bot.send_message(chat_id=chat_id,
-                             text=cr_text.get_text_schedule_not_available(),
-                             reply_markup=make_keyboard_start_menu())
+        # Проверяем есть ли у группы пользователя расписание
+        if not check_schedule(chat_id=chat_id, schedule=schedule):
             return
+
+        schedule = schedule['schedule']
         week = find_week()
         near_lessons = get_near_lesson(schedule=schedule, week=week)
 
