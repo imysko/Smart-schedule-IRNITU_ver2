@@ -17,7 +17,7 @@ function check_tg_bot_status() {
     $('#tg-bot-status-loading').show();
 
     $.ajax({
-        url: 'http://127.0.0.1:5000',
+        url: '/telegram-bot/status',
         success: function (data, textStatus) {
             console.log(data);
             console.log(textStatus)
