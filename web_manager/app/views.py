@@ -10,7 +10,6 @@ from flask import redirect, url_for, request, flash
 from app.forms import UserForm, InstitutesForm, CoursesForm, ScheduleForm, GroupsForm, BotSendMessageForm
 
 
-
 # Flask views
 class IndexView(View):
     """отображение стартовой страницы"""
@@ -101,10 +100,12 @@ class UserView(ModelView):
         form = super(UserView, self).edit_form(obj)
         return self._feed_group_choices(form)
 
+
 class ScheduleView(ModelView):
     column_list = ('group', 'schedule')  # что будет показываться на странице из формы (какие поля)
     column_sortable_list = ('group', 'schedule')  # что сортируется
     form = ScheduleForm
+
 
 class InstitutesView(ModelView):
     column_list = ('name', 'link')  # что будет показываться на странице из формы (какие поля)
@@ -127,13 +128,15 @@ class InstitutesView(ModelView):
         form = super(InstitutesView, self).edit_form(obj)
         return self._feed_institutes_choices(form)
 
+
 class CoursesView(ModelView):
     column_list = ('institute', 'name')  # что будет показываться на странице из формы (какие поля)
     column_sortable_list = ('institute')  # что сортируется
     form_excluded_columns = ('name')
     form = CoursesForm
+
     def _feed_courses_choices(self, form):
-        #form.name.choices = ['1 курс','2 курс', '3 курс']
+        # form.name.choices = ['1 курс','2 курс', '3 курс']
         return form
 
     def create_form(self):
@@ -145,8 +148,9 @@ class CoursesView(ModelView):
         form = super(CoursesView, self).edit_form(obj)
         return self._feed_courses_choices(form)
 
+
 class GroupsView(ModelView):
-    column_list = ('name', 'course','link','institute')  # что будет показываться на странице из формы (какие поля)
+    column_list = ('name', 'course', 'link', 'institute')  # что будет показываться на странице из формы (какие поля)
     column_sortable_list = ('institute')  # что сортируется
     form_excluded_columns = ('name')
     form = GroupsForm
