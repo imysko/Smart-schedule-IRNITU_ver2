@@ -23,10 +23,17 @@ storage = MongodbService().get_instance()
 app = Flask(__name__)
 
 
+# Обработка запросов от telegram
 @app.route(f'/telegram-bot/{TOKEN}', methods=["POST"])
 def webhook():
     bot.process_new_updates([telebot.types.Update.de_json(request.stream.read().decode("utf-8"))])
     return 'ok', 200
+
+
+# Проверка работы сервера бота
+@app.route('/telegram-bot/status')
+def status():
+    return 'Бот активен', 200
 
 
 # ==================== Обработка команд ==================== #
