@@ -10,10 +10,8 @@ from functions.creating_schedule import full_schedule_in_str, get_one_day_schedu
 from functions.find_week import find_week
 from functions.creating_buttons import *
 from functions.calculating_reminder_times import calculating_reminder_times
-from functions import creating_text as cr_text
 
 from flask import Flask, request
-from pprint import pprint
 
 TOKEN = os.environ.get('TOKEN')
 HOST_URL = os.environ.get('HOST_URL')
@@ -228,29 +226,50 @@ def handle_query(message):
         storage.save_or_update_user(chat_id=chat_id, notifications=time, reminders=reminders)
 
         try:
-            bot.edit_message_text(message_id=message_id, chat_id=chat_id, text=cr_text.get_notifications_status(time),
+            bot.edit_message_text(message_id=message_id, chat_id=chat_id, text=get_notifications_status(time),
                                   reply_markup=make_inline_keyboard_notifications(time))
         except Exception as e:
             logger.exception(e)
             return
 
 
+# =============================================================
+
+def get_notifications_status(time):
+    """Статус напоминаний"""
+    if not time or time == 0:
+        notifications_status = 'Напоминания выключены ❌\n' \
+                               'Воспользуйтесь настройками, чтобы включить'
+    else:
+        notifications_status = f'Напоминания включены ✅\n' \
+                               f'Сообщение придёт за {time} мин до начала пары 😇'
+    return notifications_status
+
+
+def get_text_schedule_not_available():
+    text = 'Расписание временно недоступно🚫😣\n' \
+           'Попробуйте позже⏱'
+    return text
+
+
 def check_schedule(chat_id, schedule) -> bool:
     """Проверяем есть ли у группы расписание"""
     if not schedule:
         bot.send_message(chat_id=chat_id,
-                         text=cr_text.get_text_schedule_not_available(),
+                         text=get_text_schedule_not_available(),
                          reply_markup=make_keyboard_start_menu())
         return False
     if not schedule['schedule']:
         bot.send_message(chat_id=chat_id,
-                         text=cr_text.get_text_schedule_not_available(),
+                         text=get_text_schedule_not_available(),
                          reply_markup=make_keyboard_start_menu())
         return False
 
     else:
         return True
 
+
+# =============================================================
 
 # ==================== Обработка текста ==================== #
 @bot.message_handler(content_types=['text'])
@@ -366,7 +385,7 @@ def text(message):
         time = user['notifications']
         if not time:
             time = 0
-        bot.send_message(chat_id=chat_id, text=cr_text.get_notifications_status(time),
+        bot.send_message(chat_id=chat_id, text=get_notifications_status(time),
                          reply_markup=make_inline_keyboard_notifications(time))
 
     elif 'Основное меню' in data and user:
