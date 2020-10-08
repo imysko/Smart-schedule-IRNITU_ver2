@@ -1,5 +1,37 @@
 {% extends 'admin/master.html' %}
 
 {% block body %}
-  <p>Hello world</p>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+
+<h3>Статус сервисов</h3>
+<div class="row">
+
+    <div class="col-md-2">
+        <div class="service-status">
+            <h4 class="service-status-name">Telegram bot</h4>
+            <p class="status-loading" id="tg-bot-status-loading">
+                <img class="status-loading-img" id="tg-bot-status-loading-img" src="/static/img/av.gif" alt="">
+                Загружаем...
+            </p>
+            <div class="status-info" id="tg-bot-status-info" style="display:none;">
+                <img class="status-img" id="tg-bot-status-img" src="" alt="">
+                <div class="status-text" id="tg-bot-status-text"></div>
+
+            </div>
+            <a class="status-btn" title="Обновить"><span id="tg-bot-status-btn"><i
+                    class='glyphicon glyphicon-repeat'></i></span></a>
+        </div>
+    </div>
+
+
+</div>
+
+
+</div>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="{{ url_for('static', filename='js/get_status.js') }}"></script>
+
 {% endblock %}
