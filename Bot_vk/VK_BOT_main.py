@@ -50,7 +50,7 @@ async def executor(request: web.Request):
     emulation = await bot.emulate(event, confirmation_token='3a4d03fd')
     return web.Response(text=emulation)
 
-app.router.add_route("POST", "/", executor)
+app.router.add_route("POST", "/vk-bot", executor)
 
 def parametres_for_buttons_start_menu_vk(text, color):
     '''Возвращает параметры кнопок'''
