@@ -20,9 +20,17 @@ class IndexView(View):
 
 # Create custom admin views
 class AnalyticsView(BaseView):
-    @expose('/')
+    @expose('/', methods=['get'])
     def index(self):
-        return self.render('admin/analytics_index.html')
+        counts = {}
+        cur=db.tg_statistics.find()
+        actions = sorted(set([action['action'] for action in cur]))
+        for _ in actions:
+            name = db.tg_statistics.find({'action':_})
+            count = name.count()
+            counts[_]=count
+
+        return self.render('admin/analytics_index.html', actions=actions,counts=counts)
 
 
 class BotSendMessageView(BaseView):
