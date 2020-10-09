@@ -9,7 +9,7 @@ from functions.storage import MongodbService
 from vkbottle.keyboard import Keyboard, Text
 from functions.find_week import find_week
 from vk_api.utils import get_random_id
-from vkbottle.bot import Bot, Message
+#from vkbottle.bot import Bot, Message
 from vkbottle.ext import Middleware
 from vk_api import vk_api
 from aiohttp import web
@@ -25,12 +25,14 @@ from datetime import datetime
 from vkbottle.utils import logger
 
 from aiohttp import web
+from vkbottle import Bot, Message
+
 
 token = os.environ.get('VK')
 
 MAX_CALLBACK_RANGE = 41
 storage = MongodbService().get_instance()
-bot = Bot(f"{os.environ.get('VK')}", debug="DEBUG")  # TOKEN
+bot = Bot(os.environ.get('VK'))  # TOKEN
 
 app = web.Application()
 
