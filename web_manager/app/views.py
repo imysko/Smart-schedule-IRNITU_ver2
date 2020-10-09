@@ -151,7 +151,7 @@ class CoursesView(ModelView):
 
 class GroupsView(ModelView):
     column_list = ('name', 'course', 'link', 'institute')  # что будет показываться на странице из формы (какие поля)
-    column_sortable_list = ('institute')  # что сортируется
+    column_sortable_list = ('name')  # что сортируется
     form_excluded_columns = ('name')
     form = GroupsForm
 
@@ -159,7 +159,6 @@ class GroupsView(ModelView):
         """формируем список групп для выбора"""
         groups = db.groups.find()
         form.name.choices = [group['name'] for group in groups]
-        return form
 
     def create_form(self):
         form = super(GroupsView, self).create_form()

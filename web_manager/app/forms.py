@@ -32,8 +32,8 @@ class UserForm(form.Form):
 
 class InstitutesForm(form.Form):
     """создаём форму"""
-    name = fields.SelectField('name', widget=Select2Widget())
-    link = fields.StringField('link',[validators.DataRequired()])
+    name = fields.SelectField('Название', widget=Select2Widget())
+    link = fields.StringField('Ссылка',[validators.DataRequired()])
 
 
 class CoursesForm(form.Form):
@@ -42,8 +42,9 @@ class CoursesForm(form.Form):
                          'Институт высоких технологий', 'Институт заочно-вечернего обучения', 'Институт информационных технологий и анализа данных',
                          'Институт недропользования','Институт экономики, управления и права','Институт энергетики']
     choices_name = ['1 курс', '2 курс', '3 курс', '4 курс', '5 курс', '6 курс']
-    institute = fields.SelectField('Institute',choices=choices_institute)
-    name = fields.SelectField('Курсы', choices=choices_name)
+    institute = fields.SelectField('Институт',choices=choices_institute)
+    name = fields.SelectField('Курс', choices=choices_name)
+
 
 class InnerFormLessons(form.Form):
     name = fields.StringField()
@@ -60,8 +61,8 @@ class InnerFormDays(form.Form):
     lessons = InlineFieldList(InlineFormField(InnerFormLessons))#InlineFormField(InnerFormLessons)
 
 class ScheduleForm(form.Form):
-    group = fields.StringField('Group')
-    schedule = InlineFieldList(InlineFormField(InnerFormDays))
+    group = fields.StringField('Группа')
+    schedule = InlineFieldList(InlineFormField(InnerFormDays),'Расписание')
 
 
 class GroupsForm(form.Form):
@@ -71,10 +72,10 @@ class GroupsForm(form.Form):
                          'Институт информационных технологий и анализа данных',
                          'Институт недропользования', 'Институт экономики, управления и права', 'Институт энергетики']
     choices_course = ['1 курс', '2 курс', '3 курс', '4 курс', '5 курс', '6 курс']
-    name = fields.SelectField('name',widget=Select2Widget())
-    institute = fields.SelectField('Institute',choices = choices_institute)
-    link = fields.StringField('link', [validators.DataRequired()])
-    course = fields.SelectField('course', choices = choices_course)
+    name = fields.SelectField('Название',widget=Select2Widget())
+    institute = fields.SelectField('Институт',choices = choices_institute)
+    link = fields.StringField('Ссылка', [validators.DataRequired()])
+    course = fields.SelectField('Курс', choices = choices_course)
 #
 # TG bot admin
 class BotSendMessageForm(form.Form):
