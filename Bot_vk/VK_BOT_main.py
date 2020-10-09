@@ -11,7 +11,6 @@ from functions.find_week import find_week
 from vk_api.utils import get_random_id
 from vkbottle.bot import Bot, Message
 from vkbottle.ext import Middleware
-from flask import Flask, request
 from vk_api import vk_api
 from aiohttp import web
 import typing
@@ -25,36 +24,33 @@ from datetime import datetime
 
 from vkbottle.utils import logger
 
+from aiohttp import web
+
 token = os.environ.get('VK')
 
 MAX_CALLBACK_RANGE = 41
 storage = MongodbService().get_instance()
 bot = Bot(f"{os.environ.get('VK')}", debug="DEBUG")  # TOKEN
 
+app = web.Application()
+
 content_types = {
     'text': ['Расписание', 'Ближайшая пара', 'Расписание на сегодня', 'На текущую неделю', 'На следующую неделю']}
 
 content_commands = {'text': ['/start', '/reg', '/about', '/authors']}
 
-app = Flask(__name__)
 
 TZ_IRKUTSK = pytz.timezone('Asia/Irkutsk')
 
 authorize = vk_api.VkApi(token=token)
 
 
-# Проверка работы сервера бота
-@app.route('/vk-bot/status')
-def status():
-    return 'Вк бот активен', 200
+async def executor(request: web.Request):
+    event = await request.json()
+    emulation = await bot.emulate(event, confirmation_token='3a4d03fd')
+    return web.Response(text=emulation)
 
-
-@app.route('/vk-bot', methods=['POST'])
-def webhook():
-    event = json.loads(request.data)
-    emulation = bot.emulate(event, confirmation_token="c232bb4c")
-    return emulation
-
+app.router.add_route("POST", "/", executor)
 
 def parametres_for_buttons_start_menu_vk(text, color):
     '''Возвращает параметры кнопок'''
@@ -575,7 +571,8 @@ async def wrapper(ans: Message):
 
 def main():
     '''Запуск бота'''
-    bot.run_polling()
+    #bot.run_polling()
+    web.run_app(app=app, port=8082)
 
 
 if __name__ == "__main__":

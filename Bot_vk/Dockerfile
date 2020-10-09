@@ -18,6 +18,4 @@ ENV LC_ALL ru_RU.UTF-8
 
 EXPOSE 8082
 
-RUN chmod a+x ./run.sh
-
-CMD ["./run.sh"]
+CMD ["python3", "VK_BOT_main.py"]
