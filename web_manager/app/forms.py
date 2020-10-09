@@ -6,7 +6,6 @@ from flask_admin.model.fields import InlineFormField, InlineFieldList, FieldList
 
 import flask_admin.model.fields as f
 
-print(dir(f))
 
 # TG User admin
 class InnerFormDays(form.Form):

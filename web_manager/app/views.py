@@ -102,8 +102,8 @@ class UserView(ModelView):
 
 
 class ScheduleView(ModelView):
-    column_list = ('group', 'schedule')  # что будет показываться на странице из формы (какие поля)
-    column_sortable_list = ('group', 'schedule')  # что сортируется
+    column_list = ('group',)
+    column_sortable_list = ('group',)
     form = ScheduleForm
 
 
