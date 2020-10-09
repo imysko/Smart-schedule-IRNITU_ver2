@@ -51,7 +51,7 @@ def status():
 
 @app.route('/vk-bot', methods=['POST'])
 def webhook():
-    event = request.json()
+    event = json.loads(request.data)
     emulation = bot.emulate(event, confirmation_token="c232bb4c")
     return emulation
 
