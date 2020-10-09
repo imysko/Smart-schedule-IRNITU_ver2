@@ -59,3 +59,14 @@ class MongodbService(object):
     def get_schedule(self, group):
         """возвращает расписание группы"""
         return self._db.schedule.find_one(filter={'group': group})
+
+    def save_status(self, date, time, parse_time_hours):
+        """сохраняем время последнего парса"""
+        status = {
+            'name': 'parser',
+            'date': date,
+            'time': time,
+            'parse_time_hours': parse_time_hours
+        }
+
+        return self._db.status.update_one(filter={'name': 'parser'}, update={'$set': status}, upsert=True)

@@ -5,11 +5,15 @@ from pprint import pprint
 import re
 import os
 from storage import MongodbService
+import pytz
+from datetime import datetime
 
 URL_INSTITUTES = os.getenv('URL_INSTITUTES',
                            default='https://www.istu.edu/schedule/')  # Ссылка на страницу с институтами
 
 PARSE_TIME_HOURS = int(os.getenv('PARSE_TIME_HOURS', default=1))  # время задержки парсинга (в часах)
+
+TZ_IRKUTSK = pytz.timezone('Asia/Irkutsk')
 
 storage = MongodbService().get_instance()
 
@@ -150,61 +154,65 @@ def parse():
         print('==========ИНСТИТУТЫ==========')
         pprint(institutes)
 
-        # парсим курсы и группы
-        all_courses = []
-        all_groups = []
-        for institute in institutes:
-            try:
-                html_courses_and_croups = get_html(url=institute['link'])
-            except Exception as e:
-                print(e)
-                continue
-
-            try:
-                courses, groups = get_courses_and_groups(html=html_courses_and_croups)
-            except Exception as e:
-                print(e)
-                continue
-
-
-            institute_name = institute['name']
-            for name in courses:
-                all_courses.append({'name': name, 'institute': institute_name})
-
-            for group in groups:
-                group['institute'] = institute['name']
-                all_groups.append(group)
-        # сохраняем в БД
-        storage.save_courses(courses=all_courses)
-        print('\n\n==========КУРСЫ==========')
-        pprint(all_courses)
-        storage.save_groups(all_groups)
-        print('\n\n==========ГРУППЫ==========')
-        pprint(all_groups)
-
-        # парсим расписание групп
-        print('\n\n==========РАСПИСАНИЕ==========')
-
-        for group in all_groups:
-            try:
-                html_schedule_groups = get_html(url=group['link'])
-            except Exception as e:
-                print(e)
-                continue
-
-            try:
-                schedule = get_schedule(html=html_schedule_groups)
-            except Exception as e:
-                print(e)
-                continue
-
-            group_schedule = {'group': group['name'], 'schedule': schedule}
-            storage.save_schedule(group_schedule)  # сохраняем по одной группе
-            pprint(group_schedule)
+        # # парсим курсы и группы
+        # all_courses = []
+        # all_groups = []
+        # for institute in institutes:
+        #     try:
+        #         html_courses_and_croups = get_html(url=institute['link'])
+        #     except Exception as e:
+        #         print(e)
+        #         continue
+        #
+        #     try:
+        #         courses, groups = get_courses_and_groups(html=html_courses_and_croups)
+        #     except Exception as e:
+        #         print(e)
+        #         continue
+        #
+        #     institute_name = institute['name']
+        #     for name in courses:
+        #         all_courses.append({'name': name, 'institute': institute_name})
+        #
+        #     for group in groups:
+        #         group['institute'] = institute['name']
+        #         all_groups.append(group)
+        # # сохраняем в БД
+        # storage.save_courses(courses=all_courses)
+        # print('\n\n==========КУРСЫ==========')
+        # pprint(all_courses)
+        # storage.save_groups(all_groups)
+        # print('\n\n==========ГРУППЫ==========')
+        # pprint(all_groups)
+        #
+        # # парсим расписание групп
+        # print('\n\n==========РАСПИСАНИЕ==========')
+        #
+        # for group in all_groups:
+        #     try:
+        #         html_schedule_groups = get_html(url=group['link'])
+        #     except Exception as e:
+        #         print(e)
+        #         continue
+        #
+        #     try:
+        #         schedule = get_schedule(html=html_schedule_groups)
+        #     except Exception as e:
+        #         print(e)
+        #         continue
+        #
+        #     group_schedule = {'group': group['name'], 'schedule': schedule}
+        #     storage.save_schedule(group_schedule)  # сохраняем по одной группе
+        #     pprint(group_schedule)
 
         # засыпаем
         parse_time = time() - start_time
         print(f'--- Parse time {parse_time} seconds ({parse_time / 60} minutes)---')
+
+        date_now = datetime.now(TZ_IRKUTSK).strftime('%d.%m.%Y')
+        time_now = datetime.now(TZ_IRKUTSK).strftime('%H:%M')
+        storage.save_status(parse_time_hours=PARSE_TIME_HOURS, date=date_now, time=time_now)
+
         print('Waiting...')
         sleep(PARSE_TIME_HOURS * 60 * 60)
 
