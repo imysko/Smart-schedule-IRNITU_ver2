@@ -51,7 +51,7 @@ def status():
 def webhook():
     data = json.loads(request.data)
     print(data)
-    if data['type'] == 'confirmation' and data['group_id'] == '198983266':
+    if data['type'] == 'confirmation' and data['group_id'] == 198983266:
         return 'c232bb4c', 200
     else:
         return 'Not Found', 404
