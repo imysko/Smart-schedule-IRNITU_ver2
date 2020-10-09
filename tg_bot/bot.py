@@ -1,5 +1,7 @@
 import telebot
 
+import pytz
+from datetime import datetime
 import os
 from time import sleep
 
@@ -15,6 +17,8 @@ from flask import Flask, request
 
 TOKEN = os.environ.get('TOKEN')
 HOST_URL = os.environ.get('HOST_URL')
+
+TZ_IRKUTSK = pytz.timezone('Asia/Irkutsk')
 
 bot = telebot.TeleBot(TOKEN, threaded=False)
 
@@ -52,6 +56,8 @@ def start_message(message):
                                            'Выберите институт',
                      reply_markup=make_inline_keyboard_choose_institute(storage.get_institutes()))
 
+    add_statistics(action='start')
+
 
 # Команда /reg
 @bot.message_handler(commands=['reg'])
@@ -62,6 +68,8 @@ def registration(message):
                                            'Выберите институт',
                      reply_markup=make_inline_keyboard_choose_institute(storage.get_institutes()))
 
+    add_statistics(action='reg')
+
 
 # Команда /help
 @bot.message_handler(commands=['help'])
@@ -71,6 +79,8 @@ def help(message):
                                            '/about - описание чат бота\n'
                                            '/authors - Список авторов \n'
                                            '/reg - повторная регистрация')
+
+    add_statistics(action='help')
 
 
 # Команда /about
@@ -87,6 +97,8 @@ def about(message):
                           '- Настроить гибкие уведомления с информацией из расписания, '
                           'которые будут приходить за определённое время до начала занятия')
 
+    add_statistics(action='about')
+
 
 # Команда /authors
 @bot.message_handler(commands=['authors'])
@@ -97,11 +109,13 @@ def authors(message):
                           '- Алексей @bolanebyla\n'
                           '- Султан @ace_sultan\n'
                           '- Александр @alexandrshen\n'
-                          '- Владислав @vlad TIXONNN\n'
+                          '- Владислав @TixoNNNAN\n'
                           '- Кирилл @ADAMYORT\n\n'
                           'По всем вопросом и предложениям пишите нам в личные сообщения. '
                           'Будем рады 😉\n'
                      )
+
+    add_statistics(action='authors')
 
 
 # ==================== Обработка Inline кнопок ==================== #
@@ -271,6 +285,8 @@ def handle_query(message):
             logger.exception(e)
             return
 
+        add_statistics(action='save_notifications')
+
 
 # =============================================================
 
@@ -308,6 +324,12 @@ def check_schedule(chat_id, schedule) -> bool:
         return True
 
 
+def add_statistics(action: str):
+    date_now = datetime.now(TZ_IRKUTSK).strftime('%d.%m.%Y')
+    time_now = datetime.now(TZ_IRKUTSK).strftime('%H:%M')
+    storage.save_statistics(action=action, date=date_now, time=time_now)
+
+
 # =============================================================
 
 # ==================== Обработка текста ==================== #
@@ -327,6 +349,8 @@ def text(message):
         except Exception as e:
             logger.exception(e)
             return
+
+        add_statistics(action='Расписание')
 
     elif ('На текущую неделю' == data or 'На следующую неделю' == data) and user:
         try:
@@ -359,6 +383,9 @@ def text(message):
         for schedule in schedule_str:
             bot.send_message(chat_id=chat_id,
                              text=f'{schedule}', parse_mode='HTML')
+
+        add_statistics(action=data)
+
     elif 'Расписание на сегодня' == data and user:
         try:
             group = storage.get_user(chat_id=chat_id)['group']
@@ -377,6 +404,8 @@ def text(message):
         schedule_one_day = get_one_day_schedule_in_str(schedule=schedule, week=week)
         bot.send_message(chat_id=chat_id,
                          text=f'{schedule_one_day}', parse_mode='HTML')
+
+        add_statistics(action='Расписание на сегодня')
 
     elif 'Ближайшая пара' in data and user:
         try:
@@ -420,6 +449,9 @@ def text(message):
         near_lessons_str += '-------------------------------------------\n'
         bot.send_message(chat_id=chat_id, text=f'<b>Ближайшая пара</b>\n'
                                                f'{near_lessons_str}', parse_mode='HTML')
+
+        add_statistics(action='Ближайшая пара')
+
     elif 'Напоминания' in data and user:
         time = user['notifications']
         if not time:
@@ -427,11 +459,17 @@ def text(message):
         bot.send_message(chat_id=chat_id, text=get_notifications_status(time),
                          reply_markup=make_inline_keyboard_notifications(time))
 
+        add_statistics(action='Напоминания')
+
     elif 'Основное меню' in data and user:
         bot.send_message(chat_id, text='Основное меню', reply_markup=make_keyboard_start_menu())
 
+        add_statistics(action='Основное меню')
+
     else:
         bot.send_message(chat_id, text='Я вас не понимаю 😞')
+
+        add_statistics(action='bullshit')
 
 
 if __name__ == '__main__':

@@ -7,7 +7,7 @@ from app.storage import db
 from app.bots import tg_bot
 
 from flask import redirect, url_for, request, flash
-from app.forms import UserForm, InstitutesForm, CoursesForm, ScheduleForm, GroupsForm, BotSendMessageForm
+from app.forms import UserForm, InstitutesForm, CoursesForm, ScheduleForm, GroupsForm, BotSendMessageForm, StatisticForm
 
 
 # Flask views
@@ -102,9 +102,24 @@ class UserView(ModelView):
 
 
 class ScheduleView(ModelView):
-    column_list = ('group', 'schedule')  # что будет показываться на странице из формы (какие поля)
-    column_sortable_list = ('group', 'schedule')  # что сортируется
+    column_list = ('group',)
+    column_sortable_list = ('group',)
     form = ScheduleForm
+
+    def _feed_group_choices(self, form):
+        """формируем список групп для выбора"""
+        groups = db.schedule.find()
+        form.group.choices = [group['group'] for group in groups]
+        return form
+
+    def create_form(self):
+        form = super(ScheduleView, self).create_form()
+        return self._feed_group_choices(form)
+
+    def edit_form(self, obj):
+        """выводим группы когда редактируем"""
+        form = super(ScheduleView, self).edit_form(obj)
+        return self._feed_group_choices(form)
 
 
 class InstitutesView(ModelView):
@@ -151,19 +166,33 @@ class CoursesView(ModelView):
 
 class GroupsView(ModelView):
     column_list = ('name', 'course', 'link', 'institute')  # что будет показываться на странице из формы (какие поля)
-    column_sortable_list = ('institute')  # что сортируется
+    column_sortable_list = ('name')  # что сортируется
     form_excluded_columns = ('name')
     form = GroupsForm
 
-    def _feed_groups_choices(self, form):
-        # form.name.choices = ['1 курс','2 курс', '3 курс']
+    def _feed_group_choices(self, form):
+        """формируем список групп для выбора"""
+        groups = db.groups.find()
+        form.name.choices = [group['name'] for group in groups]
         return form
 
     def create_form(self):
         form = super(GroupsView, self).create_form()
-        return self._feed_groups_choices(form)
+        return self._feed_group_choices(form)
 
     def edit_form(self, obj):
         """выводим группы когда редактируем"""
         form = super(GroupsView, self).edit_form(obj)
-        return self._feed_groups_choices(form)
+        return self._feed_group_choices(form)
+
+class StatisticView(ModelView):
+    column_list = ('action', 'date', 'time')  # что будет показываться на странице из формы (какие поля)
+    column_sortable_list = ('action')  # что сортируется
+    form_excluded_columns = ('date')
+    form = StatisticForm
+
+    def on_form_prefill(self, form, id):
+        """делает поле chat_id неизменяемым"""
+        form.action.render_kw = {'readonly': True}
+        form.date.render_kw = {'readonly': True}
+        form.time.render_kw = {'readonly': True}
