@@ -11,6 +11,7 @@ from functions.find_week import find_week
 from vk_api.utils import get_random_id
 from vkbottle.bot import Bot, Message
 from vkbottle.ext import Middleware
+from flask import Flask, request
 from vk_api import vk_api
 from aiohttp import web
 import typing
@@ -27,6 +28,14 @@ storage = MongodbService().get_instance()
 bot = Bot(f"{os.environ.get('VK')}", debug="DEBUG")  # TOKEN
 
 content_types = {'text': ['Расписание', 'Ближайшая пара', 'Расписание на сегодня','На текущую неделю','На следующую неделю']}
+
+app = Flask(__name__)
+
+
+# Проверка работы сервера бота
+@app.route('/')
+def status():
+    return 'Бот активен', 200
 
 
 def parametres_for_buttons_start_menu_vk(text, color):
@@ -339,23 +348,24 @@ async def scheduler(ans: Message):
 async def wrapper(ans: Message):
     '''Регистрация пользователя'''
     chat_id = ans.from_id
+    message_inst = ans.text
     message = ans.text
     user = storage.get_user(chat_id)
 
     # Сохраняет в месседж полное название универ для корректного сравнения
     institutes = name_institutes(storage.get_institutes())
     for institute in institutes:
-        if message[:-5] in institute:
-            message = institute
+        if message_inst[:-5] in institute:
+            message_inst = institute
 
     # Если пользователя нет в базе данных
     if not user:
         institutes = name_institutes(storage.get_institutes())
         # Смотрим выбрал ли пользователь институт
-        if message in institutes:
+        if message_inst in institutes:
             # Если да, то записываем в бд
             storage.save_or_update_user(chat_id=chat_id, institute=message)
-            await ans('Найс\n')
+            await ans(f'Вы выбрали: {message_inst}\n')
             await ans('Выберите курс.', keyboard=make_keyboard_choose_course_vk(storage.get_courses(message)))
         else:
             await ans('Я вас не понимаю\n')
@@ -370,8 +380,8 @@ async def wrapper(ans: Message):
             storage.save_or_update_user(chat_id=chat_id, course=message)
             groups = storage.get_groups(institute=institute, course=message)
             groups = name_groups(groups)
+            await ans(f'Вы выбрали: {message}\n')
             await ans('Выберите группу.', keyboard=make_keyboard_choose_group_vk(groups))
-            await ans('Найс2\n')
         else:
             await ans('Я вас не понимаю\n')
         return
@@ -385,7 +395,7 @@ async def wrapper(ans: Message):
         if message in groups:
             # Записываем в базу данных выбранную группу
             storage.save_or_update_user(chat_id=chat_id, group=message)
-            await ans('Конграт.', keyboard=make_keyboard_start_menu())
+            await ans('Поздравляем вы зарегистрировались!', keyboard=make_keyboard_start_menu())
         else:
             if message == "Далее":
                 await ans('Выберите группу.', keyboard=make_keyboard_choose_group_vk_page_2(groups))
@@ -448,8 +458,11 @@ async def wrapper(ans: Message):
 
     elif 'Назад' in message and user:
         await ans('Основное меню', keyboard=make_keyboard_start_menu())
+    elif 'Далее' in message:
+        await ans('Далее', keyboard=make_keyboard_choose_group_vk_page_2())
 
     else:
+        print(message)
         await ans('Я вас не понимаю 😞')
 
 
