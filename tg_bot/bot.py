@@ -56,9 +56,7 @@ def start_message(message):
                                            'Выберите институт',
                      reply_markup=make_inline_keyboard_choose_institute(storage.get_institutes()))
 
-    date_now = datetime.now(TZ_IRKUTSK).strftime('%d.%m.%Y')
-    time_now = datetime.now(TZ_IRKUTSK).strftime('%H:%M')
-    storage.save_statistics(action='start', date=date_now, time=time_now)
+    add_statistics(action='start')
 
 
 # Команда /reg
@@ -70,9 +68,7 @@ def registration(message):
                                            'Выберите институт',
                      reply_markup=make_inline_keyboard_choose_institute(storage.get_institutes()))
 
-    date_now = datetime.now(TZ_IRKUTSK).strftime('%d.%m.%Y')
-    time_now = datetime.now(TZ_IRKUTSK).strftime('%H:%M')
-    storage.save_statistics(action='reg', date=date_now, time=time_now)
+    add_statistics(action='reg')
 
 
 # Команда /help
@@ -84,9 +80,7 @@ def help(message):
                                            '/authors - Список авторов \n'
                                            '/reg - повторная регистрация')
 
-    date_now = datetime.now(TZ_IRKUTSK).strftime('%d.%m.%Y')
-    time_now = datetime.now(TZ_IRKUTSK).strftime('%H:%M')
-    storage.save_statistics(action='help', date=date_now, time=time_now)
+    add_statistics(action='help')
 
 
 # Команда /about
@@ -103,9 +97,7 @@ def about(message):
                           '- Настроить гибкие уведомления с информацией из расписания, '
                           'которые будут приходить за определённое время до начала занятия')
 
-    date_now = datetime.now(TZ_IRKUTSK).strftime('%d.%m.%Y')
-    time_now = datetime.now(TZ_IRKUTSK).strftime('%H:%M')
-    storage.save_statistics(action='about', date=date_now, time=time_now)
+    add_statistics(action='about')
 
 
 # Команда /authors
@@ -123,9 +115,7 @@ def authors(message):
                           'Будем рады 😉\n'
                      )
 
-    date_now = datetime.now(TZ_IRKUTSK).strftime('%d.%m.%Y')
-    time_now = datetime.now(TZ_IRKUTSK).strftime('%H:%M')
-    storage.save_statistics(action='authors', date=date_now, time=time_now)
+    add_statistics(action='authors')
 
 
 # ==================== Обработка Inline кнопок ==================== #
@@ -295,9 +285,7 @@ def handle_query(message):
             logger.exception(e)
             return
 
-        date_now = datetime.now(TZ_IRKUTSK).strftime('%d.%m.%Y')
-        time_now = datetime.now(TZ_IRKUTSK).strftime('%H:%M')
-        storage.save_statistics(action='save_notifications', date=date_now, time=time_now)
+        add_statistics(action='save_notifications')
 
 
 # =============================================================
@@ -336,6 +324,12 @@ def check_schedule(chat_id, schedule) -> bool:
         return True
 
 
+def add_statistics(action: str):
+    date_now = datetime.now(TZ_IRKUTSK).strftime('%d.%m.%Y')
+    time_now = datetime.now(TZ_IRKUTSK).strftime('%H:%M')
+    storage.save_statistics(action=action, date=date_now, time=time_now)
+
+
 # =============================================================
 
 # ==================== Обработка текста ==================== #
@@ -356,9 +350,7 @@ def text(message):
             logger.exception(e)
             return
 
-        date_now = datetime.now(TZ_IRKUTSK).strftime('%d.%m.%Y')
-        time_now = datetime.now(TZ_IRKUTSK).strftime('%H:%M')
-        storage.save_statistics(action='Расписание', date=date_now, time=time_now)
+        add_statistics(action='Расписание')
 
     elif ('На текущую неделю' == data or 'На следующую неделю' == data) and user:
         try:
@@ -392,9 +384,7 @@ def text(message):
             bot.send_message(chat_id=chat_id,
                              text=f'{schedule}', parse_mode='HTML')
 
-        date_now = datetime.now(TZ_IRKUTSK).strftime('%d.%m.%Y')
-        time_now = datetime.now(TZ_IRKUTSK).strftime('%H:%M')
-        storage.save_statistics(action=data, date=date_now, time=time_now)
+        add_statistics(action=data)
 
     elif 'Расписание на сегодня' == data and user:
         try:
@@ -415,9 +405,7 @@ def text(message):
         bot.send_message(chat_id=chat_id,
                          text=f'{schedule_one_day}', parse_mode='HTML')
 
-        date_now = datetime.now(TZ_IRKUTSK).strftime('%d.%m.%Y')
-        time_now = datetime.now(TZ_IRKUTSK).strftime('%H:%M')
-        storage.save_statistics(action='Расписание на сегодня', date=date_now, time=time_now)
+        add_statistics(action='Расписание на сегодня')
 
     elif 'Ближайшая пара' in data and user:
         try:
@@ -462,9 +450,7 @@ def text(message):
         bot.send_message(chat_id=chat_id, text=f'<b>Ближайшая пара</b>\n'
                                                f'{near_lessons_str}', parse_mode='HTML')
 
-        date_now = datetime.now(TZ_IRKUTSK).strftime('%d.%m.%Y')
-        time_now = datetime.now(TZ_IRKUTSK).strftime('%H:%M')
-        storage.save_statistics(action='Ближайшая пара', date=date_now, time=time_now)
+        add_statistics(action='Ближайшая пара')
 
     elif 'Напоминания' in data and user:
         time = user['notifications']
@@ -473,23 +459,17 @@ def text(message):
         bot.send_message(chat_id=chat_id, text=get_notifications_status(time),
                          reply_markup=make_inline_keyboard_notifications(time))
 
-        date_now = datetime.now(TZ_IRKUTSK).strftime('%d.%m.%Y')
-        time_now = datetime.now(TZ_IRKUTSK).strftime('%H:%M')
-        storage.save_statistics(action='Напоминания', date=date_now, time=time_now)
+        add_statistics(action='Напоминания')
 
     elif 'Основное меню' in data and user:
         bot.send_message(chat_id, text='Основное меню', reply_markup=make_keyboard_start_menu())
 
-        date_now = datetime.now(TZ_IRKUTSK).strftime('%d.%m.%Y')
-        time_now = datetime.now(TZ_IRKUTSK).strftime('%H:%M')
-        storage.save_statistics(action='Основное меню', date=date_now, time=time_now)
+        add_statistics(action='Основное меню')
 
     else:
         bot.send_message(chat_id, text='Я вас не понимаю 😞')
 
-        date_now = datetime.now(TZ_IRKUTSK).strftime('%d.%m.%Y')
-        time_now = datetime.now(TZ_IRKUTSK).strftime('%H:%M')
-        storage.save_statistics(action='bullshit', date=date_now, time=time_now)
+        add_statistics(action='bullshit')
 
 
 if __name__ == '__main__':
