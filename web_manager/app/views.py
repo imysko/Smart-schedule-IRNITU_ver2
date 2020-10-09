@@ -155,15 +155,17 @@ class GroupsView(ModelView):
     form_excluded_columns = ('name')
     form = GroupsForm
 
-    def _feed_groups_choices(self, form):
-        # form.name.choices = ['1 курс','2 курс', '3 курс']
+    def _feed_group_choices(self, form):
+        """формируем список групп для выбора"""
+        groups = db.groups.find()
+        form.name.choices = [group['name'] for group in groups]
         return form
 
     def create_form(self):
         form = super(GroupsView, self).create_form()
-        return self._feed_groups_choices(form)
+        return self._feed_group_choices(form)
 
     def edit_form(self, obj):
         """выводим группы когда редактируем"""
         form = super(GroupsView, self).edit_form(obj)
-        return self._feed_groups_choices(form)
+        return self._feed_group_choices(form)
