@@ -23,6 +23,7 @@ import os
 import pytz
 from datetime import datetime
 
+from vkbottle.utils import logger
 
 token = os.environ.get('VK')
 
@@ -30,9 +31,10 @@ MAX_CALLBACK_RANGE = 41
 storage = MongodbService().get_instance()
 bot = Bot(f"{os.environ.get('VK')}", debug="DEBUG")  # TOKEN
 
-content_types = {'text': ['Расписание', 'Ближайшая пара', 'Расписание на сегодня','На текущую неделю','На следующую неделю']}
+content_types = {
+    'text': ['Расписание', 'Ближайшая пара', 'Расписание на сегодня', 'На текущую неделю', 'На следующую неделю']}
 
-content_commands = {'text': ['/start', '/reg','/about','/authors']}
+content_commands = {'text': ['/start', '/reg', '/about', '/authors']}
 
 app = Flask(__name__)
 
@@ -48,13 +50,17 @@ def status():
 
 
 @app.route('/vk-bot', methods=['POST'])
-def webhook():
+async def webhook():
     data = json.loads(request.data)
-    print(data)
+    logger.debug('data: ' + str(data))
+    if 'type' not in data.keys():
+        return 'Not Found', 404
     if data['type'] == 'confirmation' and data['group_id'] == 198983266:
         return 'c232bb4c', 200
+
     else:
-        return 'Not Found', 404
+        emulation = await bot.emulate(data)
+        return
 
 
 def parametres_for_buttons_start_menu_vk(text, color):
@@ -100,6 +106,7 @@ def make_keyboard_start_menu():
     keyboard.add_button(Text(label="Расписание на сегодня"), color="default")
     keyboard.add_button(Text(label="Напоминание"), color="default")
     return keyboard
+
 
 def make_inline_keyboard_set_notifications(time=0):
     """кнопки настройки уведомлений"""
@@ -256,10 +263,12 @@ def name_courses(courses=[]):
         list_courses.append(name)
     return list_courses
 
+
 def add_statistics(action: str):
     date_now = datetime.now(TZ_IRKUTSK).strftime('%d.%m.%Y')
     time_now = datetime.now(TZ_IRKUTSK).strftime('%H:%M')
     storage.save_statistics(action=action, date=date_now, time=time_now)
+
 
 def name_groups(groups=[]):
     '''Храним список всех групп'''
@@ -269,12 +278,12 @@ def name_groups(groups=[]):
         list_groups.append(name)
     return list_groups
 
+
 # ==================== Обработка команд ==================== #
 
 # Команда /start
 @bot.on.message(text='/start')
 async def start_message(ans: Message):
-
     chat_id = ans.from_id
 
     # Проверяем есть пользователь в базе данных
@@ -286,6 +295,7 @@ async def start_message(ans: Message):
     await ans('Выберите институт.', keyboard=make_keyboard_institutes(storage.get_institutes()))
 
     add_statistics(action='start')
+
 
 # Команда /reg
 @bot.on.message(text='/reg')
@@ -305,9 +315,9 @@ async def registration(ans: Message):
 async def help(ans: Message):
     chat_id = ans.from_id
     await ans('Список команд:\n'
-            '/about - описание чат бота\n'
-            '/authors - Список авторов \n'
-            '/reg - повторная регистрация')
+              '/about - описание чат бота\n'
+              '/authors - Список авторов \n'
+              '/reg - повторная регистрация')
 
     add_statistics(action='help')
 
@@ -317,13 +327,13 @@ async def help(ans: Message):
 async def about(ans: Message):
     chat_id = ans.from_id
     await ans('О боте:\n'
-                          'Smart schedule IRNITU bot - это чат бот для просмотра расписания занятий в '
-                          'Иркутском национальном исследовательском техническом университете\n\n'
-                          'Благодаря боту можно:\n'
-                          '- Узнать актуальное расписание\n'
-                          '- Нажатием одной кнопки увидеть информацию о ближайшей паре\n'
-                          '- Настроить гибкие уведомления с информацией из расписания, '
-                          'которые будут приходить за определённое время до начала занятия')
+              'Smart schedule IRNITU bot - это чат бот для просмотра расписания занятий в '
+              'Иркутском национальном исследовательском техническом университете\n\n'
+              'Благодаря боту можно:\n'
+              '- Узнать актуальное расписание\n'
+              '- Нажатием одной кнопки увидеть информацию о ближайшей паре\n'
+              '- Настроить гибкие уведомления с информацией из расписания, '
+              'которые будут приходить за определённое время до начала занятия')
 
     add_statistics(action='about')
 
@@ -333,17 +343,16 @@ async def about(ans: Message):
 async def authors(ans: Message):
     chat_id = ans.from_id
     await ans('Авторы проекта:\n'
-                          '- Алексей @bolanebyla\n'
-                          '- Султан @ace_sultan\n'
-                          '- Александр @alexandrshen\n'
-                          '- Владислав @TixoNNNAN\n'
-                          '- Кирилл @ADAMYORT\n\n'
-                          'По всем вопросом и предложениям пишите нам в личные сообщения. '
-                          'Будем рады 😉\n'
-                     )
+              '- Алексей @bolanebyla\n'
+              '- Султан @ace_sultan\n'
+              '- Александр @alexandrshen\n'
+              '- Владислав @TixoNNNAN\n'
+              '- Кирилл @ADAMYORT\n\n'
+              'По всем вопросом и предложениям пишите нам в личные сообщения. '
+              'Будем рады 😉\n'
+              )
 
     add_statistics(action='authors')
-
 
 
 @bot.on.message(text=content_types['text'])
@@ -355,7 +364,6 @@ async def scheduler(ans: Message):
     if 'Расписание' == data and user:
         await ans('Выберите период\n', keyboard=make_keyboard_choose_schedule())
         add_statistics(action='Расписание')
-
 
     if ('На текущую неделю' == data or 'На следующую неделю' == data) and user:
         group = storage.get_user(chat_id=chat_id)['group']
@@ -412,7 +420,6 @@ async def scheduler(ans: Message):
 
         near_lessons = get_near_lesson(schedule=schedule, week=week)
 
-
         # если пар нет
         if not near_lessons:
             await ans('Сегодня больше пар нет 😎')
@@ -441,7 +448,6 @@ async def scheduler(ans: Message):
         await ans(f'Ближайшая пара\n'f'{near_lessons_str}')
 
         add_statistics(action='Ближайшая пара')
-
 
 
 @bot.on.message()
@@ -496,8 +502,8 @@ async def wrapper(ans: Message):
             # Записываем в базу данных выбранную группу
             storage.save_or_update_user(chat_id=chat_id, group=message)
             await ans('Вы успешно зарегистрировались!😊\n\n'
-                              'Для того чтобы пройти регистрацию повторно, воспользуйтесь командой /reg\n'
-                              'Основные команды - /help', keyboard=make_keyboard_start_menu())
+                      'Для того чтобы пройти регистрацию повторно, воспользуйтесь командой /reg\n'
+                      'Основные команды - /help', keyboard=make_keyboard_start_menu())
         else:
             if message == "Далее":
                 await ans('Выберите группу.', keyboard=make_keyboard_choose_group_vk_page_2(groups))
@@ -509,7 +515,7 @@ async def wrapper(ans: Message):
 
     elif 'Напоминание' in message and user:
         time = user['notifications']
-        #Проверяем стату напоминания
+        # Проверяем стату напоминания
         if not time:
             time = 0
         await ans(f'{get_notifications_status(time)}', keyboard=make_inline_keyboard_notifications())
@@ -519,7 +525,8 @@ async def wrapper(ans: Message):
     elif 'Настройки' in message and user:
         time = user['notifications']
         await ans('Настройка напоминаний ⚙\n\n'
-                                   'Укажите за сколько минут до начала пары должно приходить сообщение', keyboard=make_inline_keyboard_set_notifications(time))
+                  'Укажите за сколько минут до начала пары должно приходить сообщение',
+                  keyboard=make_inline_keyboard_set_notifications(time))
         add_statistics(action='Настройки')
 
     elif '-' in message:
@@ -528,7 +535,7 @@ async def wrapper(ans: Message):
             await ans('Хочешь уйти в минус?', keyboard=make_inline_keyboard_set_notifications(time))
             return
         time -= 5
-        #Отнимаем и проверяем на положительность
+        # Отнимаем и проверяем на положительность
         if time <= 0:
             time = 0
         storage.save_or_update_user(chat_id=chat_id, notifications=time)
@@ -543,7 +550,7 @@ async def wrapper(ans: Message):
 
     elif 'Сохранить' in message:
 
-        #Сохраняем статус в базу
+        # Сохраняем статус в базу
         time = user['notifications']
 
         group = storage.get_user(chat_id=chat_id)['group']
