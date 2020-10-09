@@ -51,16 +51,9 @@ def status():
 
 @app.route('/vk-bot', methods=['POST'])
 async def webhook():
-    data = json.loads(request.data)
-    logger.info('data: ' + str(data))
-    if 'type' not in data.keys():
-        return 'Not Found', 404
-    if data['type'] == 'confirmation' and data['group_id'] == 198983266:
-        return 'c232bb4c', 200
-
-    else:
-        emulation = await bot.emulate(data)
-        return 'ok', 200
+    event = await request.json()
+    emulation = await bot.emulate(event, confirmation_token="c232bb4c")
+    return emulation
 
 
 def parametres_for_buttons_start_menu_vk(text, color):
