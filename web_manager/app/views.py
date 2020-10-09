@@ -25,6 +25,8 @@ class ParserStatusView(View):
 
     def dispatch_request(self):
         parser_status_data = db.status.find_one(filter={'name': 'parser'})
+        if not parser_status_data:
+            return 'Парсер не активен', 503
         last_parse_date = parser_status_data['date'].split('.')
         last_parse_time = parser_status_data['time'].split(':')
         parse_time_hours = parser_status_data['parse_time_hours']
