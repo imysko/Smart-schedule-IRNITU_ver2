@@ -2,7 +2,6 @@ import pytz
 import locale
 import vk_api
 import os
-import telebot
 from datetime import datetime, timedelta
 from storage import MongodbService
 from vkbottle.bot import Bot, Message
@@ -31,7 +30,6 @@ def find_week():
 
 
 def sending_notifications(users: list):
-
         for user in users:
             chat_id = user['chat_id']
             week = user['week']
@@ -62,7 +60,7 @@ def sending_notifications(users: list):
                     if name == 'свободно':
                         continue
                     # формируем сообщение
-                    lessons_for_reminders += '-------------------------------------------\n'
+                    lessons_for_reminders += '--------------------------------------\n'
                     aud = lesson['aud']
                     if aud:
                         aud = f'Аудитория: {aud}\n'
@@ -70,19 +68,17 @@ def sending_notifications(users: list):
                     info = lesson['info']
                     prep = lesson['prep']
 
-                    lessons_for_reminders += f'<b>Начало в {time}</b>\n' \
+                    lessons_for_reminders += f'Начало в {time}\n' \
                                              f'{aud}' \
                                              f'{name}\n' \
                                              f'{info} {prep}\n'
-                    lessons_for_reminders += '-------------------------------------------\n'
+                    lessons_for_reminders += '--------------------------------------\n'
             # если пары не нашлись переходим к след user
             if not lessons_for_reminders:
                 continue
             # отправляем сообщение пользователю
-            reminders = storage.get_users_with_reminders_vk()
             text = f'Через {notifications} минут пара\n', f'{lessons_for_reminders}'
-            print(text)
-            authorize.method('messages.send', {'user_id': reminders['chat_id'], 'message': text, 'random_id': 0})
+            authorize.method('messages.send', {'user_id': chat_id, 'message': text, 'random_id': 0})
 
 
 def search_for_reminders():
@@ -101,7 +97,7 @@ def search_for_reminders():
 
             # получаем пользователей у которых включены напоминания
             reminders = storage.get_users_with_reminders_vk()
-            print(reminders)
+            # print(reminders)
 
             for reminder in reminders:
                 week = find_week()
@@ -114,8 +110,7 @@ def search_for_reminders():
                 user_day_time = user_days.get(day_now.lower())
 
                 # если время совпадает с текущим, добавляем в список на отправ
-                # if user_day_time and f'{hours_now}:{minutes_now}' in user_day_time:
-                if user_day_time and '19:05' in user_day_time:
+                if user_day_time and f'{hours_now}:{minutes_now}' in user_day_time:
                     chat_id = reminder['chat_id']
                     group = reminder['group']
                     notifications = reminder['notifications']
@@ -123,6 +118,7 @@ def search_for_reminders():
 
                     # определяем фактическое время пары (прибавляем к текущему времени время напоминания)
                     lesson_time = (time_now + timedelta(minutes=notifications)).strftime('%-H:%-M')
+
 
                     users.append(
                         {'chat_id': chat_id,
@@ -135,7 +131,7 @@ def search_for_reminders():
                     )
 
             # после того как список сформирован, нужно отправить его боту
-            print(users)
+            # print(users)
             sending_notifications(users)
 
 
