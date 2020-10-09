@@ -29,9 +29,8 @@ class AnalyticsView(BaseView):
             name = db.tg_statistics.find({'action':_})
             count = name.count()
             counts.append(count)
-        
 
-        return self.render('admin/analytics_index.html', count=count)
+        return self.render('admin/analytics_index.html', actions=actions,counts=counts)
 
 
 class BotSendMessageView(BaseView):
