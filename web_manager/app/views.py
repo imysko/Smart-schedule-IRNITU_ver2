@@ -20,7 +20,7 @@ class IndexView(View):
 
 # Create custom admin views
 class AnalyticsView(BaseView):
-    @expose('/')
+    @expose('/', methods=['get'])
     def index(self):
         return self.render('admin/analytics_index.html')
 
