@@ -42,9 +42,19 @@ authorize = vk_api.VkApi(token=token)
 
 
 # Проверка работы сервера бота
-@app.route('/')
+@app.route('/vk-bot/status')
 def status():
-    return 'Бот активен', 200
+    return 'Вк бот активен', 200
+
+
+@app.route('/vk-bot', methods=['POST'])
+def webhook():
+    data = json.loads(request.data)
+    print(data)
+    if data['type'] == 'confirmation' and data['group_id'] == '198983266':
+        return 'c232bb4c', 200
+    else:
+        return 'Not Found', 404
 
 
 def parametres_for_buttons_start_menu_vk(text, color):
