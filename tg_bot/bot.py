@@ -60,6 +60,7 @@ def start_message(message):
     time_now = datetime.now(TZ_IRKUTSK).strftime('%H:%M')
     storage.save_statistics(action='start', date=date_now, time=time_now)
 
+
 # Команда /reg
 @bot.message_handler(commands=['reg'])
 def registration(message):
@@ -68,6 +69,10 @@ def registration(message):
     bot.send_message(chat_id=chat_id, text='Пройдите повторную регистрацию😉\n'
                                            'Выберите институт',
                      reply_markup=make_inline_keyboard_choose_institute(storage.get_institutes()))
+
+    date_now = datetime.now(TZ_IRKUTSK).strftime('%d.%m.%Y')
+    time_now = datetime.now(TZ_IRKUTSK).strftime('%H:%M')
+    storage.save_statistics(action='reg', date=date_now, time=time_now)
 
 
 # Команда /help
@@ -78,6 +83,10 @@ def help(message):
                                            '/about - описание чат бота\n'
                                            '/authors - Список авторов \n'
                                            '/reg - повторная регистрация')
+
+    date_now = datetime.now(TZ_IRKUTSK).strftime('%d.%m.%Y')
+    time_now = datetime.now(TZ_IRKUTSK).strftime('%H:%M')
+    storage.save_statistics(action='help', date=date_now, time=time_now)
 
 
 # Команда /about
@@ -94,6 +103,10 @@ def about(message):
                           '- Настроить гибкие уведомления с информацией из расписания, '
                           'которые будут приходить за определённое время до начала занятия')
 
+    date_now = datetime.now(TZ_IRKUTSK).strftime('%d.%m.%Y')
+    time_now = datetime.now(TZ_IRKUTSK).strftime('%H:%M')
+    storage.save_statistics(action='about', date=date_now, time=time_now)
+
 
 # Команда /authors
 @bot.message_handler(commands=['authors'])
@@ -104,11 +117,15 @@ def authors(message):
                           '- Алексей @bolanebyla\n'
                           '- Султан @ace_sultan\n'
                           '- Александр @alexandrshen\n'
-                          '- Владислав @vlad TIXONNN\n'
+                          '- Владислав @TixoNNNAN\n'
                           '- Кирилл @ADAMYORT\n\n'
                           'По всем вопросом и предложениям пишите нам в личные сообщения. '
                           'Будем рады 😉\n'
                      )
+
+    date_now = datetime.now(TZ_IRKUTSK).strftime('%d.%m.%Y')
+    time_now = datetime.now(TZ_IRKUTSK).strftime('%H:%M')
+    storage.save_statistics(action='authors', date=date_now, time=time_now)
 
 
 # ==================== Обработка Inline кнопок ==================== #
@@ -278,6 +295,10 @@ def handle_query(message):
             logger.exception(e)
             return
 
+        date_now = datetime.now(TZ_IRKUTSK).strftime('%d.%m.%Y')
+        time_now = datetime.now(TZ_IRKUTSK).strftime('%H:%M')
+        storage.save_statistics(action='save_notifications', date=date_now, time=time_now)
+
 
 # =============================================================
 
@@ -335,6 +356,10 @@ def text(message):
             logger.exception(e)
             return
 
+        date_now = datetime.now(TZ_IRKUTSK).strftime('%d.%m.%Y')
+        time_now = datetime.now(TZ_IRKUTSK).strftime('%H:%M')
+        storage.save_statistics(action='Расписание', date=date_now, time=time_now)
+
     elif ('На текущую неделю' == data or 'На следующую неделю' == data) and user:
         try:
             group = storage.get_user(chat_id=chat_id)['group']
@@ -366,6 +391,11 @@ def text(message):
         for schedule in schedule_str:
             bot.send_message(chat_id=chat_id,
                              text=f'{schedule}', parse_mode='HTML')
+
+        date_now = datetime.now(TZ_IRKUTSK).strftime('%d.%m.%Y')
+        time_now = datetime.now(TZ_IRKUTSK).strftime('%H:%M')
+        storage.save_statistics(action=data, date=date_now, time=time_now)
+
     elif 'Расписание на сегодня' == data and user:
         try:
             group = storage.get_user(chat_id=chat_id)['group']
@@ -384,6 +414,10 @@ def text(message):
         schedule_one_day = get_one_day_schedule_in_str(schedule=schedule, week=week)
         bot.send_message(chat_id=chat_id,
                          text=f'{schedule_one_day}', parse_mode='HTML')
+
+        date_now = datetime.now(TZ_IRKUTSK).strftime('%d.%m.%Y')
+        time_now = datetime.now(TZ_IRKUTSK).strftime('%H:%M')
+        storage.save_statistics(action='Расписание на сегодня', date=date_now, time=time_now)
 
     elif 'Ближайшая пара' in data and user:
         try:
@@ -427,6 +461,11 @@ def text(message):
         near_lessons_str += '-------------------------------------------\n'
         bot.send_message(chat_id=chat_id, text=f'<b>Ближайшая пара</b>\n'
                                                f'{near_lessons_str}', parse_mode='HTML')
+
+        date_now = datetime.now(TZ_IRKUTSK).strftime('%d.%m.%Y')
+        time_now = datetime.now(TZ_IRKUTSK).strftime('%H:%M')
+        storage.save_statistics(action='Ближайшая пара', date=date_now, time=time_now)
+
     elif 'Напоминания' in data and user:
         time = user['notifications']
         if not time:
@@ -434,11 +473,23 @@ def text(message):
         bot.send_message(chat_id=chat_id, text=get_notifications_status(time),
                          reply_markup=make_inline_keyboard_notifications(time))
 
+        date_now = datetime.now(TZ_IRKUTSK).strftime('%d.%m.%Y')
+        time_now = datetime.now(TZ_IRKUTSK).strftime('%H:%M')
+        storage.save_statistics(action='Напоминания', date=date_now, time=time_now)
+
     elif 'Основное меню' in data and user:
         bot.send_message(chat_id, text='Основное меню', reply_markup=make_keyboard_start_menu())
 
+        date_now = datetime.now(TZ_IRKUTSK).strftime('%d.%m.%Y')
+        time_now = datetime.now(TZ_IRKUTSK).strftime('%H:%M')
+        storage.save_statistics(action='Основное меню', date=date_now, time=time_now)
+
     else:
         bot.send_message(chat_id, text='Я вас не понимаю 😞')
+
+        date_now = datetime.now(TZ_IRKUTSK).strftime('%d.%m.%Y')
+        time_now = datetime.now(TZ_IRKUTSK).strftime('%H:%M')
+        storage.save_statistics(action='bullshit', date=date_now, time=time_now)
 
 
 if __name__ == '__main__':
