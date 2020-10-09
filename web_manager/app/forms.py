@@ -32,7 +32,7 @@ class UserForm(form.Form):
 
 class InstitutesForm(form.Form):
     """создаём форму"""
-    name = fields.SelectField('Название', widget=Select2Widget())
+    name = fields.SelectField('Институт', widget=Select2Widget())
     link = fields.StringField('Ссылка',[validators.DataRequired()])
 
 
@@ -61,7 +61,7 @@ class InnerFormDays(form.Form):
     lessons = InlineFieldList(InlineFormField(InnerFormLessons))#InlineFormField(InnerFormLessons)
 
 class ScheduleForm(form.Form):
-    group = fields.StringField('Группа')
+    group = fields.SelectField('Группа',widget=Select2Widget())
     schedule = InlineFieldList(InlineFormField(InnerFormDays),'Расписание')
 
 
@@ -72,7 +72,7 @@ class GroupsForm(form.Form):
                          'Институт информационных технологий и анализа данных',
                          'Институт недропользования', 'Институт экономики, управления и права', 'Институт энергетики']
     choices_course = ['1 курс', '2 курс', '3 курс', '4 курс', '5 курс', '6 курс']
-    name = fields.SelectField('Название',widget=Select2Widget())
+    name = fields.SelectField('Группа',widget=Select2Widget())
     institute = fields.SelectField('Институт',choices = choices_institute)
     link = fields.StringField('Ссылка', [validators.DataRequired()])
     course = fields.SelectField('Курс', choices = choices_course)

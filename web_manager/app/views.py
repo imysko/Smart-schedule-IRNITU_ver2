@@ -106,6 +106,21 @@ class ScheduleView(ModelView):
     column_sortable_list = ('group',)
     form = ScheduleForm
 
+    def _feed_group_choices(self, form):
+        """формируем список групп для выбора"""
+        groups = db.schedule.find()
+        form.group.choices = [group['group'] for group in groups]
+        return form
+
+    def create_form(self):
+        form = super(ScheduleView, self).create_form()
+        return self._feed_group_choices(form)
+
+    def edit_form(self, obj):
+        """выводим группы когда редактируем"""
+        form = super(ScheduleView, self).edit_form(obj)
+        return self._feed_group_choices(form)
+
 
 class InstitutesView(ModelView):
     column_list = ('name', 'link')  # что будет показываться на странице из формы (какие поля)
@@ -159,6 +174,7 @@ class GroupsView(ModelView):
         """формируем список групп для выбора"""
         groups = db.groups.find()
         form.name.choices = [group['name'] for group in groups]
+        return form
 
     def create_form(self):
         form = super(GroupsView, self).create_form()
