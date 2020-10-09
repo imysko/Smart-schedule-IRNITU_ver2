@@ -1,27 +1,25 @@
 import os
-
-from vkbottle import Bot, Message
-from aiohttp import web
+from aiohttp.web import RouteTableDef, Application, Request, run_app
+from vkbottle import Bot
 
 token = os.environ.get('VK')
+app = Application()
+routes = RouteTableDef()
+bot = Bot(token, secret="asdqwemkhjjkl")
 
-bot = Bot(token=token)
-app = web.Application()
 
-
-async def executor(request: web.Request):
-    event = await request.json()
-    print(event)
-    print(bot)
-    emulation = await bot.emulate(event, confirmation_token="3a4d03fd")
-    print(emulation)
-    return web.Response(text=emulation)
+@routes.get("/vk-bot")
+async def executor(request: Request):
+    return await bot.emulate(
+        event=dict(request.query), confirmation_token="3a4d03fd"
+    )
 
 
 @bot.on.message(text="test", lower=True)
-async def wrapper(ans: Message):
-    return "Got it."
+async def wrapper():
+    return "test"
 
 
-app.router.add_route("POST", "/vk-bot", executor)
-web.run_app(app=app, port=8082)
+app.add_routes(routes)
+run_app(app, port=8082)
+
