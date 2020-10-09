@@ -5,11 +5,15 @@ from pprint import pprint
 import re
 import os
 from storage import MongodbService
+import pytz
+from datetime import datetime
 
 URL_INSTITUTES = os.getenv('URL_INSTITUTES',
                            default='https://www.istu.edu/schedule/')  # Ссылка на страницу с институтами
 
 PARSE_TIME_HOURS = int(os.getenv('PARSE_TIME_HOURS', default=1))  # время задержки парсинга (в часах)
+
+TZ_IRKUTSK = pytz.timezone('Asia/Irkutsk')
 
 storage = MongodbService().get_instance()
 
@@ -166,7 +170,6 @@ def parse():
                 print(e)
                 continue
 
-
             institute_name = institute['name']
             for name in courses:
                 all_courses.append({'name': name, 'institute': institute_name})
@@ -202,9 +205,16 @@ def parse():
             storage.save_schedule(group_schedule)  # сохраняем по одной группе
             pprint(group_schedule)
 
-        # засыпаем
+
         parse_time = time() - start_time
         print(f'--- Parse time {parse_time} seconds ({parse_time / 60} minutes)---')
+
+        # записываем статистку
+        date_now = datetime.now(TZ_IRKUTSK).strftime('%d.%m.%Y')
+        time_now = datetime.now(TZ_IRKUTSK).strftime('%H:%M')
+        storage.save_status(parse_time_hours=PARSE_TIME_HOURS, date=date_now, time=time_now)
+
+        # засыпаем
         print('Waiting...')
         sleep(PARSE_TIME_HOURS * 60 * 60)
 
