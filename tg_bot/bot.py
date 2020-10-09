@@ -1,5 +1,7 @@
 import telebot
 
+import pytz
+from datetime import datetime
 import os
 from time import sleep
 
@@ -15,6 +17,8 @@ from flask import Flask, request
 
 TOKEN = os.environ.get('TOKEN')
 HOST_URL = os.environ.get('HOST_URL')
+
+TZ_IRKUTSK = pytz.timezone('Asia/Irkutsk')
 
 bot = telebot.TeleBot(TOKEN, threaded=False)
 
@@ -52,6 +56,9 @@ def start_message(message):
                                            'Выберите институт',
                      reply_markup=make_inline_keyboard_choose_institute(storage.get_institutes()))
 
+    date_now = datetime.now(TZ_IRKUTSK).strftime('%d.%m.%Y')
+    time_now = datetime.now(TZ_IRKUTSK).strftime('%H:%M')
+    storage.save_statistics(action='start', date=date_now, time=time_now)
 
 # Команда /reg
 @bot.message_handler(commands=['reg'])

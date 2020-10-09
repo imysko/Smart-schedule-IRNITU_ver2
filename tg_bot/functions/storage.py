@@ -50,7 +50,7 @@ class MongodbService(object):
         """возвращает список курсов у определённого института"""
         return list(self._db.courses.find(filter={'institute': {'$regex': f'{institute}*'}}))
 
-    def get_groups(self, institute:str, course: str) -> list:
+    def get_groups(self, institute: str, course: str) -> list:
         """возвращает список групп на определённом курсе в определеннои институте"""
         return list(self._db.groups.find(filter={'institute': {'$regex': f'{institute}*'}, 'course': course}))
 
@@ -84,16 +84,10 @@ class MongodbService(object):
         """возвращает расписание группы"""
         return self._db.schedule.find_one(filter={'group': group})
 
-    # ======================================== VK ======================================== #
-
-    def save_id_vk(self, user_id: list):
-        """сохраняет список id в коллекцию user_id"""
-        return self._db.user_id.insert_many(user_id)
-
-    def get_user_vk(self, user_id: int):
-        """проверяет есть ли id пользователя в db"""
-        return self._db.user_id.find_one(filter={'user_id': user_id})
-
-    def delete_user_or_userdata_vk(self, user_id: int):
-        """удаление пользователя или курса пользователя из базы данных"""
-        return self._db.user_id.delete_one(filter={'user_id': user_id})
+    def save_statistics(self, action: str, date: str, time: str):
+        statistics = {
+            'action': action,
+            'date': date,
+            'time': time
+        }
+        return self._db.tg_statistics.insert_one(statistics)
