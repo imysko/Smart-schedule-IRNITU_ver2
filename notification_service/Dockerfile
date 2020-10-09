@@ -15,4 +15,4 @@ RUN apt update && \
 ENV LANG ru_RU.UTF-8
 ENV LC_ALL ru_RU.UTF-8
 
-CMD ["python3", "notification_service.py"]
+CMD ["python3", "start_reminders.py"]

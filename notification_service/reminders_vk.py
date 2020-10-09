@@ -6,16 +6,18 @@ from datetime import datetime, timedelta
 from storage import MongodbService
 from vkbottle.bot import Bot, Message
 
+import platform
+
 TOKEN = os.environ.get('VK')
 TZ_IRKUTSK = pytz.timezone('Asia/Irkutsk')
-locale.setlocale(locale.LC_TIME, 'ru_RU')
+locale_name = ('ru_RU.UTF-8' if platform.system() == 'Linux' else 'ru_RU')
+locale.setlocale(locale.LC_TIME, locale_name)
 
 bot = Bot(f"{os.environ.get('VK')}", debug="DEBUG")
 
-authorize  = vk_api.VkApi(token=TOKEN)
+authorize = vk_api.VkApi(token=TOKEN)
 
 storage = MongodbService().get_instance()
-
 
 
 def find_week():
@@ -30,58 +32,59 @@ def find_week():
 
 
 def sending_notifications(users: list):
-        for user in users:
-            chat_id = user['chat_id']
-            week = user['week']
-            day_now = user['day']
-            time = user['time']
-            group = user['group']
-            notifications = user['notifications']
+    for user in users:
+        chat_id = user['chat_id']
+        week = user['week']
+        day_now = user['day']
+        time = user['time']
+        group = user['group']
+        notifications = user['notifications']
 
-            schedule = storage.get_schedule(group=group)['schedule']
+        schedule = storage.get_schedule(group=group)['schedule']
 
-            lessons = None
-            for day in schedule:
-                # находим нужный день
-                if day['day'] == day_now:
-                    lessons = day['lessons']
-                    break
-            # если не нашлось переходем к след user
-            if not lessons:
-                continue
-            lessons_for_reminders = ''
+        lessons = None
+        for day in schedule:
+            # находим нужный день
+            if day['day'] == day_now:
+                lessons = day['lessons']
+                break
+        # если не нашлось переходем к след user
+        if not lessons:
+            continue
+        lessons_for_reminders = ''
 
-            for lesson in lessons:
-                lesson_time = lesson['time']
-                # находим нужные пары (в нужное время)
-                if lesson_time == time and (lesson['week'] == week or lesson['week'] == 'all'):
-                    name = lesson['name']
-                    # пропускаем свободные дни
-                    if name == 'свободно':
-                        continue
-                    # формируем сообщение
-                    lessons_for_reminders += '--------------------------------------\n'
-                    aud = lesson['aud']
-                    if aud:
-                        aud = f'Аудитория: {aud}\n'
-                    time = lesson['time']
-                    info = lesson['info']
-                    prep = lesson['prep']
+        for lesson in lessons:
+            lesson_time = lesson['time']
+            # находим нужные пары (в нужное время)
+            if lesson_time == time and (lesson['week'] == week or lesson['week'] == 'all'):
+                name = lesson['name']
+                # пропускаем свободные дни
+                if name == 'свободно':
+                    continue
+                # формируем сообщение
+                lessons_for_reminders += '--------------------------------------\n'
+                aud = lesson['aud']
+                if aud:
+                    aud = f'Аудитория: {aud}\n'
+                time = lesson['time']
+                info = lesson['info']
+                prep = lesson['prep']
 
-                    lessons_for_reminders += f'Начало в {time}\n' \
-                                             f'{aud}' \
-                                             f'{name}\n' \
-                                             f'{info} {prep}\n'
-                    lessons_for_reminders += '--------------------------------------\n'
-            # если пары не нашлись переходим к след user
-            if not lessons_for_reminders:
-                continue
-            # отправляем сообщение пользователю
-            text = f'Через {notifications} минут пара\n', f'{lessons_for_reminders}'
-            authorize.method('messages.send', {'user_id': chat_id, 'message': text, 'random_id': 0})
+                lessons_for_reminders += f'Начало в {time}\n' \
+                                         f'{aud}' \
+                                         f'{name}\n' \
+                                         f'{info} {prep}\n'
+                lessons_for_reminders += '--------------------------------------\n'
+        # если пары не нашлись переходим к след user
+        if not lessons_for_reminders:
+            continue
+        # отправляем сообщение пользователю
+        text = f'Через {notifications} минут пара\n', f'{lessons_for_reminders}'
+        authorize.method('messages.send', {'user_id': chat_id, 'message': text, 'random_id': 0})
 
 
 def search_for_reminders():
+    print('reminders_vk is started')
     minutes_old = None
     while True:
         # определяем время сейчас
@@ -97,7 +100,6 @@ def search_for_reminders():
 
             # получаем пользователей у которых включены напоминания
             reminders = storage.get_users_with_reminders_vk()
-            # print(reminders)
 
             for reminder in reminders:
                 week = find_week()
@@ -115,10 +117,8 @@ def search_for_reminders():
                     group = reminder['group']
                     notifications = reminder['notifications']
 
-
                     # определяем фактическое время пары (прибавляем к текущему времени время напоминания)
                     lesson_time = (time_now + timedelta(minutes=notifications)).strftime('%-H:%-M')
-
 
                     users.append(
                         {'chat_id': chat_id,
@@ -133,9 +133,6 @@ def search_for_reminders():
             # после того как список сформирован, нужно отправить его боту
             # print(users)
             sending_notifications(users)
-
-
-
 
 
 if __name__ == '__main__':

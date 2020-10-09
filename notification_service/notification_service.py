@@ -5,9 +5,12 @@ import telebot
 from datetime import datetime, timedelta
 from storage import MongodbService
 
+import platform
+
 TOKEN = os.environ.get('TOKEN')
 TZ_IRKUTSK = pytz.timezone('Asia/Irkutsk')
-locale.setlocale(locale.LC_TIME, 'ru_RU.UTF-8')
+locale_name = ('ru_RU.UTF-8' if platform.system() == 'Linux' else 'ru_RU')
+locale.setlocale(locale.LC_TIME, locale_name)
 
 bot = telebot.TeleBot(TOKEN, threaded=False)
 
@@ -78,6 +81,7 @@ def sending_notifications(users: list):
 
 
 def search_for_reminders():
+    print('reminders_tg is started')
     minutes_old = None
     while True:
         # определяем время сейчас

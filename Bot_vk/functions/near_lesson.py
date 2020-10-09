@@ -1,5 +1,4 @@
 from datetime import datetime
-import platform
 import locale
 import pytz
 

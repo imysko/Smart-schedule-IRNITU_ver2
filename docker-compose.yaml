@@ -44,6 +44,7 @@ services:
     restart: always
     environment:
       - TOKEN= # токен telegram бота
+      - VK= # токен VK бота
       - MONGO_DB_ADDR=mongodb # адрес mongoDB
       - MONGO_DB_PORT=27017 # порт mongoDB
       - MONGO_DB_DATABASE=Smart_schedule_IRNITU # название базы данных
