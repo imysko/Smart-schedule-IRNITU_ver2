@@ -4,10 +4,12 @@ import flask_admin as admin
 from flask_admin import BaseView, expose
 
 from app.storage import db
-from app.bots import tg_bot, vk_bot
+from app.bots import tg_bot  # , vk_bot
 
 from flask import redirect, url_for, request, flash
 from app.forms import UserForm, InstitutesForm, CoursesForm, ScheduleForm, GroupsForm, BotSendMessageForm, StatisticForm
+
+from datetime import datetime, timedelta
 
 
 # Flask views
@@ -18,19 +20,41 @@ class IndexView(View):
         return '<a href="/admin/">Click me to get to Admin!</a>'
 
 
+class ParserStatusView(View):
+    """Возвращает статус парсера"""
+
+    def dispatch_request(self):
+        parser_status_data = db.status.find_one(filter={'name': 'parser'})
+        last_parse_date = parser_status_data['date'].split('.')
+        last_parse_time = parser_status_data['time'].split(':')
+        parse_time_hours = parser_status_data['parse_time_hours']
+
+        # создаём объект времени последнего парса
+        last_parse = datetime(day=int(last_parse_date[0]), month=int(last_parse_date[1]),
+                              year=int(last_parse_date[2]), hour=int(last_parse_time[0]),
+                              minute=int(last_parse_time[1]))
+
+        # вычитаем из текущего времени, время последнего парса
+        # и смотрим меньше ли прошло времени чем время перерывов парсинга
+        if (datetime.now() - last_parse) <= timedelta(hours=parse_time_hours):
+            return 'Парсер активен', 200
+        else:
+            return 'Парсер не активен', 503
+
+
 # Create custom admin views
 class AnalyticsView(BaseView):
     @expose('/', methods=['get'])
     def index(self):
         counts = {}
-        cur=db.tg_statistics.find()
+        cur = db.tg_statistics.find()
         actions = sorted(set([action['action'] for action in cur]))
         for _ in actions:
-            name = db.tg_statistics.find({'action':_})
+            name = db.tg_statistics.find({'action': _})
             count = name.count()
-            counts[_]=count
+            counts[_] = count
 
-        return self.render('admin/analytics_index.html', actions=actions,counts=counts)
+        return self.render('admin/analytics_index.html', actions=actions, counts=counts)
 
 
 class BotSendMessageView(BaseView):
@@ -57,11 +81,9 @@ class BotSendMessageView(BaseView):
             else:
                 keyboard = None
 
-
             # отправляем сообщения
             status, message, exceptions = tg_bot.send_message_to_all_users(text=text, keyboard=keyboard)
             # status, message, exceptions = vk_bot.send_message_to_all_users(text=text, keyboard=keyboard)
-
 
             if status and not exceptions:
                 # Выводим сообщение об успехе
@@ -196,6 +218,7 @@ class GroupsView(ModelView):
         """выводим группы когда редактируем"""
         form = super(GroupsView, self).edit_form(obj)
         return self._feed_group_choices(form)
+
 
 class StatisticView(ModelView):
     column_list = ('action', 'date', 'time')  # что будет показываться на странице из формы (какие поля)

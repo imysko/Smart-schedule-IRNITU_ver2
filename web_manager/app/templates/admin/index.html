@@ -6,7 +6,7 @@
 
 <h3>Статус сервисов</h3>
 <div class="row">
-
+<!--Телеграм бот-->
     <div class="col-md-2">
         <div class="service-status">
             <h4 class="service-status-name">Telegram bot</h4>
@@ -23,6 +23,28 @@
                     class='glyphicon glyphicon-repeat'></i></span></a>
         </div>
     </div>
+    <!--Телеграм бот end-->
+
+    <!--Парсер-->
+        <div class="col-md-2">
+        <div class="service-status">
+            <h4 class="service-status-name">Парсер</h4>
+            <p class="status-loading" id="parser-status-loading">
+                <img class="status-loading-img" id="parser-status-loading-img" src="/static/img/av.gif" alt="">
+                Загружаем...
+            </p>
+            <div class="status-info" id="parser-status-info" style="display:none;">
+                <img class="status-img" id="parser-status-img" src="" alt="">
+                <div class="status-text" id="parser-status-text"></div>
+
+            </div>
+            <a class="status-btn" title="Обновить"><span id="parser-status-btn"><i
+                    class='glyphicon glyphicon-repeat'></i></span></a>
+        </div>
+    </div>
+
+
+    <!--Парсер end-->
 
 
 </div>
