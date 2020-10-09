@@ -32,15 +32,15 @@ class UserForm(form.Form):
 
 class InstitutesForm(form.Form):
     """создаём форму"""
-    name = fields.SelectField('name', widget=Select2Widget())
-    link = fields.StringField('link')
+    name = fields.SelectField('Название', widget=Select2Widget())
+    link = fields.StringField('Ссылка')
 
 
 class CoursesForm(form.Form):
 
-    institute = fields.StringField('Institute')
+    institute = fields.StringField('Институт')
     choices = ['1 курс', '2 курс', '3 курс', '4 курс', '5 курс', '6 курс']
-    name = fields.SelectField('Курсы', choices=choices)
+    name = fields.SelectField('Курс', choices=choices)
 
 class InnerFormLessons(form.Form):
     name = fields.StringField()
@@ -57,16 +57,16 @@ class InnerFormDays(form.Form):
     lessons = InlineFieldList(InlineFormField(InnerFormLessons))#InlineFormField(InnerFormLessons)
 
 class ScheduleForm(form.Form):
-    group = fields.StringField('Group')
-    schedule = InlineFieldList(InlineFormField(InnerFormDays))
+    group = fields.StringField('Группа')
+    schedule = InlineFieldList(InlineFormField(InnerFormDays),'Расписание')
 
 
 class GroupsForm(form.Form):
 
-    name = fields.StringField('name')
-    institute = fields.StringField('Institute')
-    link = fields.StringField('link')
-    course = fields.StringField('course')
+    name = fields.StringField('Название')
+    institute = fields.StringField('Институт')
+    link = fields.StringField('Ссылка')
+    course = fields.StringField('Курс')
 #
 # TG bot admin
 class BotSendMessageForm(form.Form):

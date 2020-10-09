@@ -151,12 +151,11 @@ class CoursesView(ModelView):
 
 class GroupsView(ModelView):
     column_list = ('name', 'course', 'link', 'institute')  # что будет показываться на странице из формы (какие поля)
-    column_sortable_list = ('institute')  # что сортируется
+    column_sortable_list = ('name')  # что сортируется
     form_excluded_columns = ('name')
     form = GroupsForm
 
     def _feed_groups_choices(self, form):
-        # form.name.choices = ['1 курс','2 курс', '3 курс']
         return form
 
     def create_form(self):
