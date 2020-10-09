@@ -2,7 +2,7 @@ from flask import Flask
 import flask_admin as admin
 
 from app.views import UserView, InstitutesView, AnalyticsView, StatisticView, IndexView, CoursesView, GroupsView, BotSendMessageView, \
-    ScheduleView, ParserStatusView
+    ScheduleView, ParserStatusView, VkUserView
 from app.storage import db
 
 # Создаём приложение
@@ -22,6 +22,9 @@ admin = admin.Admin(app, name='Умное расписание ИРНИТУ ', t
 
 # Добавляем views
 admin.add_view(UserView(db.users, 'Пользователи Telegram', category='База данных'))
+admin.add_view(VkUserView(db.VK_users, 'Пользователи Vk', category='База данных'))
+
+
 admin.add_view(InstitutesView(db.institutes, 'Институты', category='База данных'))
 
 admin.add_view(AnalyticsView(name='Аналитика', endpoint='analytics'))
