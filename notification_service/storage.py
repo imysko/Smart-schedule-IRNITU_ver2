@@ -33,6 +33,10 @@ class MongodbService(object):
     def get_users_with_reminders(self):
         return list(self._db.users.find(filter={'reminders': {'$ne': []}}))
 
+    def get_users_with_reminders_vk(self):
+        return list(self._db.VK_users.find(filter={'reminders': {'$ne': []}}))
+
+
     def get_schedule(self, group):
         """возвращает расписание группы"""
         return self._db.schedule.find_one(filter={'group': group})

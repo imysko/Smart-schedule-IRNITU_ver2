@@ -20,6 +20,9 @@ import json
 import vk
 import os
 
+import pytz
+from datetime import datetime
+
 
 token = os.environ.get('VK')
 
@@ -29,7 +32,13 @@ bot = Bot(f"{os.environ.get('VK')}", debug="DEBUG")  # TOKEN
 
 content_types = {'text': ['Расписание', 'Ближайшая пара', 'Расписание на сегодня','На текущую неделю','На следующую неделю']}
 
+content_commands = {'text': ['/start', '/reg','/about','/authors']}
+
 app = Flask(__name__)
+
+TZ_IRKUTSK = pytz.timezone('Asia/Irkutsk')
+
+authorize = vk_api.VkApi(token=token)
 
 
 # Проверка работы сервера бота
@@ -237,6 +246,10 @@ def name_courses(courses=[]):
         list_courses.append(name)
     return list_courses
 
+def add_statistics(action: str):
+    date_now = datetime.now(TZ_IRKUTSK).strftime('%d.%m.%Y')
+    time_now = datetime.now(TZ_IRKUTSK).strftime('%H:%M')
+    storage.save_statistics(action=action, date=date_now, time=time_now)
 
 def name_groups(groups=[]):
     '''Храним список всех групп'''
@@ -246,17 +259,81 @@ def name_groups(groups=[]):
         list_groups.append(name)
     return list_groups
 
+# ==================== Обработка команд ==================== #
 
+# Команда /start
 @bot.on.message(text='/start')
-async def start(ans: Message):
-    '''Начало регистрации'''
+async def start_message(ans: Message):
+
     chat_id = ans.from_id
+
     # Проверяем есть пользователь в базе данных
     if storage.get_user(chat_id):
         storage.delete_user_or_userdata(chat_id)  # Удаляем пользвателя из базы данных
     await ans('Привет\n')
+    print(11)
     await ans('Для начала пройдите небольшую регистрацию😉\n')
     await ans('Выберите институт.', keyboard=make_keyboard_institutes(storage.get_institutes()))
+
+    add_statistics(action='start')
+
+# Команда /reg
+@bot.on.message(text='/reg')
+async def registration(ans: Message):
+    chat_id = ans.from_id
+    # Проверяем есть пользователь в базе данных
+    if storage.get_user(chat_id):
+        storage.delete_user_or_userdata(chat_id)  # Удаляем пользвателя из базы данных
+    await ans('Пройдите повторную регистрацию😉\n')
+    await ans('Выберите институт.', keyboard=make_keyboard_institutes(storage.get_institutes()))
+
+    add_statistics(action='reg')
+
+
+# Команда /help
+@bot.on.message(text='/help')
+async def help(ans: Message):
+    chat_id = ans.from_id
+    await ans('Список команд:\n'
+            '/about - описание чат бота\n'
+            '/authors - Список авторов \n'
+            '/reg - повторная регистрация')
+
+    add_statistics(action='help')
+
+
+# Команда /about
+@bot.on.message(text='/about')
+async def about(ans: Message):
+    chat_id = ans.from_id
+    await ans('О боте:\n'
+                          'Smart schedule IRNITU bot - это чат бот для просмотра расписания занятий в '
+                          'Иркутском национальном исследовательском техническом университете\n\n'
+                          'Благодаря боту можно:\n'
+                          '- Узнать актуальное расписание\n'
+                          '- Нажатием одной кнопки увидеть информацию о ближайшей паре\n'
+                          '- Настроить гибкие уведомления с информацией из расписания, '
+                          'которые будут приходить за определённое время до начала занятия')
+
+    add_statistics(action='about')
+
+
+# Команда /authors
+@bot.on.message(text='/authors')
+async def authors(ans: Message):
+    chat_id = ans.from_id
+    await ans('Авторы проекта:\n'
+                          '- Алексей @bolanebyla\n'
+                          '- Султан @ace_sultan\n'
+                          '- Александр @alexandrshen\n'
+                          '- Владислав @TixoNNNAN\n'
+                          '- Кирилл @ADAMYORT\n\n'
+                          'По всем вопросом и предложениям пишите нам в личные сообщения. '
+                          'Будем рады 😉\n'
+                     )
+
+    add_statistics(action='authors')
+
 
 
 @bot.on.message(text=content_types['text'])
@@ -267,12 +344,15 @@ async def scheduler(ans: Message):
 
     if 'Расписание' == data and user:
         await ans('Выберите период\n', keyboard=make_keyboard_choose_schedule())
+        add_statistics(action='Расписание')
+
 
     if ('На текущую неделю' == data or 'На следующую неделю' == data) and user:
         group = storage.get_user(chat_id=chat_id)['group']
         schedule = storage.get_schedule(group=group)
         if not schedule:
             await ans('Расписание временно недоступно\nПопробуйте позже⏱')
+            add_statistics(action=data)
             return
 
         schedule = schedule['schedule']
@@ -291,17 +371,23 @@ async def scheduler(ans: Message):
         for schedule in schedule_str:
             await ans(f'{schedule}')
 
+        add_statistics(action=data)
+
+
+
     elif 'Расписание на сегодня' == data and user:
         group = storage.get_user(chat_id=chat_id)['group']
         schedule = storage.get_schedule(group=group)
         if not schedule:
             await ans('Расписание временно недоступно🚫😣\n'
                       'Попробуйте позже⏱', keyboard=make_keyboard_start_menu())
+            add_statistics(action='Расписание на сегодня')
             return
         schedule = schedule['schedule']
         week = find_week()
         schedule_one_day = get_one_day_schedule_in_str(schedule=schedule, week=week)
         await ans(f'{schedule_one_day}')
+        add_statistics(action='Расписание на сегодня')
 
     elif 'Ближайшая пара' in data and user:
         group = storage.get_user(chat_id=chat_id)['group']
@@ -309,6 +395,7 @@ async def scheduler(ans: Message):
         if not schedule:
             await ans('Расписание временно недоступно🚫😣\n'
                       'Попробуйте позже⏱')
+            add_statistics(action='Ближайшая пара')
             return
         schedule = schedule['schedule']
         week = find_week()
@@ -319,6 +406,7 @@ async def scheduler(ans: Message):
         # если пар нет
         if not near_lessons:
             await ans('Сегодня больше пар нет 😎')
+            add_statistics(action='Ближайшая пара')
             return
 
         near_lessons_str = ''
@@ -341,6 +429,8 @@ async def scheduler(ans: Message):
                                 f'{info} {prep}\n'
         near_lessons_str += '-------------------------------------------\n'
         await ans(f'Ближайшая пара\n'f'{near_lessons_str}')
+
+        add_statistics(action='Ближайшая пара')
 
 
 
@@ -395,7 +485,9 @@ async def wrapper(ans: Message):
         if message in groups:
             # Записываем в базу данных выбранную группу
             storage.save_or_update_user(chat_id=chat_id, group=message)
-            await ans('Поздравляем вы зарегистрировались!', keyboard=make_keyboard_start_menu())
+            await ans('Вы успешно зарегистрировались!😊\n\n'
+                              'Для того чтобы пройти регистрацию повторно, воспользуйтесь командой /reg\n'
+                              'Основные команды - /help', keyboard=make_keyboard_start_menu())
         else:
             if message == "Далее":
                 await ans('Выберите группу.', keyboard=make_keyboard_choose_group_vk_page_2(groups))
@@ -412,10 +504,13 @@ async def wrapper(ans: Message):
             time = 0
         await ans(f'{get_notifications_status(time)}', keyboard=make_inline_keyboard_notifications())
 
+        add_statistics(action='Напоминание')
+
     elif 'Настройки' in message and user:
         time = user['notifications']
         await ans('Настройка напоминаний ⚙\n\n'
                                    'Укажите за сколько минут до начала пары должно приходить сообщение', keyboard=make_inline_keyboard_set_notifications(time))
+        add_statistics(action='Настройки')
 
     elif '-' in message:
         time = user['notifications']
@@ -455,6 +550,8 @@ async def wrapper(ans: Message):
 
     elif 'Основное меню' in message and user:
         await ans('Основное меню', keyboard=make_keyboard_start_menu())
+        add_statistics(action='Основное меню')
+
 
     elif 'Назад' in message and user:
         await ans('Основное меню', keyboard=make_keyboard_start_menu())
@@ -462,8 +559,8 @@ async def wrapper(ans: Message):
         await ans('Далее', keyboard=make_keyboard_choose_group_vk_page_2())
 
     else:
-        print(message)
         await ans('Я вас не понимаю 😞')
+        add_statistics(action='bullshit')
 
 
 def main():
