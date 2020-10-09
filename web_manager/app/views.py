@@ -7,7 +7,7 @@ from app.storage import db
 from app.bots import tg_bot
 
 from flask import redirect, url_for, request, flash
-from app.forms import UserForm, InstitutesForm, CoursesForm, ScheduleForm, GroupsForm, BotSendMessageForm
+from app.forms import UserForm, InstitutesForm, CoursesForm, ScheduleForm, GroupsForm, BotSendMessageForm, StatisticForm
 
 
 # Flask views
@@ -184,3 +184,15 @@ class GroupsView(ModelView):
         """выводим группы когда редактируем"""
         form = super(GroupsView, self).edit_form(obj)
         return self._feed_group_choices(form)
+
+class StatisticView(ModelView):
+    column_list = ('action', 'date', 'time')  # что будет показываться на странице из формы (какие поля)
+    column_sortable_list = ('action')  # что сортируется
+    form_excluded_columns = ('date')
+    form = StatisticForm
+
+    def on_form_prefill(self, form, id):
+        """делает поле chat_id неизменяемым"""
+        form.action.render_kw = {'readonly': True}
+        form.date.render_kw = {'readonly': True}
+        form.time.render_kw = {'readonly': True}

@@ -85,4 +85,9 @@ class BotSendMessageForm(form.Form):
     choices = ['Без клавиатуры', 'Основное меню']
     keyboard = fields.SelectField('Клавиатура', choices=choices)
 
+class StatisticForm(form.Form):
+    action = fields.StringField()
+    date = fields.StringField()
+    time = fields.StringField()
+
 
