@@ -4,7 +4,7 @@ import flask_admin as admin
 from flask_admin import BaseView, expose
 
 from app.storage import db
-from app.bots import tg_bot
+from app.bots import tg_bot, vk_bot
 
 from flask import redirect, url_for, request, flash
 from app.forms import UserForm, InstitutesForm, CoursesForm, ScheduleForm, GroupsForm, BotSendMessageForm, StatisticForm
@@ -20,9 +20,17 @@ class IndexView(View):
 
 # Create custom admin views
 class AnalyticsView(BaseView):
-    @expose('/')
+    @expose('/', methods=['get'])
     def index(self):
-        return self.render('admin/analytics_index.html')
+        counts = {}
+        cur=db.tg_statistics.find()
+        actions = sorted(set([action['action'] for action in cur]))
+        for _ in actions:
+            name = db.tg_statistics.find({'action':_})
+            count = name.count()
+            counts[_]=count
+
+        return self.render('admin/analytics_index.html', actions=actions,counts=counts)
 
 
 class BotSendMessageView(BaseView):
@@ -45,11 +53,15 @@ class BotSendMessageView(BaseView):
 
             if keyboard == 'Основное меню':
                 keyboard = tg_bot.make_keyboard_start_menu()
+
             else:
                 keyboard = None
 
+
             # отправляем сообщения
             status, message, exceptions = tg_bot.send_message_to_all_users(text=text, keyboard=keyboard)
+            # status, message, exceptions = vk_bot.send_message_to_all_users(text=text, keyboard=keyboard)
+
 
             if status and not exceptions:
                 # Выводим сообщение об успехе

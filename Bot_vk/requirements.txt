@@ -16,3 +16,5 @@ urllib3==1.25.8
 Werkzeug==1.0.0
 vk_api==11.9.0
 vk==2.0.2
+gunicorn == 20.0.4
+flask==1.1.2

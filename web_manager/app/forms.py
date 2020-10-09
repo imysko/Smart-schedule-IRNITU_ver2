@@ -90,4 +90,9 @@ class StatisticForm(form.Form):
     date = fields.StringField()
     time = fields.StringField()
 
+class AnalycsForm(form.Form):
+    action = fields.StringField()
+    date = fields.StringField()
+    time = fields.StringField()
+
 

@@ -1,4 +1,9 @@
 {% extends 'admin/master.html' %}
 {% block body %}
-<p>Here I'm going to display some data.</p>
+
+<p>Некая аналитика <br><br></p>
+{% for action in actions%}
+<p>{{action}} -- {{counts[action]}}</p>
+{% endfor %}
+
 {% endblock %}

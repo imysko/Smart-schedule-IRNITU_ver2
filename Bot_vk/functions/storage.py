@@ -90,3 +90,10 @@ class MongodbService(object):
         """возвращает расписание группы"""
         return self._db.schedule.find_one(filter={'group': group})
 
+    def save_statistics(self, action: str, date: str, time: str):
+        statistics = {
+            'action': action,
+            'date': date,
+            'time': time
+        }
+        return self._db.vk_statistics.insert_one(statistics)
