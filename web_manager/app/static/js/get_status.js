@@ -2,10 +2,12 @@
 $(document).ready(function () {
     check_tg_bot_status();
     check_parser_status();
+    check_notifications_tg_status();
+    check_notifications_vk_status();
 });
 
 /* telegram бот */
-// если кликнут по кнопке, то узнаем сатус
+// если кликнут по кнопке, то узнаем статус
 $('#tg-bot-status-btn').click(function () {
     check_tg_bot_status()
 });
@@ -49,7 +51,7 @@ function check_tg_bot_status() {
 
 
 /* Парсер бот */
-// если кликнут по кнопке, то узнаем сатус
+// если кликнут по кнопке, то узнаем статус
 $('#parser-status-btn').click(function () {
     check_parser_status()
 });
@@ -90,3 +92,88 @@ function check_parser_status() {
     });
 }
 /* Парсер end*/
+
+/* Уведомления TG бот */
+// если кликнут по кнопке, то узнаем статус
+$('#notification_tg-status-btn').click(function () {
+    check_notifications_status()
+});
+
+
+function check_notifications_tg_status() {
+    // скрываем информацию о статусе
+    $('#notification_tg-status-info').hide();
+    // показываем анимацию загрузки
+    $('#notification_tg-status-loading').show();
+
+    $.ajax({
+        url: '/status/tg_reminders',
+        success: function (data, textStatus) {
+            console.log(data);
+            console.log(textStatus)
+
+            // скрываем загрузку
+            $('#notification_tg-status-loading').hide();
+            // устанавливаем картинку Включено
+            $("#notification_tg-status-img").attr("src", "/static/img/on.jpg");
+            //пишем текст Активен
+            $("#notification_tg-status-text").text('Активен')
+            // Показываем статус
+            $('#notification_tg-status-info').show();
+
+        },
+        error: function (data, textStatus) {
+            // скрываем загрузку
+            $('#notification_tg-status-loading').hide();
+            // устанавливаем картинку Включено
+            $("#notification_tg-status-img").attr("src", "/static/img/off.jpg");
+            //пишем текст Не активен
+            $("#notification_tg-status-text").text('Не активен')
+            // Показываем статус
+            $('#notification_tg-status-info').show();
+        }
+    });
+}
+/* Уведомления end*/
+
+/* Уведомления VK бот */
+// если кликнут по кнопке, то узнаем статус
+$('#notification_vk-status-btn').click(function () {
+    check_notifications_status()
+});
+
+function check_notifications_vk_status() {
+    // скрываем информацию о статусе
+    $('#notification_vk-status-info').hide();
+    // показываем анимацию загрузки
+    $('#notification_vk-status-loading').show();
+
+    $.ajax({
+        url: '/status/vk_reminders',
+        success: function (data, textStatus) {
+            console.log(data);
+            console.log(textStatus)
+
+            // скрываем загрузку
+            $('#notification_vk-status-loading').hide();
+            // устанавливаем картинку Включено
+            $("#notification_vk-status-img").attr("src", "/static/img/on.jpg");
+            //пишем текст Активен
+            $("#notification_vk-status-text").text('Активен')
+            // Показываем статус
+            $('#notification_vk-status-info').show();
+
+        },
+        error: function (data, textStatus) {
+            // скрываем загрузку
+            $('#notification_vk-status-loading').hide();
+            // устанавливаем картинку Включено
+            $("#notification_vk-status-img").attr("src", "/static/img/off.jpg");
+            //пишем текст Не активен
+            $("#notification_vk-status-text").text('Не активен')
+            // Показываем статус
+            $('#notification_vk-status-info').show();
+        }
+    });
+}
+/* Уведомления end*/
