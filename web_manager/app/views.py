@@ -4,8 +4,7 @@ import flask_admin as admin
 from flask_admin import BaseView, expose
 
 from app.storage import db
-from app.bots import tg_bot, vk_bot
-
+from app.bots import tg_bot
 from flask import redirect, url_for, request, flash
 from app.forms import UserForm, VkUserForm, InstitutesForm, CoursesForm, ScheduleForm, GroupsForm, BotSendMessageForm, \
     StatisticForm
