@@ -22,16 +22,14 @@ import os
 import pytz
 from datetime import datetime
 
-from vkbottle.utils import logger
 
-from aiohttp import web
 from vkbottle import Bot, Message
 
-token = os.environ.get('VK')
+TOKEN = os.environ.get('VK')
 
 MAX_CALLBACK_RANGE = 41
 storage = MongodbService().get_instance()
-bot = Bot(os.environ.get('VK'))  # TOKEN
+bot = Bot(TOKEN)  # TOKEN
 
 
 content_types = {
@@ -41,7 +39,7 @@ content_commands = {'text': ['/start', '/reg', '/about', '/authors']}
 
 TZ_IRKUTSK = pytz.timezone('Asia/Irkutsk')
 
-authorize = vk_api.VkApi(token=token)
+authorize = vk_api.VkApi(token=TOKEN)
 
 
 
