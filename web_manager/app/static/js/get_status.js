@@ -48,6 +48,7 @@ function check_tg_bot_status() {
         }
     });
 }
+
 /* telegram бот end*/
 
 
@@ -92,12 +93,13 @@ function check_parser_status() {
         }
     });
 }
+
 /* Парсер end*/
 
 /* Уведомления notification_tg */
 // если кликнут по кнопке, то узнаем статус
 $('#notification_tg-status-btn').click(function () {
-    check_notifications_status()
+    check_notifications_tg_status()
 });
 
 
@@ -135,12 +137,13 @@ function check_notifications_tg_status() {
         }
     });
 }
-/* Уведомления end*/
+
+/* Уведомления notification_tg end*/
 
 /* Уведомления notification_vk */
 // если кликнут по кнопке, то узнаем статус
 $('#notification_vk-status-btn').click(function () {
-    check_notifications_status()
+    check_notifications_vk_status()
 });
 
 function check_notifications_vk_status() {
@@ -177,11 +180,11 @@ function check_notifications_vk_status() {
         }
     });
 }
-/* Уведомления end*/
+
+/* Уведомления notification_vk end*/
 
 
-
-/* Сатус vk_bot */
+/* Статус vk_bot */
 // если кликнут по кнопке, то узнаем статус
 $('#vk-status-btn').click(function () {
     check_vk_status()
@@ -221,4 +224,5 @@ function check_vk_status() {
         }
     });
 }
+
 /* vk_bot end*/
