@@ -4,7 +4,7 @@ import flask_admin as admin
 from flask_admin import BaseView, expose
 
 from app.storage import db
-from app.bots import tg_bot  # , vk_bot
+from app.bots import tg_bot, vk_bot
 
 from flask import redirect, url_for, request, flash
 from app.forms import UserForm, VkUserForm, InstitutesForm, CoursesForm, ScheduleForm, GroupsForm, BotSendMessageForm, \
@@ -43,6 +43,53 @@ class ParserStatusView(View):
             return 'Парсер активен', 200
         else:
             return 'Парсер не активен', 503
+
+
+class TG_check_status(View):
+    """Возвращает статус нотификатора телеграмм"""
+
+    def dispatch_request(self):
+        tg_status_data = db.status.find_one(filter={'name': 'tg_reminders'})
+        if not tg_status_data:
+            return 'Парсер не активен', 503
+        last_check_reminders_date = tg_status_data['date'].split('.')
+        last_check_reminders_time = tg_status_data['time'].split(':')
+
+        # создаём объект времени последнего парса
+        last_check = datetime(day=int(last_check_reminders_date[0]), month=int(last_check_reminders_date[1]),
+                              year=int(last_check_reminders_date[2]), hour=int(last_check_reminders_time[0]),
+                              minute=int(last_check_reminders_time[1]))
+
+        # вычитаем из текущего времени, время последнего парса
+        # и смотрим меньше ли прошло времени чем время перерывов парсинга
+        if (datetime.now() - last_check) <= timedelta(minute=1):
+            return 'TG_reminders активен', 200
+        else:
+            return 'TG_reminders активен', 503
+
+
+class VK_check_status(View):
+    """Возвращает статус нотификатора телеграмм"""
+
+    def dispatch_request(self):
+        vk_status_data = db.status.find_one(filter={'name': 'vk_reminders'})
+        if not vk_status_data:
+            return 'Парсер не активен', 503
+        last_check_reminders_date = vk_status_data['date'].split('.')
+        last_check_reminders_time = vk_status_data['time'].split(':')
+
+        # создаём объект времени последнего парса
+        last_check = datetime(day=int(last_check_reminders_date[0]), month=int(last_check_reminders_date[1]),
+                              year=int(last_check_reminders_date[2]), hour=int(last_check_reminders_time[0]),
+                              minute=int(last_check_reminders_time[1]))
+
+        # вычитаем из текущего времени, время последнего парса
+        # и смотрим меньше ли прошло времени чем время перерывов парсинга
+        if (datetime.now() - last_check) <= timedelta(minute=1):
+            return 'VK_reminders активен', 200
+        else:
+            return 'VK_reminders активен', 503
+
 
 
 # Create custom admin views

@@ -82,6 +82,11 @@ def sending_notifications(users: list):
         text = f'Через {notifications} минут пара\n', f'{lessons_for_reminders}'
         authorize.method('messages.send', {'user_id': chat_id, 'message': text, 'random_id': 0})
 
+        # записываем статистку
+        date_now = datetime.now(TZ_IRKUTSK).strftime('%d.%m.%Y')
+        time_now = datetime.now(TZ_IRKUTSK).strftime('%H:%M')
+        storage.save_status_reminders_vk(date=date_now, time=time_now)
+
 
 def search_for_reminders():
     print('reminders_vk is started')
@@ -100,6 +105,7 @@ def search_for_reminders():
 
             # получаем пользователей у которых включены напоминания
             reminders = storage.get_users_with_reminders_vk()
+
 
             for reminder in reminders:
                 week = find_week()
@@ -131,7 +137,7 @@ def search_for_reminders():
                     )
 
             # после того как список сформирован, нужно отправить его боту
-            # print(users)
+            print(users)
             sending_notifications(users)
 
 

@@ -78,6 +78,10 @@ def sending_notifications(users: list):
         # отправляем сообщение пользователю
         bot.send_message(chat_id=chat_id, text=f'<b>Через {notifications} минут пара</b>\n'
                                                f'{lessons_for_reminders}', parse_mode='HTML')
+        # записываем статистку
+        date_now = datetime.now(TZ_IRKUTSK).strftime('%d.%m.%Y')
+        time_now = datetime.now(TZ_IRKUTSK).strftime('%H:%M')
+        storage.save_status_tg(date=date_now, time=time_now)
 
 
 def search_for_reminders():

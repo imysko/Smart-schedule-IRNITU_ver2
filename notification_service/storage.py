@@ -40,3 +40,23 @@ class MongodbService(object):
     def get_schedule(self, group):
         """возвращает расписание группы"""
         return self._db.schedule.find_one(filter={'group': group})
+
+    def save_status_tg(self, date, time):
+        """сохраняем время последнего парса"""
+        status = {
+            'name': 'tg_reminders',
+            'date': date,
+            'time': time,
+        }
+
+        return self._db.status.update_one(filter={'name': 'tg_reminders'}, update={'$set': status}, upsert=True)
+
+    def save_status_reminders_vk(self, date, time):
+        """сохраняем время последнего парса"""
+        status = {
+            'name': 'vk_reminders',
+            'date': date,
+            'time': time,
+        }
+
+        return self._db.status.update_one(filter={'name': 'vk_reminders'}, update={'$set': status}, upsert=True)
