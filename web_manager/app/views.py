@@ -50,7 +50,7 @@ class TG_check_status(View):
     def dispatch_request(self):
         tg_status_data = db.status.find_one(filter={'name': 'tg_reminders'})
         if not tg_status_data:
-            return 'Парсер не активен', 503
+            return 'TG_reminders не активен', 503
         last_check_reminders_date = tg_status_data['date'].split('.')
         last_check_reminders_time = tg_status_data['time'].split(':')
 
@@ -61,7 +61,7 @@ class TG_check_status(View):
 
         # вычитаем из текущего времени, время последнего парса
         # и смотрим меньше ли прошло времени чем время перерывов парсинга
-        if (datetime.now() - last_check) <= timedelta(minute=1):
+        if (datetime.now() - last_check) <= timedelta(minutes=1):
             return 'TG_reminders активен', 200
         else:
             return 'TG_reminders активен', 503
@@ -73,7 +73,7 @@ class VK_check_status(View):
     def dispatch_request(self):
         vk_status_data = db.status.find_one(filter={'name': 'vk_reminders'})
         if not vk_status_data:
-            return 'Парсер не активен', 503
+            return 'VK_reminders не активен', 503
         last_check_reminders_date = vk_status_data['date'].split('.')
         last_check_reminders_time = vk_status_data['time'].split(':')
 
@@ -84,7 +84,7 @@ class VK_check_status(View):
 
         # вычитаем из текущего времени, время последнего парса
         # и смотрим меньше ли прошло времени чем время перерывов парсинга
-        if (datetime.now() - last_check) <= timedelta(minute=1):
+        if (datetime.now() - last_check) <= timedelta(minutes=1):
             return 'VK_reminders активен', 200
         else:
             return 'VK_reminders активен', 503
