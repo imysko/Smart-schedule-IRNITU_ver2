@@ -1,9 +1,18 @@
 {% extends 'admin/master.html' %}
 {% block body %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 
-<p>Некая аналитика <br><br></p>
-{% for action in actions%}
-<p>{{action}} -- {{counts[action]}}</p>
-{% endfor %}
+
+<h3>Аналитика</h3>
+<div class="row">
+    <div class="col-md-6">
+        <div class="statistics">
+            {% for action in actions%}
+            <h4>Действие: <b><i>"{{action}}"</i></b> <pre> <b>{{counts[action]}}</b> раз(а)</pre></h4>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
 
 {% endblock %}
