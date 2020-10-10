@@ -34,7 +34,8 @@ bot = Bot(TOKEN)  # TOKEN
 content_types = {
     'text': ['Расписание', 'Ближайшая пара', 'Расписание на сегодня', 'На текущую неделю', 'На следующую неделю']}
 
-content_commands = {'text': ['/start', '/reg', '/about', '/authors']}
+сontent_commands = {'text': ['Начать', '/start']}
+
 
 TZ_IRKUTSK = pytz.timezone('Asia/Irkutsk')
 
@@ -262,7 +263,7 @@ def name_groups(groups=[]):
 # ==================== Обработка команд ==================== #
 
 # Команда /start
-@bot.on.message(text='/start')
+@bot.on.message(text=сontent_commands['text'])
 async def start_message(ans: Message):
     chat_id = ans.from_id
 
@@ -270,7 +271,6 @@ async def start_message(ans: Message):
     if storage.get_user(chat_id):
         storage.delete_user_or_userdata(chat_id)  # Удаляем пользвателя из базы данных
     await ans('Привет\n')
-    print(11)
     await ans('Для начала пройдите небольшую регистрацию😉\n')
     await ans('Выберите институт.', keyboard=make_keyboard_institutes(storage.get_institutes()))
 
