@@ -59,14 +59,6 @@ services:
       - MONGO_DB_PORT=27017 # порт mongoDB
       - MONGO_DB_DATABASE=Smart_schedule_IRNITU # название базы данных
 
-#  reminders_vk:
-#    build: reminders_vk/
-#    restart: always
-#    environment:
-#      - VK= # токен vk бота
-#      - MONGO_DB_ADDR=mongodb # адрес mongoDB
-#      - MONGO_DB_PORT=27017 # порт mongoDB
-#      - MONGO_DB_DATABASE=Smart_schedule_IRNITU # название базы данных
 
   mongodb:
     image: mongo:latest

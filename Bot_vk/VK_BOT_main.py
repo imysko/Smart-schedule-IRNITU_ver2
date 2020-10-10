@@ -22,16 +22,14 @@ import os
 import pytz
 from datetime import datetime
 
-from vkbottle.utils import logger
 
-from aiohttp import web
 from vkbottle import Bot, Message
 
-token = os.environ.get('VK')
+TOKEN = os.environ.get('VK')
 
 MAX_CALLBACK_RANGE = 41
 storage = MongodbService().get_instance()
-bot = Bot(os.environ.get('VK'))  # TOKEN
+bot = Bot(TOKEN)  # TOKEN
 
 
 content_types = {
@@ -41,7 +39,7 @@ content_commands = {'text': ['/start', '/reg', '/about', '/authors']}
 
 TZ_IRKUTSK = pytz.timezone('Asia/Irkutsk')
 
-authorize = vk_api.VkApi(token=token)
+authorize = vk_api.VkApi(token=TOKEN)
 
 
 
@@ -387,6 +385,9 @@ async def scheduler(ans: Message):
         schedule = schedule['schedule']
         week = find_week()
         schedule_one_day = get_one_day_schedule_in_str(schedule=schedule, week=week)
+        if not schedule_one_day:
+            await ans('Сегодня пар нет 😎')
+            return
         await ans(f'{schedule_one_day}')
         add_statistics(action='Расписание на сегодня')
 
@@ -455,7 +456,7 @@ async def wrapper(ans: Message):
             # Если да, то записываем в бд
             storage.save_or_update_user(chat_id=chat_id, institute=message)
             await ans(f'Вы выбрали: {message_inst}\n')
-            await ans('Выберите курс.', keyboard=make_keyboard_choose_course_vk(storage.get_courses(message)))
+            await ans('Выберите курс.', keyboard=make_keyboard_choose_course_vk(storage.get_courses(message_inst)))
         else:
             await ans('Я вас не понимаю\n')
         return

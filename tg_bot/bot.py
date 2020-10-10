@@ -402,6 +402,11 @@ def text(message):
 
         week = find_week()
         schedule_one_day = get_one_day_schedule_in_str(schedule=schedule, week=week)
+
+        if not schedule_one_day:
+            bot.send_message(chat_id=chat_id, text='Сегодня пар нет 😎')
+            return
+
         bot.send_message(chat_id=chat_id,
                          text=f'{schedule_one_day}', parse_mode='HTML')
 
