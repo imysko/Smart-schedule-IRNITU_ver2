@@ -101,9 +101,11 @@ def search_for_reminders():
             # получаем пользователей у которых включены напоминания
             reminders = storage.get_users_with_reminders_vk()
 
-
             for reminder in reminders:
                 week = find_week()
+
+                if not 'reminders' in reminder.keys():
+                    continue
 
                 # если у пользователя пустой reminders то None
                 user_days = reminder['reminders'].get(week)
@@ -139,8 +141,6 @@ def search_for_reminders():
             date_now = datetime.now(TZ_IRKUTSK).strftime('%d.%m.%Y')
             time_now = datetime.now(TZ_IRKUTSK).strftime('%H:%M')
             storage.save_status_reminders_vk(date=date_now, time=time_now)
-
-
 
 
 if __name__ == '__main__':

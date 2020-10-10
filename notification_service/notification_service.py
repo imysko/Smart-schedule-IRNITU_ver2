@@ -80,7 +80,6 @@ def sending_notifications(users: list):
                                                f'{lessons_for_reminders}', parse_mode='HTML')
 
 
-
 def search_for_reminders():
     print('reminders_tg is started')
     minutes_old = None
@@ -102,7 +101,8 @@ def search_for_reminders():
 
             for reminder in reminders:
                 week = find_week()
-
+                if not 'reminders' in reminder.keys():
+                    continue
                 # если у пользователя пустой reminders то None
                 user_days = reminder['reminders'].get(week)
                 if not user_days:
