@@ -138,7 +138,7 @@ function check_notifications_tg_status() {
     });
 }
 
-/* Уведомления end*/
+/* Уведомления notification_tg end*/
 
 /* Уведомления notification_vk */
 // если кликнут по кнопке, то узнаем статус
@@ -181,10 +181,10 @@ function check_notifications_vk_status() {
     });
 }
 
-/* Уведомления end*/
+/* Уведомления notification_vk end*/
 
 
-/* Сатус vk_bot */
+/* Статус vk_bot */
 // если кликнут по кнопке, то узнаем статус
 $('#vk-status-btn').click(function () {
     check_vk_status()
