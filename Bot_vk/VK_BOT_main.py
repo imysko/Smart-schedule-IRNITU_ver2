@@ -385,6 +385,9 @@ async def scheduler(ans: Message):
         schedule = schedule['schedule']
         week = find_week()
         schedule_one_day = get_one_day_schedule_in_str(schedule=schedule, week=week)
+        if not schedule_one_day:
+            await ans('Сегодня пар нет 😎')
+            return
         await ans(f'{schedule_one_day}')
         add_statistics(action='Расписание на сегодня')
 
