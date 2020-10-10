@@ -4,6 +4,7 @@ $(document).ready(function () {
     check_parser_status();
     check_notifications_tg_status();
     check_notifications_vk_status();
+    check_vk_status();
 });
 
 /* telegram бот */
@@ -93,7 +94,7 @@ function check_parser_status() {
 }
 /* Парсер end*/
 
-/* Уведомления TG бот */
+/* Уведомления notification_tg */
 // если кликнут по кнопке, то узнаем статус
 $('#notification_tg-status-btn').click(function () {
     check_notifications_status()
@@ -136,7 +137,7 @@ function check_notifications_tg_status() {
 }
 /* Уведомления end*/
 
-/* Уведомления VK бот */
+/* Уведомления notification_vk */
 // если кликнут по кнопке, то узнаем статус
 $('#notification_vk-status-btn').click(function () {
     check_notifications_status()
@@ -177,3 +178,47 @@ function check_notifications_vk_status() {
     });
 }
 /* Уведомления end*/
+
+
+
+/* Сатус vk_bot */
+// если кликнут по кнопке, то узнаем статус
+$('#vk-status-btn').click(function () {
+    check_vk_status()
+});
+
+function check_vk_status() {
+    // скрываем информацию о статусе
+    $('#vk-status-info').hide();
+    // показываем анимацию загрузки
+    $('#vk-status-loading').show();
+
+    $.ajax({
+        url: '/status/vk_reminders',
+        success: function (data, textStatus) {
+            console.log(data);
+            console.log(textStatus)
+
+            // скрываем загрузку
+            $('#vk-status-loading').hide();
+            // устанавливаем картинку Включено
+            $("#vk-status-img").attr("src", "/static/img/on.jpg");
+            //пишем текст Активен
+            $("#vk-status-text").text('Активен')
+            // Показываем статус
+            $('#vk-status-info').show();
+
+        },
+        error: function (data, textStatus) {
+            // скрываем загрузку
+            $('#vk-status-loading').hide();
+            // устанавливаем картинку Включено
+            $("#vk-status-img").attr("src", "/static/img/off.jpg");
+            //пишем текст Не активен
+            $("#vk-status-text").text('Не активен')
+            // Показываем статус
+            $('#vk-status-info').show();
+        }
+    });
+}
+/* vk_bot end*/
