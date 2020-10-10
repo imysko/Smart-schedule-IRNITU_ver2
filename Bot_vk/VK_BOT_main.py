@@ -453,7 +453,7 @@ async def wrapper(ans: Message):
         # Смотрим выбрал ли пользователь институт
         if message_inst in institutes:
             # Если да, то записываем в бд
-            storage.save_or_update_user(chat_id=chat_id, institute=message)
+            storage.save_or_update_user(chat_id=chat_id, institute=message_inst)
             await ans(f'Вы выбрали: {message_inst}\n')
             await ans('Выберите курс.', keyboard=make_keyboard_choose_course_vk(storage.get_courses(message_inst)))
         else:
