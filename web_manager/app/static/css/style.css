@@ -38,5 +38,12 @@
     float: right;
 }
 
+/*statistics*/
+.statistics {
+    border: 1px solid #777; /* Параметры границы */
+    border-radius: 10px;
+    padding: 10px; /* Поля вокруг текста */
+}
 
+/*statistics end*/
 
