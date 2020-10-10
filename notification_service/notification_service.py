@@ -80,6 +80,7 @@ def sending_notifications(users: list):
                                                f'{lessons_for_reminders}', parse_mode='HTML')
 
 
+
 def search_for_reminders():
     print('reminders_tg is started')
     minutes_old = None
@@ -131,6 +132,11 @@ def search_for_reminders():
             # после того как список сформирован, нужно отправить его боту
             print(users)
             sending_notifications(users)
+
+            # записываем статистку
+            date_now = datetime.now(TZ_IRKUTSK).strftime('%d.%m.%Y')
+            time_now = datetime.now(TZ_IRKUTSK).strftime('%H:%M')
+            storage.save_status_tg(date=date_now, time=time_now)
 
 
 if __name__ == '__main__':
