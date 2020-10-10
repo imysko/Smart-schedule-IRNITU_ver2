@@ -19,8 +19,6 @@ services:
   vk_bot:
     build: Bot_vk/
     restart: always
-    ports:
-      - 0.0.0.0:8082:8082
     environment:
       - VK= # токен telegram бота
       - HOST_URL= # URL сервера (если оставить HOST_URL пустымм, то бот запустится локально)
@@ -61,7 +59,14 @@ services:
       - MONGO_DB_PORT=27017 # порт mongoDB
       - MONGO_DB_DATABASE=Smart_schedule_IRNITU # название базы данных
 
-
+#  reminders_vk:
+#    build: reminders_vk/
+#    restart: always
+#    environment:
+#      - VK= # токен vk бота
+#      - MONGO_DB_ADDR=mongodb # адрес mongoDB
+#      - MONGO_DB_PORT=27017 # порт mongoDB
+#      - MONGO_DB_DATABASE=Smart_schedule_IRNITU # название базы данных
 
   mongodb:
     image: mongo:latest
