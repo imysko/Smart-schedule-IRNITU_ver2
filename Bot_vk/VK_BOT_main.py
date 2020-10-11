@@ -206,13 +206,14 @@ def make_keyboard_choose_group_vk_page_2(groups=[]):
     list_keyboard_main = []
     list_keyboard = []
     for group in groups:
-        if len(list_keyboard) == 3:
+        if len(list_keyboard) == 2:
             list_keyboard_main.append(list_keyboard)
             list_keyboard = []
         else:
             list_keyboard.append(parametres_for_buttons_start_menu_vk(f'{group}', 'primary'))
     list_keyboard_main.append(list_keyboard)
     list_keyboard_main.append([parametres_for_buttons_start_menu_vk('Назад', 'primary')])
+
 
     keyboard['buttons'] = list_keyboard_main
     keyboard = json.dumps(keyboard, ensure_ascii=False).encode('utf-8')
