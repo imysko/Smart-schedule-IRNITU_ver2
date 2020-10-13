@@ -33,6 +33,7 @@ def find_week():
 
 def sending_notifications(users: list):
     for user in users:
+        print(user)
         chat_id = user['chat_id']
         week = user['week']
         day_now = user['day']
@@ -54,9 +55,12 @@ def sending_notifications(users: list):
         lessons_for_reminders = ''
 
         for lesson in lessons:
+            print(lesson)
             lesson_time = lesson['time']
+            print(lesson_time)
+            print(time)
             # находим нужные пары (в нужное время)
-            if lesson_time == time and (lesson['week'] == week or lesson['week'] == 'all'):
+            if time in lesson_time and (lesson['week'] == week or lesson['week'] == 'all'):
                 name = lesson['name']
                 # пропускаем свободные дни
                 if name == 'свободно':
@@ -115,6 +119,7 @@ def search_for_reminders():
                 user_day_time = user_days.get(day_now.lower())
 
                 # если время совпадает с текущим, добавляем в список на отправ
+                print(user_day_time)
                 if user_day_time and f'{hours_now}:{minutes_now}' in user_day_time:
                     chat_id = reminder['chat_id']
                     group = reminder['group']
@@ -122,6 +127,7 @@ def search_for_reminders():
 
                     # определяем фактическое время пары (прибавляем к текущему времени время напоминания)
                     lesson_time = (time_now + timedelta(minutes=notifications)).strftime('%-H:%-M')
+                    print(lesson_time)
 
                     users.append(
                         {'chat_id': chat_id,
