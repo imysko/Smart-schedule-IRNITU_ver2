@@ -11,14 +11,8 @@ formatter = logging.Formatter(format, datefmt='%d.%m.%Y %H:%M:%S')
 console_handler = logging.StreamHandler()
 console_handler.setLevel(logging.INFO)
 
-# создаём файловый handler и задаём уровень
-file_handler = logging.FileHandler('bot.log')
-file_handler.setLevel(logging.INFO)
-
 # добавляем formatter
 console_handler.setFormatter(formatter)
-file_handler.setFormatter(formatter)
 
 # добавляем к logger
 logger.addHandler(console_handler)
-logger.addHandler(file_handler)
