@@ -53,7 +53,7 @@ def sending_notifications(users: list):
         for lesson in lessons:
             lesson_time = lesson['time']
             # находим нужные пары (в нужное время)
-            if lesson_time == time and (lesson['week'] == week or lesson['week'] == 'all'):
+            if time in lesson_time and (lesson['week'] == week or lesson['week'] == 'all'):
                 name = lesson['name']
                 # пропускаем свободные дни
                 if name == 'свободно':
