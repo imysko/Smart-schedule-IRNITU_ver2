@@ -8,8 +8,7 @@ from vkbottle.api.keyboard import keyboard_gen
 from functions.storage import MongodbService
 from vkbottle.keyboard import Keyboard, Text
 from functions.find_week import find_week
-from vk_api.utils import get_random_id
-# from vkbottle.bot import Bot, Message
+from vkbottle.bot import Bot, Message
 from vkbottle.ext import Middleware
 from vk_api import vk_api
 from aiohttp import web
@@ -206,9 +205,10 @@ def make_keyboard_choose_group_vk_page_2(groups=[]):
     list_keyboard_main = []
     list_keyboard = []
     for group in groups:
-        if len(list_keyboard) == 2:
+        if len(list_keyboard) == 3:
             list_keyboard_main.append(list_keyboard)
             list_keyboard = []
+            list_keyboard.append(parametres_for_buttons_start_menu_vk(f'{group}', 'primary'))
         else:
             list_keyboard.append(parametres_for_buttons_start_menu_vk(f'{group}', 'primary'))
     list_keyboard_main.append(list_keyboard)
