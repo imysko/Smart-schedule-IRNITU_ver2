@@ -6,6 +6,8 @@ from datetime import datetime, timedelta
 from storage import MongodbService
 from vkbottle.bot import Bot, Message
 
+from logger import logger
+
 import platform
 
 TOKEN = os.environ.get('VK')
@@ -54,6 +56,9 @@ def sending_notifications(users: list):
             continue
         lessons_for_reminders = ''
 
+        logger.info(f'Отправка сообщения пользователю. Notifications: {time}')
+        logger.info(f'Занятия пользователя.  {lessons}')
+
         for lesson in lessons:
             print(lesson)
             lesson_time = lesson['time']
@@ -65,6 +70,8 @@ def sending_notifications(users: list):
                 # пропускаем свободные дни
                 if name == 'свободно':
                     continue
+
+                logger.info(f'Занятие на отправку: {lesson}')
                 # формируем сообщение
                 lessons_for_reminders += '--------------------------------------\n'
                 aud = lesson['aud']
@@ -88,17 +95,16 @@ def sending_notifications(users: list):
 
 
 def search_for_reminders():
-    print('reminders_vk is started')
+    logger.info('reminders_vk is started')
     minutes_old = None
     while True:
         # определяем время сейчас
         time_now = datetime.now(TZ_IRKUTSK)
         day_now = datetime.now(TZ_IRKUTSK).strftime('%A').lower()
         hours_now = int(time_now.strftime('%H'))
-        minutes_now = int(time_now.strftime('%M'))
-        # отправлять сообщения нужно не раньше чем каждые 5 минут
-        # if minutes_now % 2 == 0 and minutes_old != minutes_now:
-        if minutes_old != minutes_now:  # это для отладки!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        minutes_now = time_now.strftime('%M')
+
+        if minutes_old != minutes_now:
             minutes_old = minutes_now  # нужно для того чтобы выполнить тело только один раз
             users = []
 
@@ -118,8 +124,10 @@ def search_for_reminders():
                 # если у пользователя нет ткущего дня, то None
                 user_day_time = user_days.get(day_now.lower())
 
+                logger.info(f'user_day_time: {user_day_time}')
+                logger.info(f'time_now {hours_now}:{minutes_now}')
+
                 # если время совпадает с текущим, добавляем в список на отправ
-                print(user_day_time)
                 if user_day_time and f'{hours_now}:{minutes_now}' in user_day_time:
                     chat_id = reminder['chat_id']
                     group = reminder['group']
@@ -139,8 +147,9 @@ def search_for_reminders():
                          }
                     )
 
+                    logger.info(f'Добавивли пользователя в список для отправки уведомлений: {reminder}')
+
             # после того как список сформирован, нужно отправить его боту
-            print(users)
             sending_notifications(users)
 
             # записываем статистку
