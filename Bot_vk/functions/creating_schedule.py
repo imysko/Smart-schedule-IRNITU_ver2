@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 import pytz
 import locale
 
@@ -9,13 +9,12 @@ TZ_IRKUTSK = pytz.timezone('Asia/Irkutsk')
 locale_name = ('ru_RU.UTF-8' if platform.system() == 'Linux' else 'ru_RU')
 locale.setlocale(locale.LC_TIME, locale_name)
 
-
 def full_schedule_in_str(schedule: list, week: str) -> list:
     schedule_str = []
+    day_now = datetime.now(TZ_IRKUTSK).strftime('%A').lower()
     for one_day in schedule:
-        day = one_day['day']
+        day = one_day['day'].upper()
         lessons = one_day['lessons']
-
         lessons_str = '-------------------------------------------\n'
         for lesson in lessons:
             name = lesson['name']
@@ -35,17 +34,24 @@ def full_schedule_in_str(schedule: list, week: str) -> list:
                 if aud:
                     aud = f'Аудитория: {aud}\n'
                 time = lesson['time']
-                info = lesson['info']
+                info = lesson['info'].replace(",", "")
                 prep = lesson['prep']
+
+
 
                 lessons_str += f'{time}\n' \
                                f'{aud}' \
-                               f'{name}\n' \
+                               f'👉{name}\n' \
                                f'{info} {prep}'
+
             lessons_str += '\n-------------------------------------------\n'
 
-        schedule_str.append(f'\n{day}\n'
-                            f'{lessons_str}')
+        if day_now == day.lower():
+            schedule_str.append(f'\n🍏{day}🍏\n'
+                                f'{lessons_str}')
+        else:
+            schedule_str.append(f'\n🍎{day}🍎\n'
+                                f'{lessons_str}')
 
     return schedule_str
 
