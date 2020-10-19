@@ -444,7 +444,7 @@ def text(message):
             if aud:
                 aud = f'Аудитория: {aud}\n'
             time = near_lesson['time']
-            info = near_lesson['info']
+            info = near_lesson['info'].replace(",", "")
             prep = near_lesson['prep']
 
             near_lessons_str += f'<b>{time}</b>\n' \

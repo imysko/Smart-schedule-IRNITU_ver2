@@ -10,9 +10,10 @@ from vkbottle.keyboard import Keyboard, Text
 from functions.find_week import find_week
 from vkbottle.bot import Bot, Message
 from vkbottle.ext import Middleware
-from vk_api import vk_api
+from vk_api import vk_api, VkUpload
 from aiohttp import web
 import typing
+import requests
 import types
 import json
 import vk
@@ -20,12 +21,15 @@ import os
 import pytz
 from datetime import datetime
 from vkbottle import Bot, Message
+from vkbottle.api.uploader.photo import PhotoUploader
 
 TOKEN = os.environ.get('VK')
 
 MAX_CALLBACK_RANGE = 41
 storage = MongodbService().get_instance()
 bot = Bot(TOKEN)  # TOKEN
+photo_uploader = PhotoUploader(bot.api, generate_attachment_strings=True)
+
 
 content_types = {
     'text': ['Расписание', 'Ближайшая пара', 'Расписание на сегодня', 'На текущую неделю', 'На следующую неделю']}
@@ -36,7 +40,8 @@ content_types = {
 TZ_IRKUTSK = pytz.timezone('Asia/Irkutsk')
 
 authorize = vk_api.VkApi(token=TOKEN)
-
+upload = VkUpload(authorize)
+map_image = "map.jpg"
 
 
 
@@ -289,14 +294,28 @@ async def registration(ans: Message):
     add_statistics(action='reg')
 
 
+# Команда /map
+@bot.on.message(text='/map')
+async def map(ans: Message):
+    chat_id = ans.from_id
+    server = authorize.method("photos.getMessagesUploadServer")
+    b = requests.post(server['upload_url'], files={'photo': open('map.jpg', 'rb')}).json()
+    print(b)
+    c = authorize.method('photos.saveMessagesPhoto', {'photo': b['photo'], 'server': b['server'], 'hash': b['hash']})[0]
+    print(c)
+    authorize.method("messages.send", {"peer_id": chat_id, "attachment": f'photo{c["owner_id"]}_{c["id"]}', 'random_id': 0})
+
+    add_statistics(action='map')
+
 # Команда /help
 @bot.on.message(text='/help')
 async def help(ans: Message):
     chat_id = ans.from_id
     await ans('Список команд:\n'
               '/about - описание чат бота\n'
-              '/authors - Список авторов \n'
-              '/reg - повторная регистрация')
+              '/authors - список авторов \n'
+              '/reg - повторная регистрация\n'
+              '/map - карта университета')
 
     add_statistics(action='help')
 

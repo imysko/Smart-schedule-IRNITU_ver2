@@ -11,7 +11,7 @@ locale.setlocale(locale.LC_TIME, locale_name)
 def full_schedule_in_str(schedule: list, week: str) -> list:
     schedule_str = []
     for one_day in schedule:
-        day = one_day['day']
+        day = one_day['day'].upper()
         lessons = one_day['lessons']
 
         lessons_str = '-------------------------------------------\n'
@@ -33,7 +33,7 @@ def full_schedule_in_str(schedule: list, week: str) -> list:
                 if aud:
                     aud = f'Аудитория: {aud}\n'
                 time = lesson['time']
-                info = lesson['info']
+                info = lesson['info'].replace(",", "")
                 prep = lesson['prep']
 
                 lessons_str += f'<b>{time}</b>\n' \
@@ -74,7 +74,7 @@ def get_one_day_schedule_in_str(schedule: list, week: str) -> str:
                     if aud:
                         aud = f'Аудитория: {aud}\n'
                     time = lesson['time']
-                    info = lesson['info']
+                    info = lesson['info'].replace(",", "")
                     prep = lesson['prep']
 
                     lessons_str += f'<b>{time}</b>\n' \
