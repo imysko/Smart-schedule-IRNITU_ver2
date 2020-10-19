@@ -17,11 +17,8 @@ import types
 import json
 import vk
 import os
-
 import pytz
 from datetime import datetime
-
-
 from vkbottle import Bot, Message
 
 TOKEN = os.environ.get('VK')
@@ -422,15 +419,15 @@ async def scheduler(ans: Message):
             if aud:
                 aud = f'Аудитория: {aud}\n'
             time = near_lesson['time']
-            info = near_lesson['info']
+            info = near_lesson['info'].replace(",", "")
             prep = near_lesson['prep']
 
             near_lessons_str += f'{time}\n' \
                                 f'{aud}' \
-                                f'{name}\n' \
+                                f'👉{name}\n' \
                                 f'{info} {prep}\n'
         near_lessons_str += '-------------------------------------------\n'
-        await ans(f'Ближайшая пара\n'f'{near_lessons_str}')
+        await ans(f'🧠Ближайшая пара🧠\n'f'{near_lessons_str}')
 
         add_statistics(action='Ближайшая пара')
 

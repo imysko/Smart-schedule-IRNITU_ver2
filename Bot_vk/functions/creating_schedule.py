@@ -1,8 +1,7 @@
 from datetime import datetime, timedelta
-import pytz
-import locale
-
 import platform
+import locale
+import pytz
 
 TZ_IRKUTSK = pytz.timezone('Asia/Irkutsk')
 # определяем на Linux или на Windows мы запускаемся
@@ -59,7 +58,7 @@ def full_schedule_in_str(schedule: list, week: str) -> list:
 def get_one_day_schedule_in_str(schedule: list, week: str) -> str:
     day_now = datetime.now(TZ_IRKUTSK).strftime('%A')
     for one_day in schedule:
-        day = one_day['day']
+        day = one_day['day'].upper()
         if day.lower() == day_now.lower():
             lessons = one_day['lessons']
 
@@ -82,13 +81,13 @@ def get_one_day_schedule_in_str(schedule: list, week: str) -> str:
                     if aud:
                         aud = f'Аудитория: {aud}\n'
                     time = lesson['time']
-                    info = lesson['info']
+                    info = lesson['info'].replace(",", "")
                     prep = lesson['prep']
 
                     lessons_str += f'{time}\n' \
                                    f'{aud}' \
-                                   f'{name}\n' \
+                                   f'👉{name}\n' \
                                    f'{info} {prep}'
                 lessons_str += '\n-------------------------------------------\n'
 
-            return f'\n{day}\n{lessons_str}'
+            return f'\n🍏{day}🍏\n{lessons_str}'
