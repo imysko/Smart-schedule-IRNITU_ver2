@@ -51,7 +51,7 @@ def start_message(message):
     if storage.get_user(chat_id):
         storage.delete_user_or_userdata(chat_id)  # Удаляем пользвателя из базы данных
 
-    bot.send_message(chat_id=chat_id, text='Привет!\n')
+    bot.send_message(chat_id=chat_id, text='Привет!😃\n')
     bot.send_message(chat_id=chat_id, text='Для начала пройдите небольшую регистрацию😉\n'
                                            'Выберите институт',
                      reply_markup=make_inline_keyboard_choose_institute(storage.get_institutes()))
