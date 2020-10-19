@@ -10,8 +10,8 @@ services:
     ports:
       - 0.0.0.0:8080:8080
     environment:
-      - TOKEN= # токен telegram бота
-      - HOST_URL= # URL сервера (если оставить HOST_URL пустымм, то бот запустится локально)
+      - TOKEN=${TG_TOKEN} # токен telegram бота
+      - HOST_URL=${HOST_URL} # URL сервера (если оставить HOST_URL пустымм, то бот запустится локально)
       - MONGO_DB_ADDR=mongodb # адрес mongoDB
       - MONGO_DB_PORT=27017 # порт mongoDB
       - MONGO_DB_DATABASE=Smart_schedule_IRNITU # название базы данных
@@ -20,8 +20,7 @@ services:
     build: Bot_vk/
     restart: always
     environment:
-      - VK= # токен telegram бота
-      - HOST_URL= # URL сервера (если оставить HOST_URL пустымм, то бот запустится локально)
+      - VK=${VK_TOKEN} # токен telegram бота
       - MONGO_DB_ADDR=mongodb # адрес mongoDB
       - MONGO_DB_PORT=27017 # порт mongoDB
       - MONGO_DB_DATABASE=Smart_schedule_IRNITU # название базы данных
@@ -41,8 +40,8 @@ services:
     build: notification_service/
     restart: always
     environment:
-      - TOKEN= # токен telegram бота
-      - VK= # токен VK бота
+      - TOKEN=${TG_TOKEN} # токен telegram бота
+      - VK=${VK_TOKEN} # токен VK бота
       - MONGO_DB_ADDR=mongodb # адрес mongoDB
       - MONGO_DB_PORT=27017 # порт mongoDB
       - MONGO_DB_DATABASE=Smart_schedule_IRNITU # название базы данных
@@ -54,7 +53,7 @@ services:
     ports:
       - 0.0.0.0:8081:8081
     environment:
-      - TG_TOKEN= # токен telegram бота
+      - TG_TOKEN=${TG_TOKEN} # токен telegram бота
       - MONGO_DB_ADDR=mongodb # адрес mongoDB
       - MONGO_DB_PORT=27017 # порт mongoDB
       - MONGO_DB_DATABASE=Smart_schedule_IRNITU # название базы данных
