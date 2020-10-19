@@ -9,7 +9,7 @@ TOKEN = os.environ.get('TG_TOKEN')
 bot = telebot.TeleBot(TOKEN, threaded=False)
 
 
-def send_message_to_all_users(text: str, keyboard=None) -> ('status', 'message', 'exceptions'):
+def send_message_to_all_users(text: str, keyboard=None) -> tuple:
     exceptions = []
     users = db.users.find()
     count_users = db.users.count()
