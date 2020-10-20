@@ -1,4 +1,4 @@
-from functions.creating_schedule import full_schedule_in_str, get_one_day_schedule_in_str
+from functions.creating_schedule import full_schedule_in_str, get_one_day_schedule_in_str, get_next_day_schedule_in_str
 from functions.calculating_reminder_times import calculating_reminder_times
 from vk_api.bot_longpoll import VkBotLongPoll, VkBotEventType
 from vk_api.keyboard import VkKeyboard, VkKeyboardColor
@@ -30,19 +30,17 @@ storage = MongodbService().get_instance()
 bot = Bot(TOKEN)  # TOKEN
 photo_uploader = PhotoUploader(bot.api, generate_attachment_strings=True)
 
-
 content_types = {
-    'text': ['Расписание', 'Ближайшая пара', 'Расписание на сегодня', 'На текущую неделю', 'На следующую неделю']}
+    'text': ['Расписание', 'Ближайшая пара', 'Расписание на сегодня', 'На текущую неделю', 'На следующую неделю',
+             'Расписание на завтра']}
 
 сontent_commands = {'text': ['Начать', '/start', 'start', 'Start']}
-
 
 TZ_IRKUTSK = pytz.timezone('Asia/Irkutsk')
 
 authorize = vk_api.VkApi(token=TOKEN)
 upload = VkUpload(authorize)
 map_image = "map.jpg"
-
 
 
 def parametres_for_buttons_start_menu_vk(text, color):
@@ -86,6 +84,8 @@ def make_keyboard_start_menu():
     keyboard.add_button(Text(label="Ближайшая пара"), color="primary")
     keyboard.add_row()
     keyboard.add_button(Text(label="Расписание на сегодня"), color="default")
+    keyboard.add_button(Text(label="Расписание на завтра"), color="default")
+    keyboard.add_row()
     keyboard.add_button(Text(label="Напоминание"), color="default")
     return keyboard
 
@@ -216,7 +216,6 @@ def make_keyboard_choose_group_vk_page_2(groups=[]):
     list_keyboard_main.append(list_keyboard)
     list_keyboard_main.append([parametres_for_buttons_start_menu_vk('Назад', 'primary')])
 
-
     keyboard['buttons'] = list_keyboard_main
     keyboard = json.dumps(keyboard, ensure_ascii=False).encode('utf-8')
     keyboard = str(keyboard.decode('utf-8'))
@@ -304,6 +303,7 @@ async def map(ans: Message):
     authorize.method("messages.send", {"peer_id": chat_id, "attachment": f'photo{c["owner_id"]}_{c["id"]}', 'random_id': 0})
 
     add_statistics(action='map')
+
 
 # Команда /help
 @bot.on.message(text='/help')
@@ -405,6 +405,23 @@ async def scheduler(ans: Message):
             return
         await ans(f'{schedule_one_day}')
         add_statistics(action='Расписание на сегодня')
+
+    elif 'Расписание на завтра' == data and user:
+        group = storage.get_user(chat_id=chat_id)['group']
+        schedule = storage.get_schedule(group=group)
+        if not schedule:
+            await ans('Расписание временно недоступно🚫😣\n'
+                      'Попробуйте позже⏱', keyboard=make_keyboard_start_menu())
+            add_statistics(action='Расписание на завтра')
+            return
+        schedule = schedule['schedule']
+        week = find_week()
+        schedule_next_day = get_next_day_schedule_in_str(schedule=schedule, week=week)
+        if not schedule_next_day:
+            await ans('Завтра пар нет 😎')
+            return
+        await ans(f'{schedule_next_day}')
+        add_statistics(action='Расписание на завтра')
 
     elif 'Ближайшая пара' in data and user:
         group = storage.get_user(chat_id=chat_id)['group']
