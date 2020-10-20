@@ -300,9 +300,7 @@ async def map(ans: Message):
     chat_id = ans.from_id
     server = authorize.method("photos.getMessagesUploadServer")
     b = requests.post(server['upload_url'], files={'photo': open('map.jpg', 'rb')}).json()
-    print(b)
     c = authorize.method('photos.saveMessagesPhoto', {'photo': b['photo'], 'server': b['server'], 'hash': b['hash']})[0]
-    print(c)
     authorize.method("messages.send", {"peer_id": chat_id, "attachment": f'photo{c["owner_id"]}_{c["id"]}', 'random_id': 0})
 
     add_statistics(action='map')

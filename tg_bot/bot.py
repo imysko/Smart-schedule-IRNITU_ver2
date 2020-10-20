@@ -1,3 +1,4 @@
+import requests
 import telebot
 
 import pytz
@@ -82,6 +83,16 @@ def help(message):
 
     add_statistics(action='help')
 
+# Команда /map
+@bot.message_handler(commands=['map'])
+def map(message):
+    chat_id = message.chat.id
+    bot.send_photo(chat_id, (open('map.jpg', "rb")))
+    # ФАЙЛОМ (РАБОТАЕТ)
+    # map = open("map.jpg", "rb")
+    # bot.send_document(chat_id, map)
+
+    add_statistics(action='map')
 
 # Команда /about
 @bot.message_handler(commands=['about'])
