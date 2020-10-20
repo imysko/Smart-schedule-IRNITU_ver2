@@ -10,9 +10,11 @@ def make_keyboard_start_menu():
     btn1 = types.KeyboardButton('Расписание')
     btn2 = types.KeyboardButton('Ближайшая пара')
     btn3 = types.KeyboardButton('Расписание на сегодня')
-    btn4 = types.KeyboardButton('Напоминания')
+    btn4 = types.KeyboardButton('Расписание на завтра')
+    btn5 = types.KeyboardButton('Напоминания')
     markup.add(btn1, btn2)
     markup.add(btn3, btn4)
+    markup.add(btn5)
     return markup
 
 

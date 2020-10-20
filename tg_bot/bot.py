@@ -9,7 +9,7 @@ from time import sleep
 from functions.storage import MongodbService
 from functions.near_lesson import get_near_lesson
 from functions.logger import logger
-from functions.creating_schedule import full_schedule_in_str, get_one_day_schedule_in_str
+from functions.creating_schedule import full_schedule_in_str, get_one_day_schedule_in_str, get_next_day_schedule_in_str
 from functions.find_week import find_week
 from functions.creating_buttons import *
 from functions.calculating_reminder_times import calculating_reminder_times
@@ -422,6 +422,32 @@ def text(message):
                          text=f'{schedule_one_day}', parse_mode='HTML')
 
         add_statistics(action='Расписание на сегодня')
+
+    elif 'Расписание на завтра' == data and user:
+        try:
+            group = storage.get_user(chat_id=chat_id)['group']
+        except Exception as e:
+            logger.exception(e)
+            return
+        schedule = storage.get_schedule(group=group)
+
+        # Проверяем есть ли у группы пользователя расписание
+        if not check_schedule(chat_id=chat_id, schedule=schedule):
+            return
+
+        schedule = schedule['schedule']
+
+        week = find_week()
+        schedule_next_day = get_next_day_schedule_in_str(schedule=schedule, week=week)
+
+        if not schedule_next_day:
+            bot.send_message(chat_id=chat_id, text='Завтра пар нет 😎')
+            return
+
+        bot.send_message(chat_id=chat_id,
+                         text=f'{schedule_next_day}', parse_mode='HTML')
+
+        add_statistics(action='Расписание на завтра')
 
     elif 'Ближайшая пара' in data and user:
         try:
