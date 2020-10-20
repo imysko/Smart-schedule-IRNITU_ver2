@@ -140,6 +140,9 @@ def make_keyboard_choose_course_vk(courses):
         list_keyboard = []
         list_keyboard.append(parametres_for_buttons_start_menu_vk(f'{name}', 'primary'))
         list_keyboard_main.append(list_keyboard)
+    list_keyboard = []
+    list_keyboard.append(parametres_for_buttons_start_menu_vk('Назад к институтам', 'primary'))
+    list_keyboard_main.append(list_keyboard)
     keyboard['buttons'] = list_keyboard_main
     keyboard = json.dumps(keyboard, ensure_ascii=False).encode('utf-8')
     keyboard = str(keyboard.decode('utf-8'))
@@ -147,20 +150,21 @@ def make_keyboard_choose_course_vk(courses):
 
 
 def make_keyboard_choose_group_vk(groups=[]):
-    """Кнопки выбора института"""
+    """Кнопки выбора группы"""
     keyboard = {
         "one_time": False
     }
     list_keyboard_main_2 = []
     list_keyboard_main = []
     list_keyboard = []
-    overflow = 0
+    overflow = 1
     for group in groups:
         overflow += 1
         if overflow == 27:
             list_keyboard_main.append(list_keyboard)
             list_keyboard = []
             list_keyboard.append(parametres_for_buttons_start_menu_vk('Далее', 'primary'))
+            list_keyboard.append(parametres_for_buttons_start_menu_vk('Назад к курсам', 'primary'))
             list_keyboard_main.append(list_keyboard)
         else:
             if overflow < 28:
@@ -170,16 +174,21 @@ def make_keyboard_choose_group_vk(groups=[]):
                     list_keyboard.append(parametres_for_buttons_start_menu_vk(f'{group}', 'primary'))
                 else:
                     list_keyboard.append(parametres_for_buttons_start_menu_vk(f'{group}', 'primary'))
+
             else:
                 list_keyboard = []
                 list_keyboard.append(parametres_for_buttons_start_menu_vk(f'{group}', 'primary'))
                 list_keyboard_main_2.append(parametres_for_buttons_start_menu_vk(f'{group}', 'primary'))
+
 
     if overflow < 28:
         list_keyboard_main.append(list_keyboard)
     else:
         list_keyboard_main_2.append(list_keyboard)
 
+    list_keyboard = []
+    list_keyboard.append(parametres_for_buttons_start_menu_vk('Назад к курсам', 'primary'))
+    list_keyboard_main.append(list_keyboard)
     keyboard['buttons'] = list_keyboard_main
     keyboard = json.dumps(keyboard, ensure_ascii=False).encode('utf-8')
     keyboard = str(keyboard.decode('utf-8'))
@@ -479,6 +488,7 @@ async def wrapper(ans: Message):
     for institute in institutes:
         if message_inst[:-5] in institute:
             message_inst = institute
+            print(message_inst)
 
     # Если пользователя нет в базе данных
     if not user:
@@ -492,10 +502,18 @@ async def wrapper(ans: Message):
         else:
             await ans('Я вас не понимаю\n')
         return
+
+    # Если нажал кнопку Назад к институтам
+    if message == "Назад к институтам" and not 'course' in user.keys():
+        await ans('Выберите институт.', keyboard=make_keyboard_institutes(storage.get_institutes()))
+        storage.delete_user_or_userdata(chat_id=chat_id)
+        return
+
     # Регистрация после выбора института
     elif not 'course' in user.keys():
         institute = user['institute']
         course = storage.get_courses(institute)
+
         # Если нажал кнопку курса
         if message in name_courses(course):
             # Записываем в базу данных выбранный курс
@@ -586,7 +604,7 @@ async def wrapper(ans: Message):
         add_statistics(action='Основное меню')
 
 
-    elif 'Назад' in message and user:
+    elif '<==Назад' == message and user:
         await ans('Основное меню', keyboard=make_keyboard_start_menu())
     elif 'Далее' in message:
         await ans('Далее', keyboard=make_keyboard_choose_group_vk_page_2())
