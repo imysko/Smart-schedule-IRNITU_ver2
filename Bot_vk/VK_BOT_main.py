@@ -3,7 +3,7 @@ from functions.calculating_reminder_times import calculating_reminder_times
 from vk_api.bot_longpoll import VkBotLongPoll, VkBotEventType
 from vk_api.keyboard import VkKeyboard, VkKeyboardColor
 from vk_api.longpoll import VkLongPoll, VkEventType
-from functions.near_lesson import get_near_lesson
+from functions.near_lesson import get_near_lesson, get_now_lesson
 from vkbottle.api.keyboard import keyboard_gen
 from functions.storage import MongodbService
 from vkbottle.keyboard import Keyboard, Text
@@ -33,7 +33,7 @@ photo_uploader = PhotoUploader(bot.api, generate_attachment_strings=True)
 
 content_types = {
     'text': ['Расписание', 'Ближайшая пара', 'Расписание на сегодня', 'На текущую неделю', 'На следующую неделю',
-             'Расписание на завтра']}
+             'Расписание на завтра', 'Следующая', 'Текущая']}
 
 сontent_commands = {'text': ['Начать', '/start', 'start', 'Start']}
 
@@ -94,6 +94,15 @@ def make_keyboard_start_menu():
     keyboard.add_button(Text(label="Список команд"), color="default")
     return keyboard
 
+def make_keyboard_nearlesson():
+    """Создаём основные кнопки"""
+    keyboard = Keyboard(one_time=False)
+    keyboard.add_row()
+    keyboard.add_button(Text(label="Текущая"), color="default")
+    keyboard.add_button(Text(label="Следующая"), color="default")
+    keyboard.add_row()
+    keyboard.add_button(Text(label="<==Назад"), color="default")
+    return keyboard
 
 def make_inline_keyboard_set_notifications(time=0):
     """кнопки настройки уведомлений"""
@@ -438,12 +447,61 @@ async def scheduler(ans: Message):
         add_statistics(action='Расписание на завтра')
 
     elif 'Ближайшая пара' in data and user:
+        await ans('Ближайшая пара', keyboard=make_keyboard_nearlesson())
+        add_statistics(action='Ближайшая пара')
+        return
+
+
+    elif 'Текущая' in data and user:
         group = storage.get_user(chat_id=chat_id)['group']
         schedule = storage.get_schedule(group=group)
         if not schedule:
             await ans('Расписание временно недоступно🚫😣\n'
-                      'Попробуйте позже⏱')
-            add_statistics(action='Ближайшая пара')
+                      'Попробуйте позже⏱', keyboard=make_keyboard_start_menu())
+            add_statistics(action='Текущая')
+            return
+        schedule = schedule['schedule']
+        week = find_week()
+
+        now_lessons = get_now_lesson(schedule=schedule, week=week)
+        print(now_lessons)
+
+        # если пар нет
+        if not now_lessons:
+            await ans('Сейчас пары нет, можете отдохнуть)', keyboard=make_keyboard_start_menu())
+            add_statistics(action='Текущая')
+            return
+
+        now_lessons_str = ''
+        for near_lesson in now_lessons:
+            name = near_lesson['name']
+            if name == 'свободно':
+                await ans('Сейчас пары нет, можете отдохнуть)', keyboard=make_keyboard_start_menu())
+                return
+            now_lessons_str += '-------------------------------------------\n'
+            aud = near_lesson['aud']
+            if aud:
+                aud = f'Аудитория: {aud}\n'
+            time = near_lesson['time']
+            info = near_lesson['info'].replace(",", "")
+            prep = near_lesson['prep']
+
+            now_lessons_str += f'{time}\n' \
+                                f'{aud}' \
+                                f'👉{name}\n' \
+                                f'{info} {prep}\n'
+        now_lessons_str += '-------------------------------------------\n'
+        await ans(f'🧠Текущая пара🧠\n'f'{now_lessons_str}', keyboard=make_keyboard_start_menu())
+
+        add_statistics(action='Текущая')
+
+    elif 'Следующая' in data and user:
+        group = storage.get_user(chat_id=chat_id)['group']
+        schedule = storage.get_schedule(group=group)
+        if not schedule:
+            await ans('Расписание временно недоступно🚫😣\n'
+                      'Попробуйте позже⏱', keyboard=make_keyboard_start_menu())
+            add_statistics(action='Следующая')
             return
         schedule = schedule['schedule']
         week = find_week()
@@ -452,15 +510,15 @@ async def scheduler(ans: Message):
 
         # если пар нет
         if not near_lessons:
-            await ans('Сегодня больше пар нет 😎')
-            add_statistics(action='Ближайшая пара')
+            await ans('Сегодня больше пар нет 😎', keyboard=make_keyboard_start_menu())
+            add_statistics(action='Следующая')
             return
 
         near_lessons_str = ''
         for near_lesson in near_lessons:
             name = near_lesson['name']
             if name == 'свободно':
-                await ans('Сегодня больше пар нет 😎')
+                await ans('Сегодня больше пар нет 😎', keyboard=make_keyboard_start_menu())
                 return
             near_lessons_str += '-------------------------------------------\n'
             aud = near_lesson['aud']
@@ -475,9 +533,9 @@ async def scheduler(ans: Message):
                                 f'👉{name}\n' \
                                 f'{info} {prep}\n'
         near_lessons_str += '-------------------------------------------\n'
-        await ans(f'🧠Ближайшая пара🧠\n'f'{near_lessons_str}')
+        await ans(f'🧠Ближайшая пара🧠\n'f'{near_lessons_str}', keyboard=make_keyboard_start_menu())
 
-        add_statistics(action='Ближайшая пара')
+        add_statistics(action='Следующая')
 
 
 @bot.on.message()
