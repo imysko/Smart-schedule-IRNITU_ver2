@@ -9,6 +9,7 @@ from functions.storage import MongodbService
 from vkbottle.keyboard import Keyboard, Text
 from functions.find_week import find_week
 from vkbottle.bot import Bot, Message
+from pymongo import MongoClient
 from vkbottle.ext import Middleware
 from vk_api import vk_api, VkUpload
 from aiohttp import web
@@ -35,6 +36,8 @@ content_types = {
              'Расписание на завтра']}
 
 сontent_commands = {'text': ['Начать', '/start', 'start', 'Start']}
+
+content_map = {'text': ['/map', 'map', 'Карта', 'карта', 'Map', 'Схема', 'схема']}
 
 TZ_IRKUTSK = pytz.timezone('Asia/Irkutsk')
 
@@ -84,9 +87,11 @@ def make_keyboard_start_menu():
     keyboard.add_button(Text(label="Ближайшая пара"), color="primary")
     keyboard.add_row()
     keyboard.add_button(Text(label="Расписание на сегодня"), color="default")
+    keyboard.add_row()
     keyboard.add_button(Text(label="Расписание на завтра"), color="default")
     keyboard.add_row()
     keyboard.add_button(Text(label="Напоминание"), color="default")
+    keyboard.add_button(Text(label="Список команд"), color="default")
     return keyboard
 
 
@@ -140,6 +145,9 @@ def make_keyboard_choose_course_vk(courses):
         list_keyboard = []
         list_keyboard.append(parametres_for_buttons_start_menu_vk(f'{name}', 'primary'))
         list_keyboard_main.append(list_keyboard)
+    list_keyboard = []
+    list_keyboard.append(parametres_for_buttons_start_menu_vk('Назад к институтам', 'primary'))
+    list_keyboard_main.append(list_keyboard)
     keyboard['buttons'] = list_keyboard_main
     keyboard = json.dumps(keyboard, ensure_ascii=False).encode('utf-8')
     keyboard = str(keyboard.decode('utf-8'))
@@ -147,7 +155,7 @@ def make_keyboard_choose_course_vk(courses):
 
 
 def make_keyboard_choose_group_vk(groups=[]):
-    """Кнопки выбора института"""
+    """Кнопки выбора группы"""
     keyboard = {
         "one_time": False
     }
@@ -161,6 +169,7 @@ def make_keyboard_choose_group_vk(groups=[]):
             list_keyboard_main.append(list_keyboard)
             list_keyboard = []
             list_keyboard.append(parametres_for_buttons_start_menu_vk('Далее', 'primary'))
+            list_keyboard.append(parametres_for_buttons_start_menu_vk('Назад к курсам', 'primary'))
             list_keyboard_main.append(list_keyboard)
         else:
             if overflow < 28:
@@ -170,12 +179,17 @@ def make_keyboard_choose_group_vk(groups=[]):
                     list_keyboard.append(parametres_for_buttons_start_menu_vk(f'{group}', 'primary'))
                 else:
                     list_keyboard.append(parametres_for_buttons_start_menu_vk(f'{group}', 'primary'))
+
             else:
                 list_keyboard = []
                 list_keyboard.append(parametres_for_buttons_start_menu_vk(f'{group}', 'primary'))
                 list_keyboard_main_2.append(parametres_for_buttons_start_menu_vk(f'{group}', 'primary'))
 
+
     if overflow < 28:
+        list_keyboard_main.append(list_keyboard)
+        list_keyboard = []
+        list_keyboard.append(parametres_for_buttons_start_menu_vk('Назад к курсам', 'primary'))
         list_keyboard_main.append(list_keyboard)
     else:
         list_keyboard_main_2.append(list_keyboard)
@@ -294,7 +308,7 @@ async def registration(ans: Message):
 
 
 # Команда /map
-@bot.on.message(text='/map')
+@bot.on.message(text=content_map['text'])
 async def map(ans: Message):
     chat_id = ans.from_id
     server = authorize.method("photos.getMessagesUploadServer")
@@ -492,10 +506,25 @@ async def wrapper(ans: Message):
         else:
             await ans('Я вас не понимаю\n')
         return
+
+    # Если нажал кнопку Назад к институтам
+    if message == "Назад к институтам" and not 'course' in user.keys():
+        await ans('Выберите институт.', keyboard=make_keyboard_institutes(storage.get_institutes()))
+        storage.delete_user_or_userdata(chat_id=chat_id)
+        return
+
+    # Если нажал кнопку Назад к институтам
+    if message == "Назад к курсам" and not 'group' in user.keys():
+
+        await ans('Выберите курс.', keyboard=make_keyboard_choose_course_vk(storage.get_courses(storage.get_user(chat_id=chat_id)['institute'])))
+        storage.delete_user_or_userdata(chat_id=chat_id, delete_only_course=True)
+        return
+
     # Регистрация после выбора института
     elif not 'course' in user.keys():
         institute = user['institute']
         course = storage.get_courses(institute)
+
         # Если нажал кнопку курса
         if message in name_courses(course):
             # Записываем в базу данных выбранный курс
@@ -586,14 +615,25 @@ async def wrapper(ans: Message):
         add_statistics(action='Основное меню')
 
 
-    elif 'Назад' in message and user:
+    elif '<==Назад' == message and user:
         await ans('Основное меню', keyboard=make_keyboard_start_menu())
     elif 'Далее' in message:
         await ans('Далее', keyboard=make_keyboard_choose_group_vk_page_2())
 
+    elif 'Список команд' == message and user:
+        await ans('Список команд:\n'
+              '/about - описание чат бота\n'
+              '/authors - список авторов \n'
+              '/reg - повторная регистрация\n'
+              '/map - карта университета')
+
+        add_statistics(action='help')
+        return
+
     else:
         await ans('Я вас не понимаю 😞')
         add_statistics(action='bullshit')
+
 
 
 def main():
