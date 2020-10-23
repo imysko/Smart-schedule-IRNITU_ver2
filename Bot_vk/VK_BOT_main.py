@@ -94,6 +94,19 @@ def make_keyboard_start_menu():
     keyboard.add_button(Text(label="Список команд"), color="default")
     return keyboard
 
+def make_keyboard_commands():
+    """Создаём кнопки команд"""
+    keyboard = Keyboard(one_time=False)
+    keyboard.add_row()
+    keyboard.add_button(Text(label="/about"), color="primary")
+    keyboard.add_button(Text(label="/authors"), color="primary")
+    keyboard.add_row()
+    keyboard.add_button(Text(label="/reg"), color="default")
+    keyboard.add_button(Text(label="/map"), color="default")
+    keyboard.add_row()
+    keyboard.add_button(Text(label="<==Назад"), color="default")
+    return keyboard
+
 def make_keyboard_nearlesson():
     """Создаём основные кнопки"""
     keyboard = Keyboard(one_time=False)
@@ -320,10 +333,12 @@ async def registration(ans: Message):
 @bot.on.message(text=content_map['text'])
 async def map(ans: Message):
     chat_id = ans.from_id
+    await ans('Подождите, карта загружается...', keyboard=make_keyboard_start_menu())
     server = authorize.method("photos.getMessagesUploadServer")
     b = requests.post(server['upload_url'], files={'photo': open('map.jpg', 'rb')}).json()
     c = authorize.method('photos.saveMessagesPhoto', {'photo': b['photo'], 'server': b['server'], 'hash': b['hash']})[0]
     authorize.method("messages.send", {"peer_id": chat_id, "attachment": f'photo{c["owner_id"]}_{c["id"]}', 'random_id': 0})
+
 
     add_statistics(action='map')
 
@@ -352,7 +367,7 @@ async def about(ans: Message):
               '- Узнать актуальное расписание\n'
               '- Нажатием одной кнопки увидеть информацию о ближайшей паре\n'
               '- Настроить гибкие уведомления с информацией из расписания, '
-              'которые будут приходить за определённое время до начала занятия')
+              'которые будут приходить за определённое время до начала занятия', keyboard=make_keyboard_start_menu())
 
     add_statistics(action='about')
 
@@ -368,7 +383,7 @@ async def authors(ans: Message):
               '-[id135615548|Владислав]\n'
               '-[id502898628|Кирилл]\n\n'
               'По всем вопросом и предложениям пишите нам в личные сообщения. '
-              'Будем рады 😉\n'
+              'Будем рады 😉\n', keyboard=make_keyboard_start_menu()
               )
 
     add_statistics(action='authors')
@@ -672,9 +687,9 @@ async def wrapper(ans: Message):
         await ans('Основное меню', keyboard=make_keyboard_start_menu())
         add_statistics(action='Основное меню')
 
-
     elif '<==Назад' == message and user:
         await ans('Основное меню', keyboard=make_keyboard_start_menu())
+
     elif 'Далее' in message:
         await ans('Далее', keyboard=make_keyboard_choose_group_vk_page_2())
 
@@ -683,7 +698,7 @@ async def wrapper(ans: Message):
               '/about - описание чат бота\n'
               '/authors - список авторов \n'
               '/reg - повторная регистрация\n'
-              '/map - карта университета')
+              '/map - карта университета', keyboard=make_keyboard_commands())
 
         add_statistics(action='help')
         return
