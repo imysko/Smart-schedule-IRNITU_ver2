@@ -236,7 +236,7 @@ class ScheduleView(ModelView):
 
 class InstitutesView(ModelView):
     column_list = ('name', 'link')  # что будет показываться на странице из формы (какие поля)
-    column_sortable_list = ('name')  # что сортируется
+    column_sortable_list = ('name',)  # что сортируется
     form = InstitutesForm
 
     def _feed_institutes_choices(self, form):
@@ -258,7 +258,7 @@ class InstitutesView(ModelView):
 
 class CoursesView(ModelView):
     column_list = ('institute', 'name')  # что будет показываться на странице из формы (какие поля)
-    column_sortable_list = ('institute')  # что сортируется
+    column_sortable_list = ('institute','name')  # что сортируется
     form_excluded_columns = ('name')
     form = CoursesForm
 
@@ -278,7 +278,7 @@ class CoursesView(ModelView):
 
 class GroupsView(ModelView):
     column_list = ('name', 'course', 'link', 'institute')  # что будет показываться на странице из формы (какие поля)
-    column_sortable_list = ('name')  # что сортируется
+    column_sortable_list = ('name', 'course', 'institute')  # что сортируется
     form_excluded_columns = ('name')
     form = GroupsForm
 
