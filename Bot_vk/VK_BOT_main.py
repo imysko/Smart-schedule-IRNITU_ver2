@@ -24,6 +24,7 @@ from datetime import datetime
 from vkbottle import Bot, Message
 from vkbottle.api.uploader.photo import PhotoUploader
 
+
 TOKEN = os.environ.get('VK')
 
 MAX_CALLBACK_RANGE = 41
