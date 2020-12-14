@@ -21,7 +21,7 @@ urllib3==1.25.8
 vbml==0.5.93
 vk==2.0.2
 vk-api==11.9.0
-vkbottle==2.7.12
+vkbottle==3.0
 watchgod==0.6
 Werkzeug==1.0.0
 yarl==1.6.0
