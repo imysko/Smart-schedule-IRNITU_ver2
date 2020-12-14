@@ -700,6 +700,7 @@ async def wrapper(ans: Message):
     elif 'Далее' in message:
         await ans.answer('Далее', keyboard=make_keyboard_choose_group_vk_page_2())
 
+
     elif 'Список команд' == message and user:
         await ans.answer('Список команд:\n'
               '/about - описание чат бота\n'
