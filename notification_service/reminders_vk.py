@@ -35,7 +35,6 @@ def find_week():
 
 def sending_notifications(users: list):
     for user in users:
-        print(user)
         chat_id = user['chat_id']
         week = user['week']
         day_now = user['day']
@@ -60,10 +59,7 @@ def sending_notifications(users: list):
         logger.info(f'Занятия пользователя.  {lessons}')
 
         for lesson in lessons:
-            print(lesson)
             lesson_time = lesson['time']
-            print(lesson_time)
-            print(time)
             # находим нужные пары (в нужное время)
             if time in lesson_time and (lesson['week'] == week or lesson['week'] == 'all'):
                 name = lesson['name']
@@ -135,7 +131,6 @@ def search_for_reminders():
 
                     # определяем фактическое время пары (прибавляем к текущему времени время напоминания)
                     lesson_time = (time_now + timedelta(minutes=notifications)).strftime('%-H:%-M')
-                    print(lesson_time)
 
                     users.append(
                         {'chat_id': chat_id,
@@ -147,7 +142,7 @@ def search_for_reminders():
                          }
                     )
 
-                    logger.info(f'Добавивли пользователя в список для отправки уведомлений: {reminder}')
+                    logger.info(f'Добавили пользователя в список для отправки уведомлений: {reminder}')
 
             # после того как список сформирован, нужно отправить его боту
             sending_notifications(users)
