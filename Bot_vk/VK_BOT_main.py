@@ -33,12 +33,12 @@ bot = Bot(TOKEN)  # TOKEN
 # photo_uploader = PhotoUploader(bot.api, generate_attachment_strings=True)
 
 content_types = {
-    'text': ['Расписание', 'Ближайшая пара', 'Расписание на сегодня', 'На текущую неделю', 'На следующую неделю',
-             'Расписание на завтра', 'Следующая', 'Текущая']}
+    'text': ['Расписание 🗓', 'Ближайшая пара ⏱', 'Расписание на сегодня 🍏', 'На текущую неделю', 'На следующую неделю',
+             'Расписание на завтра 🍎', 'Следующая', 'Текущая']}
 
-сontent_commands = {'text': ['Начать', '/start', 'start', 'Start']}
+сontent_commands = {'text': ['Начать','начать', 'Начало', 'start']}
 
-content_map = {'text': ['/map', 'map', 'Карта', 'карта', 'Map', 'Схема', 'схема']}
+content_map = {'text': ['map', 'Карта', 'карта', 'Map', 'Схема', 'схема']}
 
 TZ_IRKUTSK = pytz.timezone('Asia/Irkutsk')
 
@@ -84,26 +84,36 @@ def make_keyboard_start_menu():
     """Создаём основные кнопки"""
     keyboard = Keyboard(one_time=False)
     keyboard.row()
-    keyboard.add(Text(label="Расписание"), color=KeyboardButtonColor.PRIMARY)
-    keyboard.add(Text(label="Ближайшая пара"), color=KeyboardButtonColor.PRIMARY)
+    keyboard.add(Text(label="Расписание 🗓"), color=KeyboardButtonColor.PRIMARY)
+    keyboard.add(Text(label="Ближайшая пара ⏱"), color=KeyboardButtonColor.PRIMARY)
     keyboard.row()
-    keyboard.add(Text(label="Расписание на сегодня"), color=KeyboardButtonColor.SECONDARY)
+    keyboard.add(Text(label="Расписание на сегодня 🍏"), color=KeyboardButtonColor.SECONDARY)
     keyboard.row()
-    keyboard.add(Text(label="Расписание на завтра"), color=KeyboardButtonColor.SECONDARY)
+    keyboard.add(Text(label="Расписание на завтра 🍎"), color=KeyboardButtonColor.SECONDARY)
     keyboard.row()
-    keyboard.add(Text(label="Напоминание"), color=KeyboardButtonColor.SECONDARY)
-    keyboard.add(Text(label="Список команд"), color=KeyboardButtonColor.SECONDARY)
+    keyboard.add(Text(label="Напоминание 📣"), color=KeyboardButtonColor.PRIMARY)
+    keyboard.add(Text(label="Другое ⚡"), color=KeyboardButtonColor.PRIMARY)
     return keyboard
 
 def make_keyboard_commands():
     """Создаём кнопки команд"""
     keyboard = Keyboard(one_time=False)
     keyboard.row()
-    keyboard.add(Text(label="/about"), color=KeyboardButtonColor.PRIMARY)
-    keyboard.add(Text(label="/authors"), color=KeyboardButtonColor.PRIMARY)
+    # keyboard.add(Text(label="about"), color=KeyboardButtonColor.PRIMARY)
+    keyboard.add(Text(label="Авторы"), color=KeyboardButtonColor.PRIMARY)
     keyboard.row()
-    keyboard.add(Text(label="/reg"), color=KeyboardButtonColor.SECONDARY)
-    keyboard.add(Text(label="/map"), color=KeyboardButtonColor.SECONDARY)
+    keyboard.add(Text(label="Регистрация"), color=KeyboardButtonColor.SECONDARY)
+    keyboard.add(Text(label="Карта"), color=KeyboardButtonColor.SECONDARY)
+    keyboard.row()
+    keyboard.add(Text(label="<==Назад"), color=KeyboardButtonColor.SECONDARY)
+    return keyboard
+
+def make_keyboard_extra():
+    keyboard = Keyboard(one_time=False)
+    keyboard.row()
+    keyboard.add(Text(label="Список команд"), color=KeyboardButtonColor.PRIMARY)
+    keyboard.row()
+    keyboard.add(Text(label="Поиск 🔎"), color=KeyboardButtonColor.SECONDARY)
     keyboard.row()
     keyboard.add(Text(label="<==Назад"), color=KeyboardButtonColor.SECONDARY)
     return keyboard
@@ -112,8 +122,8 @@ def make_keyboard_nearlesson():
     """Создаём основные кнопки"""
     keyboard = Keyboard(one_time=False)
     keyboard.row()
-    keyboard.add(Text(label="Текущая"), color=KeyboardButtonColor.SECONDARY)
-    keyboard.add(Text(label="Следующая"), color=KeyboardButtonColor.SECONDARY)
+    keyboard.add(Text(label="Текущая"), color=KeyboardButtonColor.PRIMARY)
+    keyboard.add(Text(label="Следующая"), color=KeyboardButtonColor.PRIMARY)
     keyboard.row()
     keyboard.add(Text(label="<==Назад"), color=KeyboardButtonColor.SECONDARY)
     return keyboard
@@ -301,7 +311,7 @@ def name_groups(groups=[]):
 
 # ==================== Обработка команд ==================== #
 
-# Команда /start
+# Команда start
 @bot.on.message(text=сontent_commands['text'])
 async def start_message(ans: Message):
     chat_id = ans.from_id
@@ -311,26 +321,26 @@ async def start_message(ans: Message):
         storage.delete_user_or_userdata(chat_id)  # Удаляем пользвателя из базы данных
     await ans.answer('Привет\n')
     await ans.answer('Для начала пройдите небольшую регистрацию😉\n')
-    await ans.answer('Во время регистрации, если вы совершите ошибку, то в любой момент можно прописать команду /start и начать всё сначала 😉\n')
     await ans.answer('Выберите институт.', keyboard=make_keyboard_institutes(storage.get_institutes()))
 
     add_statistics(action='start')
 
 
-# Команда /reg
-@bot.on.message(text='/reg')
+# Команда Регистрация
+@bot.on.message(text='Регистрация')
 async def registration(ans: Message):
     chat_id = ans.from_id
     # Проверяем есть пользователь в базе данных
     if storage.get_user(chat_id):
         storage.delete_user_or_userdata(chat_id)  # Удаляем пользвателя из базы данных
-    await ans.answer('Пройдите повторную регистрацию😉\n')
+    await ans.answer('Повторная регистрация😉\n')
     await ans.answer('Выберите институт.', keyboard=make_keyboard_institutes(storage.get_institutes()))
+
 
     add_statistics(action='reg')
 
 
-# Команда /map
+# Команда Карта
 @bot.on.message(text=content_map['text'])
 async def map(ans: Message):
     chat_id = ans.from_id
@@ -344,37 +354,36 @@ async def map(ans: Message):
     add_statistics(action='map')
 
 
-# Команда /help
-@bot.on.message(text='/help')
-async def help(ans: Message):
-    chat_id = ans.from_id
-    await ans.answer('Список команд:\n'
-              '/about - описание чат бота\n'
-              '/authors - список авторов \n'
-              '/reg - повторная регистрация\n'
-              '/map - карта университета')
-
-    add_statistics(action='help')
-
-
-# Команда /about
-@bot.on.message(text='/about')
-async def about(ans: Message):
-    chat_id = ans.from_id
-    await ans.answer('О боте:\n'
-              'Smart schedule IRNITU bot - это чат бот для просмотра расписания занятий в '
-              'Иркутском национальном исследовательском техническом университете\n\n'
-              'Благодаря боту можно:\n'
-              '- Узнать актуальное расписание\n'
-              '- Нажатием одной кнопки увидеть информацию о ближайшей паре\n'
-              '- Настроить гибкие уведомления с информацией из расписания, '
-              'которые будут приходить за определённое время до начала занятия', keyboard=make_keyboard_start_menu())
-
-    add_statistics(action='about')
+# # Команда help
+# @bot.on.message(text='help')
+# async def help(ans: Message):
+#     chat_id = ans.from_id
+#     await ans.answer('Список команд:\n'
+#               'Авторы - список авторов \n'
+#               'Регистрация - повторная регистрация\n'
+#               'Карта - карта университета')
+#
+#     add_statistics(action='help')
 
 
-# Команда /authors
-@bot.on.message(text='/authors')
+# # Команда /about
+# @bot.on.message(text='about')
+# async def about(ans: Message):
+#     chat_id = ans.from_id
+#     await ans.answer('О боте:\n'
+#               'Smart schedule IRNITU bot - это чат бот для просмотра расписания занятий в '
+#               'Иркутском национальном исследовательском техническом университете\n\n'
+#               'Благодаря боту можно:\n'
+#               '- Узнать актуальное расписание\n'
+#               '- Нажатием одной кнопки увидеть информацию о ближайшей паре\n'
+#               '- Настроить гибкие уведомления с информацией из расписания, '
+#               'которые будут приходить за определённое время до начала занятия', keyboard=make_keyboard_start_menu())
+#
+#     add_statistics(action='about')
+
+
+# Команда Авторы
+@bot.on.message(text='Авторы')
 async def authors(ans: Message):
     chat_id = ans.from_id
     await ans.answer('Авторы проекта:\n'
@@ -396,7 +405,7 @@ async def scheduler(ans: Message):
     data = ans.text
     user = storage.get_user(chat_id=chat_id)
 
-    if 'Расписание' == data and user:
+    if 'Расписание 🗓' == data and user:
         await ans.answer('Выберите период\n', keyboard=make_keyboard_choose_schedule())
         add_statistics(action='Расписание')
 
@@ -428,7 +437,7 @@ async def scheduler(ans: Message):
 
 
 
-    elif 'Расписание на сегодня' == data and user:
+    elif 'Расписание на сегодня 🍏' == data and user:
         group = storage.get_user(chat_id=chat_id)['group']
         schedule = storage.get_schedule(group=group)
         if not schedule:
@@ -445,7 +454,7 @@ async def scheduler(ans: Message):
         await ans.answer(f'{schedule_one_day}')
         add_statistics(action='Расписание на сегодня')
 
-    elif 'Расписание на завтра' == data and user:
+    elif 'Расписание на завтра 🍎' == data and user:
         group = storage.get_user(chat_id=chat_id)['group']
         schedule = storage.get_schedule(group=group)
         if not schedule:
@@ -455,13 +464,14 @@ async def scheduler(ans: Message):
             return
         schedule = schedule['schedule']
         week = find_week()
-        if datetime.now(TZ_IRKUTSK).strftime('%A').lower() == 'воскресенье':
+        if datetime.today().isoweekday() == 7:
             if week == 'odd':
-                week == 'even'
+                week = 'even'
             elif week == 'even':
                 week = 'odd'
             else:
                 week = 'all'
+
         schedule_next_day = get_next_day_schedule_in_str(schedule=schedule, week=week)
         if not schedule_next_day:
             await ans.answer('Завтра пар нет 😎')
@@ -469,7 +479,7 @@ async def scheduler(ans: Message):
         await ans.answer(f'{schedule_next_day}')
         add_statistics(action='Расписание на завтра')
 
-    elif 'Ближайшая пара' in data and user:
+    elif 'Ближайшая пара ⏱' in data and user:
         await ans.answer('Ближайшая пара', keyboard=make_keyboard_nearlesson())
         add_statistics(action='Ближайшая пара')
         return
@@ -585,7 +595,7 @@ async def wrapper(ans: Message):
             await ans.answer(f'Вы выбрали: {message_inst}\n')
             await ans.answer('Выберите курс.', keyboard=make_keyboard_choose_course_vk(storage.get_courses(message_inst)))
         else:
-            await ans.answer('Я вас не понимаю\n')
+            await ans.answer('Ради твоего удобства, я вывел клавиатуру со списком инстиутов ниже 😸👇🏻')
         return
 
     # Если нажал кнопку Назад к институтам
@@ -615,7 +625,7 @@ async def wrapper(ans: Message):
             await ans.answer(f'Вы выбрали: {message}\n')
             await ans.answer('Выберите группу.', keyboard=make_keyboard_choose_group_vk(groups))
         else:
-            await ans.answer('Я вас не понимаю\n')
+            await ans.answer('Не огорчай меня, я же не просто так старался над клавиатурой 😼👇🏻')
         return
     # Регистрация после выбора курса
     elif not 'group' in user.keys():
@@ -628,18 +638,18 @@ async def wrapper(ans: Message):
             # Записываем в базу данных выбранную группу
             storage.save_or_update_user(chat_id=chat_id, group=message)
             await ans.answer('Вы успешно зарегистрировались!😊\n\n'
-                      'Для того чтобы пройти регистрацию повторно, воспользуйтесь командой /reg\n'
-                      'Основные команды - /help', keyboard=make_keyboard_start_menu())
+                      'Для того чтобы пройти регистрацию повторно, напишите сообщение "Регистрация"\n'
+                      , keyboard=make_keyboard_start_menu())
         else:
             if message == "Далее":
                 await ans.answer('Выберите группу.', keyboard=make_keyboard_choose_group_vk_page_2(groups))
             elif message == "Назад":
                 await ans.answer('Выберите группу.', keyboard=make_keyboard_choose_group_vk(groups))
             else:
-                await ans.answer('Я вас не понимаю\n')
+                await ans.answer('Я очень сомневаюсь, что твоей группы нет в списке ниже 😉')
         return
 
-    elif 'Напоминание' in message and user:
+    elif 'Напоминание 📣' in message and user:
         time = user['notifications']
         # Проверяем стату напоминания
         if not time:
@@ -704,16 +714,24 @@ async def wrapper(ans: Message):
 
     elif 'Список команд' == message and user:
         await ans.answer('Список команд:\n'
-              '/about - описание чат бота\n'
-              '/authors - список авторов \n'
-              '/reg - повторная регистрация\n'
-              '/map - карта университета', keyboard=make_keyboard_commands())
+              'Авторы - список авторов \n'
+              'Регистрация- повторная регистрация\n'
+              'Карта - карта университета', keyboard=make_keyboard_commands())
+
+        add_statistics(action='help')
+        return
+
+    elif 'Другое ⚡' == message and user:
+        await ans.answer('Другое', keyboard=make_keyboard_extra())
 
         add_statistics(action='help')
         return
 
     else:
-        await ans.answer('Я вас не понимаю 😞')
+        await ans.answer('Такому ещё не научили 😇, знаю только эти команды:\n'
+                             'Авторы - список авторов \n'
+                             'Регистрация - повторная регистрация\n'
+                             'Карта - карта университета')
         add_statistics(action='bullshit')
 
 
