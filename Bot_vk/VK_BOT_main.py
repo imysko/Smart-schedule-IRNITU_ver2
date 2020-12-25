@@ -582,8 +582,10 @@ async def wrapper(ans: Message):
     # Сохраняет в месседж полное название универ для корректного сравнения
     institutes = name_institutes(storage.get_institutes())
     for institute in institutes:
-        if message_inst[:-5] in institute:
-            message_inst = institute
+        if len(message_inst)>5:
+            if message_inst[:-5] in institute:
+                message_inst = institute
+
 
     # Если пользователя нет в базе данных
     if not user:
@@ -731,7 +733,7 @@ async def wrapper(ans: Message):
         await ans.answer('Такому ещё не научили 😇, знаю только эти команды:\n'
                              'Авторы - список авторов \n'
                              'Регистрация - повторная регистрация\n'
-                             'Карта - карта университета')
+                             'Карта - карта университета', keyboard=make_keyboard_start_menu())
         add_statistics(action='bullshit')
 
 
