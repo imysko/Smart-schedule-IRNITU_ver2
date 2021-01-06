@@ -66,6 +66,8 @@ services:
     build: nginx/
     restart: always
     container_name: nginx
+    ports:
+      - 0.0.0.0:8080:80
 
 
   mongodb:
