@@ -6,3 +6,4 @@ data
 web_manager-wsgi
 *.DS_Store
 web_manager/app/static/.DS_Store
+.env

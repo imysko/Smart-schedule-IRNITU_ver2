@@ -7,8 +7,7 @@ services:
   tg_bot:
     build: tg_bot/
     restart: always
-    ports:
-      - 0.0.0.0:8080:8080
+    container_name: tg_bot
     environment:
       - TOKEN=${TG_TOKEN} # токен telegram бота
       - HOST_URL=${HOST_URL} # URL сервера (если оставить HOST_URL пустымм, то бот запустится локально)
@@ -16,18 +15,22 @@ services:
       - MONGO_DB_PORT=27017 # порт mongoDB
       - MONGO_DB_DATABASE=Smart_schedule_IRNITU # название базы данных
 
+
   vk_bot:
     build: Bot_vk/
     restart: always
+    container_name: vk_bot
     environment:
       - VK=${VK_TOKEN} # токен telegram бота
       - MONGO_DB_ADDR=mongodb # адрес mongoDB
       - MONGO_DB_PORT=27017 # порт mongoDB
       - MONGO_DB_DATABASE=Smart_schedule_IRNITU # название базы данных
 
+
   parser:
     build: parser/
     restart: always
+    container_name: parser
     environment:
       - URL_INSTITUTES=https://www.istu.edu/schedule/ # URL на страницу с выбором института
       - MONGO_DB_ADDR=mongodb # адрес mongoDB
@@ -39,6 +42,7 @@ services:
   notification_service:
     build: notification_service/
     restart: always
+    container_name: notification_service
     environment:
       - TOKEN=${TG_TOKEN} # токен telegram бота
       - VK=${VK_TOKEN} # токен VK бота
@@ -50,13 +54,20 @@ services:
   web_manager:
     build: web_manager/
     restart: always
-    ports:
-      - 0.0.0.0:8081:8081
+    container_name: web_manager
     environment:
       - TG_TOKEN=${TG_TOKEN} # токен telegram бота
       - MONGO_DB_ADDR=mongodb # адрес mongoDB
       - MONGO_DB_PORT=27017 # порт mongoDB
       - MONGO_DB_DATABASE=Smart_schedule_IRNITU # название базы данных
+
+
+  nginx:
+    build: nginx/
+    restart: always
+    container_name: nginx
+    ports:
+      - 0.0.0.0:8080:80
 
 
   mongodb:
