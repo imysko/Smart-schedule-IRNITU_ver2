@@ -1,19 +1,19 @@
 import unittest
-from data_conversion import convert_institutes
+from data_conversion import convert_institutes, convert_groups
 
 
 class TestConversionMethods(unittest.TestCase):
 
     def test_convert_institutes_oneDictInList(self):
-        input_value = [{'id_5': 664, 'fac': 'Аспирантура'}]
+        input_value = [{'fac': 'Аспирантура'}]
         expected = [{'name': 'Аспирантура'}]
         result = convert_institutes(input_value)
         self.assertEqual(result, expected)
 
     def test_convert_institutes_aFewDictInList(self):
         input_value = [
-            {'id_5': 1, 'fac': 'Институт авиамашиностроения и транспорта'},
-            {'id_5': 680, 'fac': 'Институт заочно-вечернего обучения'}
+            {'fac': 'Институт авиамашиностроения и транспорта'},
+            {'fac': 'Институт заочно-вечернего обучения'}
         ]
         expected = [
             {'name': 'Институт авиамашиностроения и транспорта'},
@@ -27,6 +27,30 @@ class TestConversionMethods(unittest.TestCase):
         with self.assertRaises(ValueError):
             convert_institutes(input_value)
 
+    def test_convert_groups_oneDictInList(self):
+        input_value = [{'obozn': 'ПСУм-20-1', 'kurs': 1, 'fac': 'Институт высоких технологий'}]
+        expected = [{'name': 'ПСУм-20-1', 'course': '1 курс', 'institute': 'Институт высоких технологий'}]
+        result = convert_groups(input_value)
+        self.assertEqual(result, expected)
+
+    def test_convert_groups_aFewDictInList(self):
+        input_value = [
+            {'obozn': 'ГРб-20-1', 'kurs': 1, 'fac': 'Институт архитектуры, строительства и дизайна'},
+            {'obozn': 'ИГ-17-1', 'kurs': 4, 'fac': 'Институт недропользования'},
+            {'obozn': 'УКбп-17-1', 'kurs': 4, 'fac': 'Институт высоких технологий'}
+        ]
+        expected = [
+            {'name': 'ГРб-20-1', 'course': '1 курс', 'institute': 'Институт архитектуры, строительства и дизайна'},
+            {'name': 'ИГ-17-1', 'course': '4 курс', 'institute': 'Институт недропользования'},
+            {'name': 'УКбп-17-1', 'course': '4 курс', 'institute': 'Институт высоких технологий'}
+        ]
+        result = convert_groups(input_value)
+        self.assertEqual(result, expected)
+
+    def test_convert_groups_emptyList_returnValueError(self):
+        input_value = []
+        with self.assertRaises(ValueError):
+            convert_groups(input_value)
 
 
 if __name__ == '__main__':

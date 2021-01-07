@@ -19,17 +19,24 @@ db_params = {
 }
 
 
-def get_institutes() -> dict:
+def get_institutes() -> list:
+    """Получение институтов из PostgreSQL"""
     with closing(psycopg2.connect(**db_params)) as conn:
-        print('Database opened successfully')
         with conn.cursor(cursor_factory=DictCursor) as cursor:
-            cursor.execute("SELECT id_5, fac from vacfac")
+            cursor.execute("SELECT fac from vacfac")
             rows = cursor.fetchall()
-
-            for row in rows:
-                print(dict(row))
-
-    print("\nOperation done successfully")
+            institutes = [dict(institute) for institute in rows]
+            return institutes
 
 
-get_institutes()
+def get_groups() -> list:
+    """Получение групп из PostgreSQL"""
+    with closing(psycopg2.connect(**db_params)) as conn:
+        with conn.cursor(cursor_factory=DictCursor) as cursor:
+            # Вместо id института подставляется сразу название.
+            cursor.execute("SELECT groups.obozn, groups.kurs, vacfac.fac "
+                           "from groups join vacfac "
+                           "on groups.fac = vacfac.id_5")
+            rows = cursor.fetchall()
+            groups = [dict(group) for group in rows]
+            return groups
