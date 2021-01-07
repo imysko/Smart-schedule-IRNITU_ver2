@@ -2,6 +2,8 @@ import postgre_storage
 import data_conversion
 from mongo_storage import MongodbService
 
+from pprint import pprint
+
 mongo_storage = MongodbService().get_instance()
 
 
@@ -21,6 +23,7 @@ def main():
 
     # Курсы
     mongo_courses = data_conversion.convert_courses(mongo_groups)
+    pprint(mongo_courses)
     mongo_storage.save_groups(mongo_groups)  # Сохраняем группы
     mongo_storage.save_courses(mongo_courses)  # Сохраняем курсы
 

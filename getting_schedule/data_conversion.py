@@ -31,6 +31,11 @@ def convert_courses(mongo_groups: list) -> list:
     for group in mongo_groups:
         group.pop('name', None)
         group['name'] = group.pop('course')
+    mongo_groups = sorted(mongo_groups, key=lambda x: x['name'])  # Сортируем массив
 
-    courses = [el for el, _ in groupby(mongo_groups)]  # Удаляем поторяющиеся элементы
+    # Удаляем поторяющиеся элементы
+    courses = []
+    for item in mongo_groups:
+        if item not in courses:
+            courses.append(item)
     return courses

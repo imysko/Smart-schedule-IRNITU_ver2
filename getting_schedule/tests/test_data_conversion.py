@@ -57,17 +57,21 @@ class TestConversionMethods(unittest.TestCase):
     # Курсы
     def test_convert_courses_aFewDictInList(self):
         input_value = [
+            {'name': 'УКбп-17-1', 'course': '4 курс', 'institute': 'Институт высоких технологий'},
+            {'name': 'УВФ-17-1', 'course': '4 курс', 'institute': 'Институт недропользования'},
             {'name': 'ГРб-20-1', 'course': '1 курс', 'institute': 'Институт архитектуры, строительства и дизайна'},
             {'name': 'УКбп-19-1', 'course': '2 курс', 'institute': 'Институт высоких технологий'},
             {'name': 'ИГ-18-1', 'course': '3 курс', 'institute': 'Институт недропользования'},
-            {'name': 'УКбп-17-1', 'course': '4 курс', 'institute': 'Институт высоких технологий'},
+            {'name': 'йцу-18-1', 'course': '3 курс', 'institute': 'Институт недропользования'},
+            {'name': 'фывв-18-1', 'course': '3 курс', 'institute': 'Институт недропользования'},
             {'name': 'АБВб-17-1', 'course': '4 курс', 'institute': 'Институт высоких технологий'}
         ]
         expected = [
             {'name': '1 курс', 'institute': 'Институт архитектуры, строительства и дизайна'},
             {'name': '2 курс', 'institute': 'Институт высоких технологий'},
             {'name': '3 курс', 'institute': 'Институт недропользования'},
-            {'name': '4 курс', 'institute': 'Институт высоких технологий'}
+            {'name': '4 курс', 'institute': 'Институт высоких технологий'},
+            {'name': '4 курс', 'institute': 'Институт недропользования', }
         ]
         result = convert_courses(input_value)
         self.assertEqual(result, expected)
