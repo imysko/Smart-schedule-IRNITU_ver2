@@ -40,3 +40,30 @@ def get_groups() -> list:
             rows = cursor.fetchall()
             groups = [dict(group) for group in rows]
             return groups
+
+
+def get_schedule() -> list:
+    """Получение расписания групп из PostgreSQL"""
+    with closing(psycopg2.connect(**db_params)) as conn:
+        with conn.cursor(cursor_factory=DictCursor) as cursor:
+            # Вместо id института подставляется сразу название.
+            cursor.execute("SELECT "
+                           "groups.obozn, "
+                           "vacpara.begtime, "
+                           "everyweek, "
+                           "prepods.preps, "
+                           "auditories_verbose, "
+                           "day, "
+                           "nt, "
+                           "disciplines.title, "
+                           "ngroup "
+                           "from schedule "
+                           "join groups on schedule.group_id = groups.id_7 "
+                           "join vacpara on schedule.para = vacpara.id_66 "
+                           
+                           "join prepods on schedule.teachers[1] = prepods.id_61 "
+                           
+                           "join disciplines on schedule.discipline = disciplines.id ")
+            rows = cursor.fetchall()
+            groups = [dict(group) for group in rows]
+            return groups

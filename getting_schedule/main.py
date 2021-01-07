@@ -26,6 +26,9 @@ def main():
                            key=lambda x: x['name'])
     mongo_storage.save_courses(mongo_courses)  # Сохраняем курсы
 
+    # Расписание
+    pg_schedule = postgre_storage.get_schedule()
+
 
 if __name__ == '__main__':
     main()
