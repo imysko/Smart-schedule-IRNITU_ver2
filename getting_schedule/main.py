@@ -18,7 +18,11 @@ def main():
     # Группы
     pg_groups = postgre_storage.get_groups()
     mongo_groups = data_conversion.convert_groups(pg_groups)
-    mongo_storage.save_groups(mongo_groups)
+
+    # Курсы
+    mongo_courses = data_conversion.convert_courses(mongo_groups)
+    mongo_storage.save_groups(mongo_groups)  # Сохраняем группы
+    mongo_storage.save_courses(mongo_courses)  # Сохраняем курсы
 
 
 if __name__ == '__main__':

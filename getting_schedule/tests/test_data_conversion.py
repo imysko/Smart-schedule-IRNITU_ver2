@@ -1,9 +1,10 @@
 import unittest
-from data_conversion import convert_institutes, convert_groups
+from data_conversion import convert_institutes, convert_groups, convert_courses
 
 
 class TestConversionMethods(unittest.TestCase):
 
+    # Институты
     def test_convert_institutes_oneDictInList(self):
         input_value = [{'fac': 'Аспирантура'}]
         expected = [{'name': 'Аспирантура'}]
@@ -27,6 +28,7 @@ class TestConversionMethods(unittest.TestCase):
         with self.assertRaises(ValueError):
             convert_institutes(input_value)
 
+    # Группы
     def test_convert_groups_oneDictInList(self):
         input_value = [{'obozn': 'ПСУм-20-1', 'kurs': 1, 'fac': 'Институт высоких технологий'}]
         expected = [{'name': 'ПСУм-20-1', 'course': '1 курс', 'institute': 'Институт высоких технологий'}]
@@ -51,6 +53,29 @@ class TestConversionMethods(unittest.TestCase):
         input_value = []
         with self.assertRaises(ValueError):
             convert_groups(input_value)
+
+    # Курсы
+    def test_convert_courses_aFewDictInList(self):
+        input_value = [
+            {'name': 'ГРб-20-1', 'course': '1 курс', 'institute': 'Институт архитектуры, строительства и дизайна'},
+            {'name': 'УКбп-19-1', 'course': '2 курс', 'institute': 'Институт высоких технологий'},
+            {'name': 'ИГ-18-1', 'course': '3 курс', 'institute': 'Институт недропользования'},
+            {'name': 'УКбп-17-1', 'course': '4 курс', 'institute': 'Институт высоких технологий'},
+            {'name': 'АБВб-17-1', 'course': '4 курс', 'institute': 'Институт высоких технологий'}
+        ]
+        expected = [
+            {'name': '1 курс', 'institute': 'Институт архитектуры, строительства и дизайна'},
+            {'name': '2 курс', 'institute': 'Институт высоких технологий'},
+            {'name': '3 курс', 'institute': 'Институт недропользования'},
+            {'name': '4 курс', 'institute': 'Институт высоких технологий'}
+        ]
+        result = convert_courses(input_value)
+        self.assertEqual(result, expected)
+
+    def test_convert_courses_emptyList_returnValueError(self):
+        input_value = []
+        with self.assertRaises(ValueError):
+            convert_courses(input_value)
 
 
 if __name__ == '__main__':

@@ -1,3 +1,6 @@
+from itertools import groupby
+
+
 def convert_institutes(pg_institutes: list) -> list:
     """Преобразование формата институтов"""
     if not pg_institutes:
@@ -17,3 +20,17 @@ def convert_groups(pg_groups: list) -> list:
     } for group in pg_groups]
 
     return result_data
+
+
+def convert_courses(mongo_groups: list) -> list:
+    """Получение курсов из информации о группах"""
+    if not mongo_groups:
+        raise ValueError('Данные не могут быть пустыми')
+
+    # Удаляем информацию о курсе, меняем ключ course на name
+    for group in mongo_groups:
+        group.pop('name', None)
+        group['name'] = group.pop('course')
+
+    courses = [el for el, _ in groupby(mongo_groups)]  # Удаляем поторяющиеся элементы
+    return courses
