@@ -2,8 +2,6 @@ import postgre_storage
 import data_conversion
 from mongo_storage import MongodbService
 
-from pprint import pprint
-
 mongo_storage = MongodbService().get_instance()
 
 
@@ -13,18 +11,19 @@ def main():
     pg_institutes = postgre_storage.get_institutes()
     # Преобразуем данные в нужный формат.
     mongo_institutes = sorted(data_conversion.convert_institutes(pg_institutes),
-                              key=lambda x: x['name'])
+                              key=lambda x: x['name'])  # Сортируем массив
     # Сохраняем данные.
     mongo_storage.save_institutes(mongo_institutes)
 
     # Группы
     pg_groups = postgre_storage.get_groups()
-    mongo_groups = data_conversion.convert_groups(pg_groups)
+    mongo_groups = sorted(data_conversion.convert_groups(pg_groups),
+                          key=lambda x: x['name'])
+    mongo_storage.save_groups(mongo_groups)  # Сохраняем группы
 
     # Курсы
-    mongo_courses = data_conversion.convert_courses(mongo_groups)
-    pprint(mongo_courses)
-    mongo_storage.save_groups(mongo_groups)  # Сохраняем группы
+    mongo_courses = sorted(data_conversion.convert_courses(mongo_groups),
+                           key=lambda x: x['name'])
     mongo_storage.save_courses(mongo_courses)  # Сохраняем курсы
 
 

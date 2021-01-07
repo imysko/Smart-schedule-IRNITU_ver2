@@ -1,6 +1,3 @@
-from itertools import groupby
-
-
 def convert_institutes(pg_institutes: list) -> list:
     """Преобразование формата институтов"""
     if not pg_institutes:
@@ -30,8 +27,8 @@ def convert_courses(mongo_groups: list) -> list:
     # Удаляем информацию о курсе, меняем ключ course на name
     for group in mongo_groups:
         group.pop('name', None)
+        group.pop('_id', None)
         group['name'] = group.pop('course')
-    mongo_groups = sorted(mongo_groups, key=lambda x: x['name'])  # Сортируем массив
 
     # Удаляем поторяющиеся элементы
     courses = []
