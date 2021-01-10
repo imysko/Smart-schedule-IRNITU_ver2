@@ -6,8 +6,8 @@ from datetime import datetime
 import os
 from time import sleep
 
+from functions.near_lesson import get_near_lesson, get_now_lesson
 from functions.storage import MongodbService
-from functions.near_lesson import get_near_lesson
 from functions.logger import logger
 from functions.creating_schedule import full_schedule_in_str, get_one_day_schedule_in_str, get_next_day_schedule_in_str
 from functions.find_week import find_week
@@ -83,6 +83,7 @@ def help(message):
 
     add_statistics(action='help')
 
+
 # Команда /map
 @bot.message_handler(commands=['map'])
 def map(message):
@@ -93,6 +94,7 @@ def map(message):
     # bot.send_document(chat_id, map)
 
     add_statistics(action='map')
+
 
 # Команда /about
 @bot.message_handler(commands=['about'])
@@ -353,7 +355,7 @@ def text(message):
 
     user = storage.get_user(chat_id=chat_id)
 
-    if 'Расписание' == data and user:
+    if 'Расписание 🗓' == data and user:
         try:
             bot.send_message(chat_id=chat_id, text='Выберите период',
                              reply_markup=make_keyboard_choose_schedule())
@@ -397,7 +399,7 @@ def text(message):
 
         add_statistics(action=data)
 
-    elif 'Расписание на сегодня' == data and user:
+    elif 'Расписание на сегодня 🍏' in data and user:
         try:
             group = storage.get_user(chat_id=chat_id)['group']
         except Exception as e:
@@ -423,7 +425,7 @@ def text(message):
 
         add_statistics(action='Расписание на сегодня')
 
-    elif 'Расписание на завтра' == data and user:
+    elif 'Расписание на завтра 🍎' in data and user:
         try:
             group = storage.get_user(chat_id=chat_id)['group']
         except Exception as e:
@@ -449,7 +451,12 @@ def text(message):
 
         add_statistics(action='Расписание на завтра')
 
-    elif 'Ближайшая пара' in data and user:
+    elif 'Ближайшая пара ⏱' in data and user:
+        bot.send_message(chat_id, text='Ближайшая пара', reply_markup=make_keyboard_nearlesson())
+
+        add_statistics(action='Ближайшая пара')
+
+    elif 'Текущая' in data and user:
         try:
             group = storage.get_user(chat_id=chat_id)['group']
         except Exception as e:
@@ -463,18 +470,68 @@ def text(message):
 
         schedule = schedule['schedule']
         week = find_week()
-        near_lessons = get_near_lesson(schedule=schedule, week=week)
+        now_lessons = get_now_lesson(schedule=schedule, week=week)
 
         # если пар нет
-        if not near_lessons:
-            bot.send_message(chat_id=chat_id, text='Сегодня больше пар нет 😎')
+        if not now_lessons:
+            bot.send_message(chat_id=chat_id, text='Сейчас пары нет, можете отдохнуть')
+            add_statistics(action='Текущая')
+            return
+
+        now_lessons_str = ''
+        for near_lesson in now_lessons:
+            name = near_lesson['name']
+            if name == 'свободно':
+                bot.send_message(chat_id=chat_id, text='Сейчас пары нет, можете отдохнуть',
+                                 reply_markup=make_keyboard_start_menu())
+                return
+            now_lessons_str += '-------------------------------------------\n'
+            aud = near_lesson['aud']
+            if aud:
+                aud = f'Аудитория: {aud}\n'
+            time = near_lesson['time']
+            info = near_lesson['info'].replace(",", "")
+            prep = near_lesson['prep']
+
+            now_lessons_str += f'<b>{time}</b>\n' \
+                               f'{aud}' \
+                               f'👉{name}\n' \
+                               f'{info} {prep}\n'
+        now_lessons_str += '-------------------------------------------\n'
+        bot.send_message(chat_id=chat_id, text=f'🧠Текущая пара🧠\n'
+                                               f'{now_lessons_str}', parse_mode='HTML',
+                         reply_markup=make_keyboard_start_menu())
+
+        add_statistics(action='Текущая')
+
+    elif 'Следующая' in data and user:
+        try:
+            group = storage.get_user(chat_id=chat_id)['group']
+        except Exception as e:
+            logger.exception(e)
+            return
+        schedule = storage.get_schedule(group=group)
+
+        # Проверяем есть ли у группы пользователя расписание
+        if not check_schedule(chat_id=chat_id, schedule=schedule):
+            return
+
+        schedule = schedule['schedule']
+        week = find_week()
+        now_lessons = get_now_lesson(schedule=schedule, week=week)
+
+        # если пар нет
+        if not now_lessons:
+            bot.send_message(chat_id=chat_id, text='Сегодня больше пар нет 😎', reply_markup=make_keyboard_start_menu())
+            add_statistics(action='Следующая')
             return
 
         near_lessons_str = ''
-        for near_lesson in near_lessons:
+        for near_lesson in now_lessons:
             name = near_lesson['name']
             if name == 'свободно':
-                bot.send_message(chat_id=chat_id, text='Сегодня больше пар нет 😎')
+                bot.send_message(chat_id=chat_id, text='Сегодня больше пар нет 😎',
+                                 reply_markup=make_keyboard_start_menu())
                 return
             near_lessons_str += '-------------------------------------------\n'
             aud = near_lesson['aud']
@@ -486,15 +543,16 @@ def text(message):
 
             near_lessons_str += f'<b>{time}</b>\n' \
                                 f'{aud}' \
-                                f'{name}\n' \
+                                f'👉{name}\n' \
                                 f'{info} {prep}\n'
         near_lessons_str += '-------------------------------------------\n'
-        bot.send_message(chat_id=chat_id, text=f'<b>Ближайшая пара</b>\n'
-                                               f'{near_lessons_str}', parse_mode='HTML')
+        bot.send_message(chat_id=chat_id, text=f'🧠Ближайшая пара🧠\n'
+                                               f'{near_lessons_str}', parse_mode='HTML',
+                         reply_markup=make_keyboard_start_menu())
 
-        add_statistics(action='Ближайшая пара')
+        add_statistics(action='Следующая')
 
-    elif 'Напоминания' in data and user:
+    elif 'Напоминание 📣' in data and user:
         time = user['notifications']
         if not time:
             time = 0
@@ -507,6 +565,41 @@ def text(message):
         bot.send_message(chat_id, text='Основное меню', reply_markup=make_keyboard_start_menu())
 
         add_statistics(action='Основное меню')
+
+    elif 'Авторы' == data and user:
+        bot.send_message(chat_id, parse_mode='HTML', text='<b>Авторы проекта:\n</b>'
+                                       '- Алексей @bolanebyla\n'
+                                       '- Султан @ace_sultan\n'
+                                       '- Александр @alexandrshen\n'
+                                       '- Владислав @TixoNNNAN\n'
+                                       '- Кирилл @ADAMYORT\n\n'
+                                       'По всем вопросом и предложениям пишите нам в личные сообщения. '
+                                       'Будем рады 😉\n')
+
+        add_statistics(action='Авторы')
+
+    elif 'Список команд' in data and user:
+        bot.send_message(chat_id, text='Список команд:\n'
+                                       'Авторы - список авторов \n'
+                                       'Регистрация- повторная регистрация\n'
+                                       'Карта - карта университета', reply_markup=make_keyboard_commands())
+
+        add_statistics(action='Другое')
+
+    elif 'Другое ⚡' in data and user:
+        bot.send_message(chat_id, text='Другое', reply_markup=make_keyboard_extra())
+
+        add_statistics(action='Другое')
+
+    elif 'Регистрация' in data and user:
+        bot.send_message(chat_id=chat_id, text='Пройдите повторную регистрацию😉\n'
+                                               'Выберите институт',
+                         reply_markup=make_inline_keyboard_choose_institute(storage.get_institutes()))
+
+    elif 'Карта' in data and user:
+        bot.send_message(chat_id=chat_id, text='Подождите, карта загружается...')
+        bot.send_photo(chat_id, (open('map.jpg', "rb")))
+        add_statistics(action='Карта')
 
     else:
         bot.send_message(chat_id, text='Я вас не понимаю 😞')
