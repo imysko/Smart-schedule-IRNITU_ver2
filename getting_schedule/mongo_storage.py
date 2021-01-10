@@ -37,9 +37,10 @@ class MongodbService(object):
         self._db.groups.drop()  # очищаем старые записи в коллекции
         return self._db.groups.insert_many(groups)
 
-    def save_schedule(self, schedule: dict):
+    def save_schedule(self, schedule: list):
         """Сохраняет расписание в коллекцию schedule"""
-        return self._db.schedule.update_one(filter={'group': schedule['group']}, update={'$set': schedule}, upsert=True)
+        self._db.schedule.drop()  # очищаем старые записи в коллекции
+        return self._db.schedule.insert_many(schedule)
 
     def save_status(self, date, time, getting_schedule_time_hours):
         """Сохраняет время последнего обращения к PostgreSQL"""
