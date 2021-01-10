@@ -26,9 +26,30 @@ def main():
                            key=lambda x: x['name'])
     mongo_storage.save_courses(mongo_courses)  # Сохраняем курсы
 
+    # ============РАБОТАЕТ НЕ КОРРЕКТНО============
     # Расписание
-    pg_schedule = postgre_storage.get_schedule()
+    import time
 
+    start_time1 = time.time()
+    pg_schedule = postgre_storage.get_schedule()
+    end_time1 = time.time()
+    print('1')
+
+    start_time2 = time.time()
+    print(len(pg_schedule))
+    mongo_schedule = data_conversion.convert_schedule(pg_schedule)
+    end_time2 = time.time()
+
+    mongo_storage.save_schedule(mongo_schedule)
+
+    print('postgre_storage.get_schedule()')
+    print("--- %s seconds ---" % (end_time1 - start_time1))
+
+    print('data_conversion.convert_schedule(pg_schedule)')
+    print("--- %s seconds ---" % (end_time2 - start_time2))
+
+
+# =====================================
 
 if __name__ == '__main__':
     main()

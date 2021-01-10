@@ -36,3 +36,118 @@ def convert_courses(mongo_groups: list) -> list:
         if item not in courses:
             courses.append(item)
     return courses
+
+
+DAYS = {
+    1: 'понедельник',
+    2: 'вторник',
+    3: 'среда',
+    4: 'четверг',
+    5: 'пятница',
+    6: 'суббота',
+    7: 'воскресенье'
+}
+
+def getting_week_and_day_of_week(pg_lesson: dict) -> tuple:
+    """Определение четности недели и дня недели"""
+
+    if pg_lesson['everyweek'] == 2:
+        week = 'all'
+        day = DAYS[pg_lesson['day']]
+    else:
+        if pg_lesson['day'] <= 7:
+            week = 'even'
+            day = DAYS[pg_lesson['day']]
+        else:
+            week = 'odd'
+            day = DAYS[pg_lesson['day'] - 7]
+
+    return week, day
+
+
+def is_there_dict_with_value_in_list(input_list_with_dict: list, value: str) -> bool:
+    if not input_list_with_dict:
+        return False
+
+    for dict_item in input_list_with_dict:
+        if value in dict_item.values():
+            return True
+    return False
+
+
+def get_dict_key(d, value):
+    """Получение ключа по значеню словаря"""
+    for k, v in d.items():
+        if v == value:
+            return k
+
+
+def convert_schedule(pg_schedule: list) -> list:
+    """Преобразование формата расписания"""
+
+    # Сортируем массив, чтобы одинаковые группы стояли рядом.
+    pg_schedule = sorted(pg_schedule, key=lambda x: x['obozn'])
+
+
+
+
+    all_schedule = []
+
+    schedule = []
+
+    for item in pg_schedule:
+        week, day = getting_week_and_day_of_week(item)
+
+        if item['nt'] == 1:
+            info = '( Лекция )'
+        elif item['nt'] == 2:
+            if item['ngroup']:
+                info = f'( Практ. подгруппа {item["ngroup"]} )'
+            else:
+                info = '( Практ. )'
+        else:
+            if item['ngroup']:
+                info = f'( Лаб. раб. подгруппа {item["ngroup"]} )'
+            else:
+                info = f'( Лаб. раб. )'
+
+        lesson = {
+            'time': item['begtime'],
+            'week': week,
+            'name': item['title'],
+            'aud': item['auditories_verbose'],
+            'info': info,
+            'prep': item['preps'].strip(),
+        }
+
+        if not is_there_dict_with_value_in_list(schedule, day):
+            schedule.append(
+                {
+                    'day': day,
+                    'lessons': []
+                }
+            )
+
+        for sch in schedule:
+            if sch['day'] == day:
+                sch['lessons'].append(lesson)
+
+
+        # Если нашлась другая группа или это последний жлемен списка, сохраняем предыдущую.
+        current_group = item['obozn']
+        next_group = ''
+        if item != pg_schedule[-1]:
+            next_group = pg_schedule[pg_schedule.index(item) + 1]['obozn']
+
+        if current_group != next_group or item == pg_schedule[-1]:
+            # Сортируем пары в дне по времени
+            for sch in schedule:
+                sch['lessons'] = sorted(sch['lessons'], key=lambda x: int(x['time'].replace(':', '')))
+
+            all_schedule.append({
+                'group': current_group,
+                'schedule': sorted(schedule, key=lambda x: get_dict_key(DAYS, x['day']))
+            })
+
+            schedule = []
+    return all_schedule
