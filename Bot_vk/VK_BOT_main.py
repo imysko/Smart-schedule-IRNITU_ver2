@@ -404,7 +404,7 @@ async def scheduler(ans: Message):
     if ('На текущую неделю' == data or 'На следующую неделю' == data) and user:
         group = storage.get_user(chat_id=chat_id)['group']
         schedule = storage.get_schedule(group=group)
-        if not schedule:
+        if schedule['schedule'] == []:
             await ans.answer('Расписание временно недоступно\nПопробуйте позже⏱')
             add_statistics(action=data)
             return
@@ -670,14 +670,14 @@ async def wrapper(ans: Message):
         if time <= 0:
             time = 0
         storage.save_or_update_user(chat_id=chat_id, notifications=time)
-        await ans.answer('minus', keyboard=make_inline_keyboard_set_notifications(time))
+        await ans.answer('Минус 5 минут', keyboard=make_inline_keyboard_set_notifications(time))
         return
 
     elif '+' in message:
         time = user['notifications']
         time += 5
         storage.save_or_update_user(chat_id=chat_id, notifications=time)
-        await ans.answer('plus', keyboard=make_inline_keyboard_set_notifications(time))
+        await ans.answer('Плюс 5 минут', keyboard=make_inline_keyboard_set_notifications(time))
 
     elif 'Сохранить' in message:
 

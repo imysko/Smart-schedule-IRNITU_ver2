@@ -1,19 +1,19 @@
 from datetime import datetime, timedelta
+import platform
 import pytz
 import locale
 
-import platform
-
 TZ_IRKUTSK = pytz.timezone('Asia/Irkutsk')
+# определяем на Linux или на Windows мы запускаемся
 locale_name = ('ru_RU.UTF-8' if platform.system() == 'Linux' else 'ru_RU')
 locale.setlocale(locale.LC_TIME, locale_name)
 
 def full_schedule_in_str(schedule: list, week: str) -> list:
     schedule_str = []
+    day_now = datetime.now(TZ_IRKUTSK).strftime('%A').lower()
     for one_day in schedule:
         day = one_day['day'].upper()
         lessons = one_day['lessons']
-
         lessons_str = '-------------------------------------------\n'
         for lesson in lessons:
             name = lesson['name']
@@ -38,12 +38,17 @@ def full_schedule_in_str(schedule: list, week: str) -> list:
 
                 lessons_str += f'<b>{time}</b>\n' \
                                f'{aud}' \
-                               f'{name}\n' \
+                               f'👉{name}\n' \
                                f'{info} {prep}'
+
             lessons_str += '\n-------------------------------------------\n'
 
-        schedule_str.append(f'\n<b>{day}</b>\n'
-                            f'{lessons_str}')
+        if day_now == day.lower():
+            schedule_str.append(f'\n🍏{day}🍏\n'
+                                f'{lessons_str}')
+        else:
+            schedule_str.append(f'\n🍎{day}🍎\n'
+                                f'{lessons_str}')
 
     return schedule_str
 
@@ -51,7 +56,7 @@ def full_schedule_in_str(schedule: list, week: str) -> list:
 def get_one_day_schedule_in_str(schedule: list, week: str) -> str:
     day_now = datetime.now(TZ_IRKUTSK).strftime('%A')
     for one_day in schedule:
-        day = one_day['day']
+        day = one_day['day'].upper()
         if day.lower() == day_now.lower():
             lessons = one_day['lessons']
 
@@ -79,16 +84,16 @@ def get_one_day_schedule_in_str(schedule: list, week: str) -> str:
 
                     lessons_str += f'<b>{time}</b>\n' \
                                    f'{aud}' \
-                                   f'{name}\n' \
+                                   f'👉{name}\n' \
                                    f'{info} {prep}'
                 lessons_str += '\n-------------------------------------------\n'
 
-            return f'\n<b>{day}</b>\n{lessons_str}'
+            return f'\n🍏{day}🍏\n{lessons_str}'
 
 def get_next_day_schedule_in_str(schedule: list, week: str) -> str:
     day_tomorrow = (datetime.now(TZ_IRKUTSK) + timedelta(days=1)).strftime('%A')
     for one_day in schedule:
-        day = one_day['day']
+        day = one_day['day'].upper()
         if day.lower() == day_tomorrow.lower():
             lessons = one_day['lessons']
 
@@ -116,8 +121,8 @@ def get_next_day_schedule_in_str(schedule: list, week: str) -> str:
 
                     lessons_str += f'<b>{time}</b>\n' \
                                    f'{aud}' \
-                                   f'{name}\n' \
+                                   f'👉{name}\n' \
                                    f'{info} {prep}'
                 lessons_str += '\n-------------------------------------------\n'
 
-            return f'\n<b>{day}</b>\n{lessons_str}'
+            return f'\n🍎{day}🍎\n{lessons_str}'
