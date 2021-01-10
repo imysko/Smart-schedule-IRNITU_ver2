@@ -602,7 +602,10 @@ def text(message):
         add_statistics(action='Карта')
 
     else:
-        bot.send_message(chat_id, text='Я вас не понимаю 😞')
+        if user:
+            bot.send_message(chat_id, text='Я вас не понимаю 😞', reply_markup=make_keyboard_start_menu())
+        else:
+            bot.send_message(chat_id, text='Я вас не понимаю 😞')
 
         add_statistics(action='bullshit')
 
