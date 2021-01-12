@@ -586,30 +586,20 @@ class TestScheduleConversionMethods(unittest.TestCase):
         result = convert_schedule(input_value)
         self.assertEqual(result, expected)
 
-
-    def test_convert_schedule_aFewDictInListOneDay_RightInfo(self):
+    def test_convert_schedule_aFewDictInListOneDay_SubgroupsInRightOrder(self):
         input_value = [
             {'obozn': 'ТХб-18-2', 'begtime': '10:00', 'everyweek': 2,
              'preps': '', 'auditories_verbose': '', 'day': 3,
-             'nt': 1, 'title': 'les_1', 'ngroup': None},
+             'nt': 2, 'title': 'les_2', 'ngroup': 2},
             {'obozn': 'ТХб-18-2', 'begtime': '10:00', 'everyweek': 2,
              'preps': '', 'auditories_verbose': '', 'day': 3,
-             'nt': 2, 'title': 'les_2', 'ngroup': 1},
-            {'obozn': 'ТХб-18-2', 'begtime': '10:00', 'everyweek': 2,
+             'nt': 2, 'title': 'les_1', 'ngroup': 1},
+            {'obozn': 'ТХб-18-2', 'begtime': '11:45', 'everyweek': 2,
              'preps': '', 'auditories_verbose': '', 'day': 3,
-             'nt': 2, 'title': 'les_3', 'ngroup': 2},
-            {'obozn': 'ТХб-18-2', 'begtime': '10:00', 'everyweek': 2,
+             'nt': 3, 'title': 'les_4', 'ngroup': 2},
+            {'obozn': 'ТХб-18-2', 'begtime': '11:45', 'everyweek': 2,
              'preps': '', 'auditories_verbose': '', 'day': 3,
-             'nt': 2, 'title': 'les_4', 'ngroup': None},
-            {'obozn': 'ТХб-18-2', 'begtime': '10:00', 'everyweek': 2,
-             'preps': '', 'auditories_verbose': '', 'day': 3,
-             'nt': 3, 'title': 'les_5', 'ngroup': 1},
-            {'obozn': 'ТХб-18-2', 'begtime': '10:00', 'everyweek': 2,
-             'preps': '', 'auditories_verbose': '', 'day': 3,
-             'nt': 3, 'title': 'les_6', 'ngroup': 2},
-            {'obozn': 'ТХб-18-2', 'begtime': '10:00', 'everyweek': 2,
-             'preps': '', 'auditories_verbose': '', 'day': 3,
-             'nt': 3, 'title': 'les_7', 'ngroup': None},
+             'nt': 3, 'title': 'les_3', 'ngroup': 1},
         ]
 
         expected = [
@@ -624,7 +614,7 @@ class TestScheduleConversionMethods(unittest.TestCase):
                                 'week': 'all',
                                 'name': 'les_1',
                                 'aud': '',
-                                'info': '( Лекция )',
+                                'info': '( Практ. подгруппа 1 )',
                                 'prep': '',
                             },
                             {
@@ -632,11 +622,85 @@ class TestScheduleConversionMethods(unittest.TestCase):
                                 'week': 'all',
                                 'name': 'les_2',
                                 'aud': '',
+                                'info': '( Практ. подгруппа 2 )',
+                                'prep': '',
+                            },
+                            {
+                                'time': '11:45',
+                                'week': 'all',
+                                'name': 'les_3',
+                                'aud': '',
+                                'info': '( Лаб. раб. подгруппа 1 )',
+                                'prep': '',
+                            },
+                            {
+                                'time': '11:45',
+                                'week': 'all',
+                                'name': 'les_4',
+                                'aud': '',
+                                'info': '( Лаб. раб. подгруппа 2 )',
+                                'prep': '',
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+
+        result = convert_schedule(input_value)
+        self.assertEqual(result, expected)
+
+
+    def test_convert_schedule_aFewDictInListOneDay_RightInfo(self):
+        input_value = [
+            {'obozn': 'ТХб-18-2', 'begtime': '10:01', 'everyweek': 2,
+             'preps': '', 'auditories_verbose': '', 'day': 3,
+             'nt': 1, 'title': 'les_1', 'ngroup': None},
+            {'obozn': 'ТХб-18-2', 'begtime': '10:03', 'everyweek': 2,
+             'preps': '', 'auditories_verbose': '', 'day': 3,
+             'nt': 2, 'title': 'les_3', 'ngroup': 2},
+            {'obozn': 'ТХб-18-2', 'begtime': '10:02', 'everyweek': 2,
+             'preps': '', 'auditories_verbose': '', 'day': 3,
+             'nt': 2, 'title': 'les_2', 'ngroup': 1},
+            {'obozn': 'ТХб-18-2', 'begtime': '10:04', 'everyweek': 2,
+             'preps': '', 'auditories_verbose': '', 'day': 3,
+             'nt': 2, 'title': 'les_4', 'ngroup': None},
+            {'obozn': 'ТХб-18-2', 'begtime': '10:05', 'everyweek': 2,
+             'preps': '', 'auditories_verbose': '', 'day': 3,
+             'nt': 3, 'title': 'les_5', 'ngroup': 1},
+            {'obozn': 'ТХб-18-2', 'begtime': '10:06', 'everyweek': 2,
+             'preps': '', 'auditories_verbose': '', 'day': 3,
+             'nt': 3, 'title': 'les_6', 'ngroup': 2},
+            {'obozn': 'ТХб-18-2', 'begtime': '10:07', 'everyweek': 2,
+             'preps': '', 'auditories_verbose': '', 'day': 3,
+             'nt': 3, 'title': 'les_7', 'ngroup': None},
+        ]
+
+        expected = [
+            {
+                'group': 'ТХб-18-2',
+                'schedule': [
+                    {
+                        'day': 'среда',
+                        'lessons': [
+                            {
+                                'time': '10:01',
+                                'week': 'all',
+                                'name': 'les_1',
+                                'aud': '',
+                                'info': '( Лекция )',
+                                'prep': '',
+                            },
+                            {
+                                'time': '10:02',
+                                'week': 'all',
+                                'name': 'les_2',
+                                'aud': '',
                                 'info': '( Практ. подгруппа 1 )',
                                 'prep': '',
                             },
                             {
-                                'time': '10:00',
+                                'time': '10:03',
                                 'week': 'all',
                                 'name': 'les_3',
                                 'aud': '',
@@ -644,7 +708,7 @@ class TestScheduleConversionMethods(unittest.TestCase):
                                 'prep': '',
                             },
                             {
-                                'time': '10:00',
+                                'time': '10:04',
                                 'week': 'all',
                                 'name': 'les_4',
                                 'aud': '',
@@ -652,7 +716,7 @@ class TestScheduleConversionMethods(unittest.TestCase):
                                 'prep': '',
                             },
                             {
-                                'time': '10:00',
+                                'time': '10:05',
                                 'week': 'all',
                                 'name': 'les_5',
                                 'aud': '',
@@ -660,7 +724,7 @@ class TestScheduleConversionMethods(unittest.TestCase):
                                 'prep': '',
                             },
                             {
-                                'time': '10:00',
+                                'time': '10:06',
                                 'week': 'all',
                                 'name': 'les_6',
                                 'aud': '',
@@ -668,7 +732,7 @@ class TestScheduleConversionMethods(unittest.TestCase):
                                 'prep': '',
                             },
                             {
-                                'time': '10:00',
+                                'time': '10:07',
                                 'week': 'all',
                                 'name': 'les_7',
                                 'aud': '',
@@ -683,7 +747,6 @@ class TestScheduleConversionMethods(unittest.TestCase):
 
         result = convert_schedule(input_value)
         self.assertEqual(result, expected)
-
 
     def test_convert_schedule_aFewDictInListOneDay_RightPrepAndAud(self):
         input_value = [

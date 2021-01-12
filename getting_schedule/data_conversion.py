@@ -141,6 +141,7 @@ def convert_schedule(pg_schedule: list) -> list:
         if current_group != next_group or item == pg_schedule[-1]:
             # Сортируем пары в дне по времени
             for sch in schedule:
+                sch['lessons'] = sorted(sch['lessons'], key=lambda x: x['info'])
                 sch['lessons'] = sorted(sch['lessons'], key=lambda x: int(x['time'].replace(':', '')))
 
             all_schedule.append({
