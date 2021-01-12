@@ -36,7 +36,7 @@ def main():
 
     start_time2 = time.time()
     print(len(pg_schedule))
-    mongo_schedule = data_conversion.convert_schedule(pg_schedule[:10000])
+    mongo_schedule = data_conversion.convert_schedule(pg_schedule)
     end_time2 = time.time()
 
     mongo_storage.save_schedule(mongo_schedule)
