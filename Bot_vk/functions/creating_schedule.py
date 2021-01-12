@@ -36,8 +36,6 @@ def full_schedule_in_str(schedule: list, week: str) -> list:
                 info = lesson['info'].replace(",", "")
                 prep = lesson['prep']
 
-
-
                 lessons_str += f'{time}\n' \
                                f'{aud}' \
                                f'👉{name}\n' \

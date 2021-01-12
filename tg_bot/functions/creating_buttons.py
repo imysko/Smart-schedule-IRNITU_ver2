@@ -7,14 +7,16 @@ MAX_CALLBACK_RANGE = 41
 def make_keyboard_start_menu():
     """Создаём основные кнопки"""
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=False, resize_keyboard=True)
-    btn1 = types.KeyboardButton('Расписание')
-    btn2 = types.KeyboardButton('Ближайшая пара')
-    btn3 = types.KeyboardButton('Расписание на сегодня')
-    btn4 = types.KeyboardButton('Расписание на завтра')
-    btn5 = types.KeyboardButton('Напоминания')
+    btn1 = types.KeyboardButton('Расписание 🗓')
+    btn2 = types.KeyboardButton('Ближайшая пара ⏱')
+    btn3 = types.KeyboardButton('Расписание на сегодня 🍏')
+    btn4 = types.KeyboardButton('Расписание на завтра 🍎')
+    btn5 = types.KeyboardButton('Напоминание 📣')
+    btn6 = types.KeyboardButton('Другое ⚡')
     markup.add(btn1, btn2)
-    markup.add(btn3, btn4)
-    markup.add(btn5)
+    markup.add(btn3)
+    markup.add(btn4)
+    markup.add(btn5, btn6)
     return markup
 
 
@@ -105,6 +107,42 @@ def make_keyboard_choose_schedule():
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=False, resize_keyboard=True)
     btn1 = types.KeyboardButton('На текущую неделю')
     btn2 = types.KeyboardButton('На следующую неделю')
+    btn3 = types.KeyboardButton('Основное меню')
+    markup.add(btn1, btn2)
+    markup.add(btn3)
+    return markup
+
+
+def make_keyboard_extra():
+    """Создаём кнопки Другое ⚡ """
+    markup = types.ReplyKeyboardMarkup(one_time_keyboard=False, resize_keyboard=True)
+    btn1 = types.KeyboardButton('Список команд')
+    btn2 = types.KeyboardButton('Поиск 🔎')
+    btn3 = types.KeyboardButton('Основное меню')
+    markup.add(btn1)
+    markup.add(btn2)
+    markup.add(btn3)
+    return markup
+
+
+def make_keyboard_commands():
+    """Создаём кнопки команд"""
+    markup = types.ReplyKeyboardMarkup(one_time_keyboard=False, resize_keyboard=True)
+    btn1 = types.KeyboardButton('Авторы')
+    btn2 = types.KeyboardButton('Регистрация')
+    btn3 = types.KeyboardButton('Карта')
+    btn4 = types.KeyboardButton('Основное меню')
+    markup.add(btn1)
+    markup.add(btn2, btn3)
+    markup.add(btn4)
+    return markup
+
+
+def make_keyboard_nearlesson():
+    """Создаём кнопки подпунктов Ближайшей пары"""
+    markup = types.ReplyKeyboardMarkup(one_time_keyboard=False, resize_keyboard=True)
+    btn1 = types.KeyboardButton('Текущая')
+    btn2 = types.KeyboardButton('Следующая')
     btn3 = types.KeyboardButton('Основное меню')
     markup.add(btn1, btn2)
     markup.add(btn3)
