@@ -779,6 +779,53 @@ class TestScheduleConversionMethods(unittest.TestCase):
         result = convert_schedule(input_value)
         self.assertEqual(result, expected)
 
+
+
+    def test_convert_schedule_aFewDictInListOneDay_returnDuplicateLessonsRemoved(self):
+        input_value = [
+            {'obozn': 'ИБб-18-1', 'begtime': '10:00', 'everyweek': 2,
+             'preps': '', 'auditories_verbose': '', 'day': 3,
+             'nt': 2, 'title': 'les_1', 'ngroup': 1},
+            {'obozn': 'ИБб-18-1', 'begtime': '11:45', 'everyweek': 2,
+             'preps': '', 'auditories_verbose': '', 'day': 3,
+             'nt': 1, 'title': 'les_2', 'ngroup': None},
+            {'obozn': 'ИБб-18-1', 'begtime': '10:00', 'everyweek': 2,
+             'preps': '', 'auditories_verbose': '', 'day': 3,
+             'nt': 2, 'title': 'les_1', 'ngroup': 1},
+        ]
+
+        expected = [
+            {
+                'group': 'ИБб-18-1',
+                'schedule': [
+                    {
+                        'day': 'среда',
+                        'lessons': [
+                            {
+                                'time': '10:00',
+                                'week': 'all',
+                                'name': 'les_1',
+                                'aud': '',
+                                'info': '( Практ. подгруппа 1 )',
+                                'prep': '',
+                            },
+                            {
+                                'time': '11:45',
+                                'week': 'all',
+                                'name': 'les_2',
+                                'aud': '',
+                                'info': '( Лекция )',
+                                'prep': '',
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+
+        result = convert_schedule(input_value)
+        self.assertEqual(result, expected)
+
     # def test_convert_schedule_aFewDictInListTwoGroups(self):
     #     input_value = [
     #         [{'obozn': 'ТХб-18-2', 'begtime': '10:00', 'everyweek': 2,

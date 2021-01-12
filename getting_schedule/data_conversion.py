@@ -132,6 +132,8 @@ def convert_schedule(pg_schedule: list) -> list:
         # Добавляем пары в нужный день.
         for sch in schedule:
             if sch['day'] == day:
+                if lesson in sch['lessons']:
+                    break
                 sch['lessons'].append(lesson)
                 break
 
