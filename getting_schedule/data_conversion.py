@@ -91,12 +91,13 @@ def convert_schedule(pg_schedule: list) -> list:
 
     all_schedule = []
 
-    schedule = []
+    schedule = []  # Расписание группы.
 
     item_index = 0  # Счетчик индекса.
     for item in pg_schedule:
         week, day = getting_week_and_day_of_week(item)
 
+        # Определяем вид пары и подгруппу.
         if item['nt'] == 1:
             info = '( Лекция )'
         elif item['nt'] == 2:
@@ -119,6 +120,7 @@ def convert_schedule(pg_schedule: list) -> list:
             'prep': item['preps'].strip(),
         }
 
+        # Смотрим, создал ли уже нужный день в расписании.
         if not is_there_dict_with_value_in_list(schedule, day):
             schedule.append(
                 {
@@ -127,6 +129,7 @@ def convert_schedule(pg_schedule: list) -> list:
                 }
             )
 
+        # Добавляем пары в нужный день.
         for sch in schedule:
             if sch['day'] == day:
                 sch['lessons'].append(lesson)
@@ -141,7 +144,9 @@ def convert_schedule(pg_schedule: list) -> list:
         if current_group != next_group or item == pg_schedule[-1]:
             # Сортируем пары в дне по времени
             for sch in schedule:
+                # Сортируем подгруппы
                 sch['lessons'] = sorted(sch['lessons'], key=lambda x: x['info'])
+                # Сортируем по времени
                 sch['lessons'] = sorted(sch['lessons'], key=lambda x: int(x['time'].replace(':', '')))
 
             all_schedule.append({
@@ -149,6 +154,7 @@ def convert_schedule(pg_schedule: list) -> list:
                 'schedule': sorted(schedule, key=lambda x: get_dict_key(DAYS, x['day']))
             })
 
+            # Обнуляем расписание для слудующей группы
             schedule = []
 
         item_index += 1  # Увеличиваем счетчик индекса.
