@@ -48,6 +48,7 @@ DAYS = {
     7: 'воскресенье'
 }
 
+
 def getting_week_and_day_of_week(pg_lesson: dict) -> tuple:
     """Определение четности недели и дня недели"""
 
@@ -88,13 +89,11 @@ def convert_schedule(pg_schedule: list) -> list:
     # Сортируем массив, чтобы одинаковые группы стояли рядом.
     pg_schedule = sorted(pg_schedule, key=lambda x: x['obozn'])
 
-
-
-
     all_schedule = []
 
     schedule = []
 
+    item_index = 0  # Счетчик индекса.
     for item in pg_schedule:
         week, day = getting_week_and_day_of_week(item)
 
@@ -131,13 +130,13 @@ def convert_schedule(pg_schedule: list) -> list:
         for sch in schedule:
             if sch['day'] == day:
                 sch['lessons'].append(lesson)
+                break
 
-
-        # Если нашлась другая группа или это последний жлемен списка, сохраняем предыдущую.
+        # Если нашлась другая группа или это последний элемент списка, сохраняем предыдущую.
         current_group = item['obozn']
         next_group = ''
         if item != pg_schedule[-1]:
-            next_group = pg_schedule[pg_schedule.index(item) + 1]['obozn']
+            next_group = pg_schedule[item_index + 1]['obozn']
 
         if current_group != next_group or item == pg_schedule[-1]:
             # Сортируем пары в дне по времени
@@ -150,4 +149,6 @@ def convert_schedule(pg_schedule: list) -> list:
             })
 
             schedule = []
+
+        item_index += 1  # Увеличиваем счетчик индекса.
     return all_schedule
