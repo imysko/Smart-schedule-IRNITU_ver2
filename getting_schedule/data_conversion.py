@@ -138,11 +138,11 @@ def convert_schedule(pg_schedule: list) -> list:
         # Если нашлась другая группа или это последний элемент списка, сохраняем предыдущую.
         current_group = item['obozn']
         next_group = ''
-        if item != pg_schedule[-1]:
+        if item_index != len(pg_schedule) - 1:
             next_group = pg_schedule[item_index + 1]['obozn']
 
-        if current_group != next_group or item == pg_schedule[-1]:
-            # Сортируем пары в дне по времени
+        if current_group != next_group or item_index == len(pg_schedule) - 1:
+            # Сортируем пары в дне по времени и подгруппе
             for sch in schedule:
                 # Сортируем подгруппы
                 sch['lessons'] = sorted(sch['lessons'], key=lambda x: x['info'])
