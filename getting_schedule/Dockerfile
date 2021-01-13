@@ -1,4 +1,4 @@
-FROM python:3.8:stable-alpine
+FROM python:3.8-alpine
 
 RUN mkdir -p /usr/src/getting_schedule/
 WORKDIR /usr/src/getting_schedule/
