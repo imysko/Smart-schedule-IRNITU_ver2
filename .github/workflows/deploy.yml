@@ -34,6 +34,10 @@ jobs:
           export VK_TOKEN=${{ secrets.VK_TOKEN }}
           export HOST_URL=${{ secrets.HOST_URL }}
           
+          export PG_DB_HOST=${{ secrets.PG_DB_HOST }}
+          export PG_DB_PASSWORD=${{ secrets.PG_DB_PASSWORD }}
+          export PG_DB_USER=${{ secrets.PG_DB_USER }}
+          
           docker-compose build 
           docker-compose up -d
           
