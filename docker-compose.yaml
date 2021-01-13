@@ -27,18 +27,6 @@ services:
       - MONGO_DB_DATABASE=Smart_schedule_IRNITU # название базы данных
 
 
-  parser:
-    build: parser/
-    restart: always
-    container_name: parser
-    environment:
-      - URL_INSTITUTES=https://www.istu.edu/schedule/ # URL на страницу с выбором института
-      - MONGO_DB_ADDR=mongodb # адрес mongoDB
-      - MONGO_DB_PORT=27017 # порт mongoDB
-      - MONGO_DB_DATABASE=Smart_schedule_IRNITU # название базы данных
-      - PARSE_TIME_HOURS=1 # задержка между циклами парсинга (в часах)
-
-
   notification_service:
     build: notification_service/
     restart: always
@@ -75,3 +63,32 @@ services:
     volumes:
       - mongodb_volume:/data/db
     restart: always
+
+
+  getting_schedule:
+    build: getting_schedule/
+    restart: always
+    container_name: getting_schedule
+    environment:
+      - MONGO_DB_ADDR=mongodb # адрес mongoDB
+      - MONGO_DB_PORT=${MONGO_DB_PORT} # порт mongoDB (default: 27017)
+      - MONGO_DB_DATABASE=${MONGO_DB_DATABASE} # название базы данных MongoDB (default: Smart_schedule_IRNITU)
+      - PG_DB_DATABASE=${PG_DB_DATABASE} # название базы данных PostgreSQL (default: schedule)
+      - PG_DB_USER=${PG_DB_USER} # пользователь PostgreSQL
+      - PG_DB_PASSWORD=${PG_DB_PASSWORD}  # пароль PostgreSQL
+      - PG_DB_HOST=${PG_DB_HOST} # адрес PostgreSQL
+      - PG_DB_PORT=${PG_DB_PORT} # порт PostgreSQL (default: 5432)
+      - GETTING_SCHEDULE_TIME_HOURS=${GETTING_SCHEDULE_TIME_HOURS} # время задержки (в часах) между обращениями к PostgreSQL для получения расписания (default: 1)
+
+
+# НЕ ИСПОЛЬЗУЕТСЯ ЕСЛИ ЕСТЬ ВОЗМОЖНОСТЬ ПОЛУЧАТЬ ДАННЫЕ НАПРЯМУЮ ИЗ БАЗЫ
+#    parser:
+#      build: parser/
+#      restart: always
+#      container_name: parser
+#      environment:
+#        - URL_INSTITUTES=https://www.istu.edu/schedule/ # URL на страницу с выбором института
+#        - MONGO_DB_ADDR=mongodb # адрес mongoDB
+#        - MONGO_DB_PORT=27017 # порт mongoDB
+#        - MONGO_DB_DATABASE=Smart_schedule_IRNITU # название базы данных
+#        - PARSE_TIME_HOURS=1 # задержка между циклами парсинга (в часах)
