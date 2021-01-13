@@ -1,27 +1,16 @@
 from functions.creating_schedule import full_schedule_in_str, get_one_day_schedule_in_str, get_next_day_schedule_in_str
 from functions.calculating_reminder_times import calculating_reminder_times
-import asyncio
-import time
-from vkbottle.api import API
-from vk_api.bot_longpoll import VkBotLongPoll, VkBotEventType
-from vk_api.keyboard import VkKeyboard, VkKeyboardColor
-from vk_api.longpoll import VkLongPoll, VkEventType
 from functions.near_lesson import get_near_lesson, get_now_lesson
 from functions.storage import MongodbService
-# from vkbottle.keyboard import Keyboard, Text
 from vkbottle import Keyboard, KeyboardButtonColor, Text
 from functions.find_week import find_week
-from pymongo import MongoClient
 from vk_api import vk_api, VkUpload
-from aiohttp import web
-import typing
 import requests
-import types
 import json
 import os
 import pytz
 from datetime import datetime
-from vkbottle.bot import Bot, Message, run_multibot
+from vkbottle.bot import Bot, Message
 
 # from vkbottle.api.uploader.photo import PhotoUploader
 
@@ -33,10 +22,11 @@ bot = Bot(TOKEN)  # TOKEN
 # photo_uploader = PhotoUploader(bot.api, generate_attachment_strings=True)
 
 content_types = {
-    'text': ['Расписание 🗓', 'Ближайшая пара ⏱', 'Расписание на сегодня 🍏', 'На текущую неделю', 'На следующую неделю',
+    'text': ['Расписание 🗓', 'Ближайшая пара ⏱', 'Расписание на сегодня 🍏', 'На текущую неделю',
+             'На следующую неделю',
              'Расписание на завтра 🍎', 'Следующая', 'Текущая']}
 
-сontent_commands = {'text': ['Начать','начать', 'Начало', 'start']}
+сontent_commands = {'text': ['Начать', 'начать', 'Начало', 'start']}
 
 content_map = {'text': ['map', 'Карта', 'карта', 'Map', 'Схема', 'схема']}
 
@@ -95,6 +85,7 @@ def make_keyboard_start_menu():
     keyboard.add(Text(label="Другое ⚡"), color=KeyboardButtonColor.PRIMARY)
     return keyboard
 
+
 def make_keyboard_commands():
     """Создаём кнопки команд"""
     keyboard = Keyboard(one_time=False)
@@ -108,6 +99,7 @@ def make_keyboard_commands():
     keyboard.add(Text(label="<==Назад"), color=KeyboardButtonColor.SECONDARY)
     return keyboard
 
+
 def make_keyboard_extra():
     keyboard = Keyboard(one_time=False)
     keyboard.row()
@@ -118,6 +110,7 @@ def make_keyboard_extra():
     keyboard.add(Text(label="<==Назад"), color=KeyboardButtonColor.SECONDARY)
     return keyboard
 
+
 def make_keyboard_nearlesson():
     """Создаём основные кнопки"""
     keyboard = Keyboard(one_time=False)
@@ -127,6 +120,7 @@ def make_keyboard_nearlesson():
     keyboard.row()
     keyboard.add(Text(label="<==Назад"), color=KeyboardButtonColor.SECONDARY)
     return keyboard
+
 
 def make_inline_keyboard_set_notifications(time=0):
     """кнопки настройки уведомлений"""
@@ -217,7 +211,6 @@ def make_keyboard_choose_group_vk(groups=[]):
                 list_keyboard = []
                 list_keyboard.append(parametres_for_buttons_start_menu_vk(f'{group}', 'primary'))
                 list_keyboard_main_2.append(parametres_for_buttons_start_menu_vk(f'{group}', 'primary'))
-
 
     if overflow < 28:
         list_keyboard_main.append(list_keyboard)
@@ -336,7 +329,6 @@ async def registration(ans: Message):
     await ans.answer('Повторная регистрация😉\n')
     await ans.answer('Выберите институт.', keyboard=make_keyboard_institutes(storage.get_institutes()))
 
-
     add_statistics(action='reg')
 
 
@@ -348,8 +340,8 @@ async def map(ans: Message):
     server = authorize.method("photos.getMessagesUploadServer")
     b = requests.post(server['upload_url'], files={'photo': open('map.jpg', 'rb')}).json()
     c = authorize.method('photos.saveMessagesPhoto', {'photo': b['photo'], 'server': b['server'], 'hash': b['hash']})[0]
-    authorize.method("messages.send", {"peer_id": chat_id, "attachment": f'photo{c["owner_id"]}_{c["id"]}', 'random_id': 0})
-
+    authorize.method("messages.send",
+                     {"peer_id": chat_id, "attachment": f'photo{c["owner_id"]}_{c["id"]}', 'random_id': 0})
 
     add_statistics(action='map')
 
@@ -387,14 +379,14 @@ async def map(ans: Message):
 async def authors(ans: Message):
     chat_id = ans.from_id
     await ans.answer('Авторы проекта:\n'
-              '-[id132677094|Алексей]\n'
-              '-[id128784852|Султан]\n'
-              '-[id169584462|Александр] \n'
-              '-[id135615548|Владислав]\n'
-              '-[id502898628|Кирилл]\n\n'
-              'По всем вопросом и предложениям пишите нам в личные сообщения. '
-              'Будем рады 😉\n', keyboard=make_keyboard_start_menu()
-              )
+                     '-[id132677094|Алексей]\n'
+                     '-[id128784852|Султан]\n'
+                     '-[id169584462|Александр] \n'
+                     '-[id135615548|Владислав]\n'
+                     '-[id502898628|Кирилл]\n\n'
+                     'По всем вопросом и предложениям пишите нам в личные сообщения. '
+                     'Будем рады 😉\n', keyboard=make_keyboard_start_menu()
+                     )
 
     add_statistics(action='authors')
 
@@ -412,7 +404,7 @@ async def scheduler(ans: Message):
     if ('На текущую неделю' == data or 'На следующую неделю' == data) and user:
         group = storage.get_user(chat_id=chat_id)['group']
         schedule = storage.get_schedule(group=group)
-        if not schedule:
+        if schedule['schedule'] == []:
             await ans.answer('Расписание временно недоступно\nПопробуйте позже⏱')
             add_statistics(action=data)
             return
@@ -428,7 +420,7 @@ async def scheduler(ans: Message):
 
         schedule_str = full_schedule_in_str(schedule, week=week)
         await ans.answer(f'Расписание {group}\n'
-                  f'Неделя: {week_name}', keyboard=make_keyboard_start_menu())
+                         f'Неделя: {week_name}', keyboard=make_keyboard_start_menu())
 
         for schedule in schedule_str:
             await ans.answer(f'{schedule}')
@@ -442,7 +434,7 @@ async def scheduler(ans: Message):
         schedule = storage.get_schedule(group=group)
         if not schedule:
             await ans.answer('Расписание временно недоступно🚫😣\n'
-                      'Попробуйте позже⏱', keyboard=make_keyboard_start_menu())
+                             'Попробуйте позже⏱', keyboard=make_keyboard_start_menu())
             add_statistics(action='Расписание на сегодня')
             return
         schedule = schedule['schedule']
@@ -459,7 +451,7 @@ async def scheduler(ans: Message):
         schedule = storage.get_schedule(group=group)
         if not schedule:
             await ans.answer('Расписание временно недоступно🚫😣\n'
-                      'Попробуйте позже⏱', keyboard=make_keyboard_start_menu())
+                             'Попробуйте позже⏱', keyboard=make_keyboard_start_menu())
             add_statistics(action='Расписание на завтра')
             return
         schedule = schedule['schedule']
@@ -490,7 +482,7 @@ async def scheduler(ans: Message):
         schedule = storage.get_schedule(group=group)
         if not schedule:
             await ans.answer('Расписание временно недоступно🚫😣\n'
-                      'Попробуйте позже⏱', keyboard=make_keyboard_start_menu())
+                             'Попробуйте позже⏱', keyboard=make_keyboard_start_menu())
             add_statistics(action='Текущая')
             return
         schedule = schedule['schedule']
@@ -520,9 +512,9 @@ async def scheduler(ans: Message):
             prep = near_lesson['prep']
 
             now_lessons_str += f'{time}\n' \
-                                f'{aud}' \
-                                f'👉{name}\n' \
-                                f'{info} {prep}\n'
+                               f'{aud}' \
+                               f'👉{name}\n' \
+                               f'{info} {prep}\n'
         now_lessons_str += '-------------------------------------------\n'
         await ans.answer(f'🧠Текущая пара🧠\n'f'{now_lessons_str}', keyboard=make_keyboard_start_menu())
 
@@ -533,7 +525,7 @@ async def scheduler(ans: Message):
         schedule = storage.get_schedule(group=group)
         if not schedule:
             await ans.answer('Расписание временно недоступно🚫😣\n'
-                      'Попробуйте позже⏱', keyboard=make_keyboard_start_menu())
+                             'Попробуйте позже⏱', keyboard=make_keyboard_start_menu())
             add_statistics(action='Следующая')
             return
         schedule = schedule['schedule']
@@ -582,10 +574,9 @@ async def wrapper(ans: Message):
     # Сохраняет в месседж полное название универ для корректного сравнения
     institutes = name_institutes(storage.get_institutes())
     for institute in institutes:
-        if len(message_inst)>5:
+        if len(message_inst) > 5:
             if message_inst[:-5] in institute:
                 message_inst = institute
-
 
     # Если пользователя нет в базе данных
     if not user:
@@ -595,7 +586,8 @@ async def wrapper(ans: Message):
             # Если да, то записываем в бд
             storage.save_or_update_user(chat_id=chat_id, institute=message_inst)
             await ans.answer(f'Вы выбрали: {message_inst}\n')
-            await ans.answer('Выберите курс.', keyboard=make_keyboard_choose_course_vk(storage.get_courses(message_inst)))
+            await ans.answer('Выберите курс.',
+                             keyboard=make_keyboard_choose_course_vk(storage.get_courses(message_inst)))
         else:
             await ans.answer('Ради твоего удобства, я вывел клавиатуру со списком инстиутов ниже 😸👇🏻')
         return
@@ -609,7 +601,8 @@ async def wrapper(ans: Message):
     # Если нажал кнопку Назад к институтам
     if message == "Назад к курсам" and not 'group' in user.keys():
 
-        await ans.answer('Выберите курс.', keyboard=make_keyboard_choose_course_vk(storage.get_courses(storage.get_user(chat_id=chat_id)['institute'])))
+        await ans.answer('Выберите курс.', keyboard=make_keyboard_choose_course_vk(
+            storage.get_courses(storage.get_user(chat_id=chat_id)['institute'])))
         storage.delete_user_or_userdata(chat_id=chat_id, delete_only_course=True)
         return
 
@@ -640,8 +633,8 @@ async def wrapper(ans: Message):
             # Записываем в базу данных выбранную группу
             storage.save_or_update_user(chat_id=chat_id, group=message)
             await ans.answer('Вы успешно зарегистрировались!😊\n\n'
-                      'Для того чтобы пройти регистрацию повторно, напишите сообщение "Регистрация"\n'
-                      , keyboard=make_keyboard_start_menu())
+                             'Для того чтобы пройти регистрацию повторно, напишите сообщение "Регистрация"\n'
+                             , keyboard=make_keyboard_start_menu())
         else:
             if message == "Далее":
                 await ans.answer('Выберите группу.', keyboard=make_keyboard_choose_group_vk_page_2(groups))
@@ -663,8 +656,8 @@ async def wrapper(ans: Message):
     elif 'Настройки' in message and user:
         time = user['notifications']
         await ans.answer('Настройка напоминаний ⚙\n\n'
-                  'Укажите за сколько минут до начала пары должно приходить сообщение',
-                  keyboard=make_inline_keyboard_set_notifications(time))
+                         'Укажите за сколько минут до начала пары должно приходить сообщение',
+                         keyboard=make_inline_keyboard_set_notifications(time))
         add_statistics(action='Настройки')
 
     elif '-' in message:
@@ -677,14 +670,14 @@ async def wrapper(ans: Message):
         if time <= 0:
             time = 0
         storage.save_or_update_user(chat_id=chat_id, notifications=time)
-        await ans.answer('minus', keyboard=make_inline_keyboard_set_notifications(time))
+        await ans.answer('Минус 5 минут', keyboard=make_inline_keyboard_set_notifications(time))
         return
 
     elif '+' in message:
         time = user['notifications']
         time += 5
         storage.save_or_update_user(chat_id=chat_id, notifications=time)
-        await ans.answer('plus', keyboard=make_inline_keyboard_set_notifications(time))
+        await ans.answer('Плюс 5 минут', keyboard=make_inline_keyboard_set_notifications(time))
 
     elif 'Сохранить' in message:
 
@@ -716,9 +709,9 @@ async def wrapper(ans: Message):
 
     elif 'Список команд' == message and user:
         await ans.answer('Список команд:\n'
-              'Авторы - список авторов \n'
-              'Регистрация- повторная регистрация\n'
-              'Карта - карта университета', keyboard=make_keyboard_commands())
+                         'Авторы - список авторов \n'
+                         'Регистрация- повторная регистрация\n'
+                         'Карта - карта университета', keyboard=make_keyboard_commands())
 
         add_statistics(action='help')
         return
@@ -731,11 +724,10 @@ async def wrapper(ans: Message):
 
     else:
         await ans.answer('Такому ещё не научили 😇, знаю только эти команды:\n'
-                             'Авторы - список авторов \n'
-                             'Регистрация - повторная регистрация\n'
-                             'Карта - карта университета', keyboard=make_keyboard_start_menu())
+                         'Авторы - список авторов \n'
+                         'Регистрация - повторная регистрация\n'
+                         'Карта - карта университета', keyboard=make_keyboard_start_menu())
         add_statistics(action='bullshit')
-
 
 
 def main():

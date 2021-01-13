@@ -39,4 +39,4 @@ jobs:
           
           sleep 3
           docker ps -a
-          docker image rm $(docker image ls -f dangling=true -q) 2>/dev/null
+# docker image rm $(docker image ls -f dangling=true -q) 2>/dev/null
