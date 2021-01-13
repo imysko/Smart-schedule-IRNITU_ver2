@@ -6,6 +6,10 @@ from pymongo.errors import PyMongoError
 import psycopg2
 
 import time
+import os
+
+# Задержка работы цикла (в часах).
+GETTING_SCHEDULE_TIME_HOURS = float(os.environ.get('GETTING_SCHEDULE_TIME_HOURS', default=1)) * 60 * 60
 
 mongo_storage = MongodbService().get_instance()
 
@@ -95,21 +99,26 @@ def processing_schedule():
 
 
 def main():
-    # Время начала работы цикла.
-    start_time = time.time()
+    while True:
+        # Время начала работы цикла.
+        start_time = time.time()
 
-    # Институты
-    processing_institutes()
+        # Институты
+        processing_institutes()
 
-    # Группы и курсы
-    processing_groups_and_courses()
+        # Группы и курсы
+        processing_groups_and_courses()
 
-    # Расписание
-    processing_schedule()
+        # Расписание
+        processing_schedule()
 
-    # Время окончания работы цикла.
-    end_time = time.time()
-    print('Total operating time', f"--- {end_time - start_time} seconds ---")
+        # Время окончания работы цикла.
+        end_time = time.time()
+        print('Total operating time', f"--- {end_time - start_time} seconds ---")
+
+        # Задержка работы цикла (в часах).
+        print(f'Waiting for the next cycle. The waiting time: {GETTING_SCHEDULE_TIME_HOURS / 60 / 60} hours...\n')
+        time.sleep(GETTING_SCHEDULE_TIME_HOURS)
 
 
 # =====================================
