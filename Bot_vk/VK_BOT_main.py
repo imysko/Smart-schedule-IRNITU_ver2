@@ -2,6 +2,8 @@ from functions.creating_schedule import full_schedule_in_str, get_one_day_schedu
 from functions.calculating_reminder_times import calculating_reminder_times
 from functions.near_lesson import get_near_lesson, get_now_lesson
 from functions.storage import MongodbService
+from vkbottle_types import BaseStateGroup
+from vkbottle.bot import Message, Bot
 from vkbottle import Keyboard, KeyboardButtonColor, Text
 from functions.find_week import find_week
 from vk_api import vk_api, VkUpload
@@ -303,6 +305,71 @@ def name_groups(groups=[]):
 
 
 # ==================== Обработка команд ==================== #
+
+class SuperStates(BaseStateGroup):
+    SEARCH = 0
+
+
+@bot.on.message(state=SuperStates.SEARCH)  # StateRule(SuperStates.AWKWARD_STATE)
+async def awkward_handler(ans: Message):
+
+    keyboard = {
+        "one_time": False
+    }
+
+
+    serch_result = storage.get_search_list(ans.text)
+
+    list_keyboard_main_2 = []
+    list_keyboard_main = []
+    list_keyboard = []
+    overflow = 0
+    for group in serch_result:
+        group = group["name"]
+        overflow += 1
+        if overflow == 27:
+            list_keyboard_main.append(list_keyboard)
+            list_keyboard = []
+            list_keyboard.append(parametres_for_buttons_start_menu_vk('Далее', 'primary'))
+            list_keyboard.append(parametres_for_buttons_start_menu_vk('<==Назад', 'primary'))
+            list_keyboard_main.append(list_keyboard)
+        else:
+            if overflow < 28:
+                if len(list_keyboard) == 3:
+                    list_keyboard_main.append(list_keyboard)
+                    list_keyboard = []
+                    list_keyboard.append(parametres_for_buttons_start_menu_vk(f'{group}', 'primary'))
+                else:
+                    list_keyboard.append(parametres_for_buttons_start_menu_vk(f'{group}', 'primary'))
+
+            else:
+                list_keyboard = []
+                list_keyboard.append(parametres_for_buttons_start_menu_vk(f'{group}', 'primary'))
+                list_keyboard_main_2.append(parametres_for_buttons_start_menu_vk(f'{group}', 'primary'))
+
+    if overflow < 28:
+        list_keyboard_main.append(list_keyboard)
+        list_keyboard = []
+        list_keyboard.append(parametres_for_buttons_start_menu_vk('<==Назад', 'primary'))
+        list_keyboard_main.append(list_keyboard)
+    else:
+        list_keyboard_main_2.append(list_keyboard)
+
+    keyboard['buttons'] = list_keyboard_main
+    keyboard = json.dumps(keyboard, ensure_ascii=False).encode('utf-8')
+    keyboard = str(keyboard.decode('utf-8'))
+
+    await ans.answer("Результат поиска", keyboard=keyboard)
+
+    await bot.state_dispenser.delete(ans.peer_id)
+
+
+@bot.on.message(text="Поиск 🔎")
+async def die_handler(ans: Message):
+    await bot.state_dispenser.set(ans.peer_id, SuperStates.SEARCH)
+    return "Введите название группы или фамилию преподавателя\n" \
+           "Например: ИБб-18-1 или Иванов"
+
 
 # Команда start
 @bot.on.message(text=сontent_commands['text'])
@@ -660,7 +727,7 @@ async def wrapper(ans: Message):
                          keyboard=make_inline_keyboard_set_notifications(time))
         add_statistics(action='Настройки')
 
-    elif '-' in message:
+    elif '-' == message:
         time = user['notifications']
         if time == 0:
             await ans.answer('Хочешь уйти в минус?', keyboard=make_inline_keyboard_set_notifications(time))
@@ -673,7 +740,7 @@ async def wrapper(ans: Message):
         await ans.answer('Минус 5 минут', keyboard=make_inline_keyboard_set_notifications(time))
         return
 
-    elif '+' in message:
+    elif '+' == message:
         time = user['notifications']
         time += 5
         storage.save_or_update_user(chat_id=chat_id, notifications=time)
@@ -721,6 +788,13 @@ async def wrapper(ans: Message):
 
         add_statistics(action='help')
         return
+
+    elif "Поиск 🔎" == message and user:
+        await ans.answer('Введите название группы или фамилию преподавателя\n'
+                         'Например: ИБб-18-1 или Иванов')
+        # Тянем список групп с базы и создаём список названий групп
+        # all_groups = storage.get_all_groups()
+
 
     else:
         await ans.answer('Такому ещё не научили 😇, знаю только эти команды:\n'
