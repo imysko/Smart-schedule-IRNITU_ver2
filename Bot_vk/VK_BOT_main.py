@@ -14,14 +14,13 @@ import pytz
 from datetime import datetime
 from vkbottle.bot import Bot, Message
 
-# from vkbottle.api.uploader.photo import PhotoUploader
 
 TOKEN = os.environ.get('VK')
 
 MAX_CALLBACK_RANGE = 41
 storage = MongodbService().get_instance()
 bot = Bot(TOKEN)  # TOKEN
-# photo_uploader = PhotoUploader(bot.api, generate_attachment_strings=True)
+
 
 content_types = {
     'text': ['Расписание 🗓', 'Ближайшая пара ⏱', 'Расписание на сегодня 🍏', 'На текущую неделю',
@@ -264,6 +263,65 @@ def make_keyboard_choose_group_vk_page_2(groups=[]):
     return keyboard
 
 
+def make_keyboard_search_group(search_result=[]):
+    """Кнопки выбора группы"""
+
+    keyboard = {
+        "one_time": False
+    }
+
+    list_keyboard_main_2 = []
+    list_keyboard_main = []
+    list_keyboard = []
+    overflow = 0
+    for group in search_result:
+        group = group["name"]
+        overflow += 1
+        if overflow == 27:
+            list_keyboard_main.append(list_keyboard)
+            list_keyboard = []
+            list_keyboard.append(parametres_for_buttons_start_menu_vk('Дальше', 'primary'))
+            list_keyboard.append(parametres_for_buttons_start_menu_vk('<==Назад', 'primary'))
+            list_keyboard_main.append(list_keyboard)
+        else:
+            if overflow < 28:
+                if len(list_keyboard) == 3:
+                    list_keyboard_main.append(list_keyboard)
+                    list_keyboard = []
+                    list_keyboard.append(parametres_for_buttons_start_menu_vk(f'{group}', 'primary'))
+                else:
+                    list_keyboard.append(parametres_for_buttons_start_menu_vk(f'{group}', 'primary'))
+
+            else:
+                list_keyboard = []
+                list_keyboard.append(parametres_for_buttons_start_menu_vk(f'{group}', 'primary'))
+                list_keyboard_main_2.append(parametres_for_buttons_start_menu_vk(f'{group}', 'primary'))
+
+    if overflow < 28:
+        list_keyboard_main.append(list_keyboard)
+        list_keyboard = []
+        list_keyboard.append(parametres_for_buttons_start_menu_vk('<==Назад', 'primary'))
+        list_keyboard_main.append(list_keyboard)
+    else:
+        list_keyboard_main_2.append(list_keyboard)
+
+    keyboard['buttons'] = list_keyboard_main
+    keyboard = json.dumps(keyboard, ensure_ascii=False).encode('utf-8')
+    keyboard = str(keyboard.decode('utf-8'))
+
+    return keyboard, list_keyboard_main_2
+
+
+def keyboard_condition(list_keyboard_main):
+    """Следит за состоянием клавиатуры во время поиска"""
+    if len(list_keyboard_main) > 27:
+        keyboard = list_keyboard_main[27:]
+        keyboard_condition = list_keyboard_main[:27]
+        return keyboard, keyboard_condition
+    else:
+        keyboard = list_keyboard_main
+        return keyboard, 0
+
 def sep_space(name):
     '''Обрезает длину института, если тот больше 40 символов'''
     dlina = abs(len(name) - MAX_CALLBACK_RANGE)
@@ -306,69 +364,46 @@ def name_groups(groups=[]):
 
 # ==================== Обработка команд ==================== #
 
-class SuperStates(BaseStateGroup):
-    SEARCH = 0
-
-
-@bot.on.message(state=SuperStates.SEARCH)  # StateRule(SuperStates.AWKWARD_STATE)
-async def awkward_handler(ans: Message):
-
-    keyboard = {
-        "one_time": False
-    }
-
-
-    serch_result = storage.get_search_list(ans.text)
-
-    list_keyboard_main_2 = []
-    list_keyboard_main = []
-    list_keyboard = []
-    overflow = 0
-    for group in serch_result:
-        group = group["name"]
-        overflow += 1
-        if overflow == 27:
-            list_keyboard_main.append(list_keyboard)
-            list_keyboard = []
-            list_keyboard.append(parametres_for_buttons_start_menu_vk('Далее', 'primary'))
-            list_keyboard.append(parametres_for_buttons_start_menu_vk('<==Назад', 'primary'))
-            list_keyboard_main.append(list_keyboard)
-        else:
-            if overflow < 28:
-                if len(list_keyboard) == 3:
-                    list_keyboard_main.append(list_keyboard)
-                    list_keyboard = []
-                    list_keyboard.append(parametres_for_buttons_start_menu_vk(f'{group}', 'primary'))
-                else:
-                    list_keyboard.append(parametres_for_buttons_start_menu_vk(f'{group}', 'primary'))
-
-            else:
-                list_keyboard = []
-                list_keyboard.append(parametres_for_buttons_start_menu_vk(f'{group}', 'primary'))
-                list_keyboard_main_2.append(parametres_for_buttons_start_menu_vk(f'{group}', 'primary'))
-
-    if overflow < 28:
-        list_keyboard_main.append(list_keyboard)
-        list_keyboard = []
-        list_keyboard.append(parametres_for_buttons_start_menu_vk('<==Назад', 'primary'))
-        list_keyboard_main.append(list_keyboard)
-    else:
-        list_keyboard_main_2.append(list_keyboard)
-
-    keyboard['buttons'] = list_keyboard_main
-    keyboard = json.dumps(keyboard, ensure_ascii=False).encode('utf-8')
-    keyboard = str(keyboard.decode('utf-8'))
-
-    await ans.answer("Результат поиска", keyboard=keyboard)
-
-    await bot.state_dispenser.delete(ans.peer_id)
-
-
-@bot.on.message(text="Поиск 🔎")
-async def die_handler(ans: Message):
-    await bot.state_dispenser.set(ans.peer_id, SuperStates.SEARCH)
-    return "Введите название группы или фамилию преподавателя\n" \
-           "Например: ИБб-18-1 или Иванов"
+# class SuperStates(BaseStateGroup):
+#     SEARCH = 0
+#     NEXT_PAGE = 1
+#
+#
+# @bot.on.message(state=SuperStates.SEARCH)  # StateRule(SuperStates.AWKWARD_STATE)
+# async def awkward_handler(ans: Message):
+#     # Данные фактически режутся при передачи и затираются при вызове "Дальше"
+#     # Решить проблему с передаче данных после формирования клавиатуры
+#     condition = []
+#
+#     if condition:
+#
+#
+#         # @bot.on.message(state=SuperStates.NEXT_PAGE)  # StateRule(SuperStates.AWKWARD_STATE)
+#         # async def awkward_handler(ans: Message):
+#         #
+#         # @bot.on.message(text="Дальше")
+#         # async def die_handler(ans: Message):
+#         #     await bot.state_dispenser.set(ans.peer_id, SuperStates.NEXT_PAGE)
+#
+#         if ans.text == "Дальше":
+#             keyboard, condition = keyboard_condition(condition)
+#             await ans.answer("Результат поиска", keyboard=keyboard)
+#         elif ans.text != "Выйти":
+#             await ans.answer("Результат поиска", keyboard=keyboard)
+#         else:
+#             await bot.state_dispenser.delete(ans.peer_id)
+#
+#     else:
+#         keyboard, condition = make_keyboard_search_group(storage.get_search_list(ans.text))
+#         await ans.answer("Результат поиска", keyboard=keyboard)
+#
+#
+#
+# @bot.on.message(text="Поиск 🔎")
+# async def die_handler(ans: Message):
+#     await bot.state_dispenser.set(ans.peer_id, SuperStates.SEARCH)
+#     return "Введите название группы или фамилию преподавателя\n" \
+#            "Например: ИБб-18-1 или Иванов"
 
 
 # Команда start
@@ -411,34 +446,6 @@ async def map(ans: Message):
                      {"peer_id": chat_id, "attachment": f'photo{c["owner_id"]}_{c["id"]}', 'random_id': 0})
 
     add_statistics(action='map')
-
-
-# # Команда help
-# @bot.on.message(text='help')
-# async def help(ans: Message):
-#     chat_id = ans.from_id
-#     await ans.answer('Список команд:\n'
-#               'Авторы - список авторов \n'
-#               'Регистрация - повторная регистрация\n'
-#               'Карта - карта университета')
-#
-#     add_statistics(action='help')
-
-
-# # Команда /about
-# @bot.on.message(text='about')
-# async def about(ans: Message):
-#     chat_id = ans.from_id
-#     await ans.answer('О боте:\n'
-#               'Smart schedule IRNITU bot - это чат бот для просмотра расписания занятий в '
-#               'Иркутском национальном исследовательском техническом университете\n\n'
-#               'Благодаря боту можно:\n'
-#               '- Узнать актуальное расписание\n'
-#               '- Нажатием одной кнопки увидеть информацию о ближайшей паре\n'
-#               '- Настроить гибкие уведомления с информацией из расписания, '
-#               'которые будут приходить за определённое время до начала занятия', keyboard=make_keyboard_start_menu())
-#
-#     add_statistics(action='about')
 
 
 # Команда Авторы
@@ -788,6 +795,7 @@ async def wrapper(ans: Message):
 
         add_statistics(action='help')
         return
+
 
     elif "Поиск 🔎" == message and user:
         await ans.answer('Введите название группы или фамилию преподавателя\n'
