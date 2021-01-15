@@ -9,7 +9,9 @@ import time
 import os
 
 # Задержка работы цикла (в часах).
-GETTING_SCHEDULE_TIME_HOURS = float(os.environ.get('GETTING_SCHEDULE_TIME_HOURS', default=1)) * 60 * 60
+GETTING_SCHEDULE_TIME_HOURS = float(os.environ.get('GETTING_SCHEDULE_TIME_HOURS')
+                                    if os.environ.get('GETTING_SCHEDULE_TIME_HOURS')
+                                    else 1) * 60 * 60
 
 mongo_storage = MongodbService().get_instance()
 
