@@ -305,12 +305,33 @@ def make_keyboard_search_group(search_result=[]):
     else:
         list_keyboard_main_2.append(list_keyboard)
 
+
     keyboard['buttons'] = list_keyboard_main
     keyboard = json.dumps(keyboard, ensure_ascii=False).encode('utf-8')
     keyboard = str(keyboard.decode('utf-8'))
 
-    return keyboard, list_keyboard_main_2
+    return keyboard
 
+def make_keyboard_condition(list_condition):
+    keyboard = {
+        "one_time": False
+    }
+    list_keyboard_main = []
+    list_keyboard = []
+
+    for group in list_condition:
+        group = group["name"]
+
+
+    list_condition = list_condition['name']
+
+
+
+    # keyboard['buttons'] = list_keyboard_main
+    # keyboard = json.dumps(keyboard, ensure_ascii=False).encode('utf-8')
+    # keyboard = str(keyboard.decode('utf-8'))
+
+    # return list_condition
 
 def keyboard_condition(list_keyboard_main):
     """Следит за состоянием клавиатуры во время поиска"""
@@ -362,48 +383,43 @@ def name_groups(groups=[]):
     return list_groups
 
 
+# ==================== ПОИСК ==================== #
+
+class SuperStates(BaseStateGroup):
+    SEARCH = 0
+    NEXT_PAGE = 1
+
+
+@bot.on.message(state=SuperStates.SEARCH)  # StateRule(SuperStates.AWKWARD_STATE)
+async def awkward_handler(ans: Message):
+
+    # make_keyboard_condition(storage.get_search_list(ans.text))
+
+    # if storage.get_search_list(ans.text):
+    #     keyboard = make_keyboard_search_group(storage.get_search_list(ans.text))
+
+    if ans.text == "Дальше":
+        await bot.state_dispenser.set(ans.peer_id, SuperStates.NEXT_PAGE)
+        await ans.answer()
+
+    # else:
+    #     # page_counter = 0
+    #     # page_counter += 1
+    #     keyboard, condition = make_keyboard_search_group(storage.get_search_list(ans.text))
+    #     await ans.answer("Результат поиска", keyboard=keyboard)
+
 # ==================== Обработка команд ==================== #
 
-# class SuperStates(BaseStateGroup):
-#     SEARCH = 0
-#     NEXT_PAGE = 1
-#
-#
-# @bot.on.message(state=SuperStates.SEARCH)  # StateRule(SuperStates.AWKWARD_STATE)
-# async def awkward_handler(ans: Message):
-#     # Данные фактически режутся при передачи и затираются при вызове "Дальше"
-#     # Решить проблему с передаче данных после формирования клавиатуры
-#     condition = []
-#
-#     if condition:
-#
-#
-#         # @bot.on.message(state=SuperStates.NEXT_PAGE)  # StateRule(SuperStates.AWKWARD_STATE)
-#         # async def awkward_handler(ans: Message):
-#         #
-#         # @bot.on.message(text="Дальше")
-#         # async def die_handler(ans: Message):
-#         #     await bot.state_dispenser.set(ans.peer_id, SuperStates.NEXT_PAGE)
-#
-#         if ans.text == "Дальше":
-#             keyboard, condition = keyboard_condition(condition)
-#             await ans.answer("Результат поиска", keyboard=keyboard)
-#         elif ans.text != "Выйти":
-#             await ans.answer("Результат поиска", keyboard=keyboard)
-#         else:
-#             await bot.state_dispenser.delete(ans.peer_id)
-#
-#     else:
-#         keyboard, condition = make_keyboard_search_group(storage.get_search_list(ans.text))
-#         await ans.answer("Результат поиска", keyboard=keyboard)
-#
-#
-#
-# @bot.on.message(text="Поиск 🔎")
-# async def die_handler(ans: Message):
-#     await bot.state_dispenser.set(ans.peer_id, SuperStates.SEARCH)
-#     return "Введите название группы или фамилию преподавателя\n" \
-#            "Например: ИБб-18-1 или Иванов"
+@bot.on.message(text="Поиск 🔎")
+async def die_handler(ans: Message):
+    print(111111111111)
+    await bot.state_dispenser.set(ans.peer_id, SuperStates.SEARCH)
+    return "Вы в поиске"
+
+
+@bot.on.message(state=SuperStates.NEXT_PAGE)
+async def awkward_handler(ans: Message):
+    return "ВСЁ ПОЛУЧИЛОСЬ"
 
 
 # Команда start
@@ -796,12 +812,6 @@ async def wrapper(ans: Message):
         add_statistics(action='help')
         return
 
-
-    elif "Поиск 🔎" == message and user:
-        await ans.answer('Введите название группы или фамилию преподавателя\n'
-                         'Например: ИБб-18-1 или Иванов')
-        # Тянем список групп с базы и создаём список названий групп
-        # all_groups = storage.get_all_groups()
 
 
     else:
