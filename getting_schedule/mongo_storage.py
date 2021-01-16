@@ -42,6 +42,10 @@ class MongodbService(object):
         self._db.schedule.drop()  # очищаем старые записи в коллекции
         return self._db.schedule.insert_many(schedule)
 
+    def delete_schedule(self):
+        """Удаляем расписание (очищаем коллекцию schedule)"""
+        return self._db.schedule.drop()
+
     def save_status(self, date, time, getting_schedule_time_hours):
         """Сохраняет время последнего обращения к PostgreSQL"""
         status = {

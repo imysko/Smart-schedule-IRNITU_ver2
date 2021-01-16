@@ -87,7 +87,11 @@ def processing_schedule():
     try:
         pg_schedule = postgre_storage.get_schedule()
         mongo_schedule = data_conversion.convert_schedule(pg_schedule)
-        mongo_storage.save_schedule(mongo_schedule)
+
+        if mongo_schedule:
+            mongo_storage.save_schedule(mongo_schedule)
+        else:
+            mongo_storage.delete_schedule()
 
         end_time = time.time()
         print('Processing_schedule successful.', f'Operation time: {end_time - start_time} seconds.')
