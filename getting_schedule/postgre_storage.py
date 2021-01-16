@@ -49,6 +49,7 @@ def get_schedule() -> list:
             # Вместо id института подставляется сразу название.
             cursor.execute("SELECT "
                            "groups.obozn, "
+                           "dend,"
                            "vacpara.begtime, "
                            "everyweek, "
                            "prepods.preps, "
@@ -60,9 +61,9 @@ def get_schedule() -> list:
                            "from schedule "
                            "join groups on schedule.group_id = groups.id_7 "
                            "join vacpara on schedule.para = vacpara.id_66 "
-                           
+
                            "join prepods on schedule.teachers[1] = prepods.id_61 "
-                           
+
                            "join disciplines on schedule.discipline = disciplines.id ")
             rows = cursor.fetchall()
             groups = [dict(group) for group in rows]

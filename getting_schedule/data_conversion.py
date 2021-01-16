@@ -1,3 +1,9 @@
+from datetime import datetime, date
+import pytz
+
+TIME_ZONE = pytz.timezone('Asia/Irkutsk')
+
+
 def convert_institutes(pg_institutes: list) -> list:
     """Преобразование формата институтов"""
     if not pg_institutes:
@@ -86,6 +92,10 @@ def get_dict_key(d, value):
 def convert_schedule(pg_schedule: list) -> list:
     """Преобразование формата расписания"""
 
+    date_now = datetime.now(TIME_ZONE).date()
+
+    # date_now = date(2020, 12, 20) ДЛЯ ОТЛАДКИ!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
     # Сортируем массив, чтобы одинаковые группы стояли рядом.
     pg_schedule = sorted(pg_schedule, key=lambda x: x['obozn'])
 
@@ -95,47 +105,51 @@ def convert_schedule(pg_schedule: list) -> list:
 
     item_index = 0  # Счетчик индекса.
     for item in pg_schedule:
-        week, day = getting_week_and_day_of_week(item)
 
-        # Определяем вид пары и подгруппу.
-        if item['nt'] == 1:
-            info = '( Лекция )'
-        elif item['nt'] == 2:
-            if item['ngroup']:
-                info = f'( Практ. подгруппа {item["ngroup"]} )'
+        # Проверяем, что расписание действует
+        if date_now <= item['dend']:
+
+            week, day = getting_week_and_day_of_week(item)
+
+            # Определяем вид пары и подгруппу.
+            if item['nt'] == 1:
+                info = '( Лекция )'
+            elif item['nt'] == 2:
+                if item['ngroup']:
+                    info = f'( Практ. подгруппа {item["ngroup"]} )'
+                else:
+                    info = '( Практ. )'
             else:
-                info = '( Практ. )'
-        else:
-            if item['ngroup']:
-                info = f'( Лаб. раб. подгруппа {item["ngroup"]} )'
-            else:
-                info = f'( Лаб. раб. )'
+                if item['ngroup']:
+                    info = f'( Лаб. раб. подгруппа {item["ngroup"]} )'
+                else:
+                    info = f'( Лаб. раб. )'
 
-        lesson = {
-            'time': item['begtime'],
-            'week': week,
-            'name': item['title'],
-            'aud': item['auditories_verbose'],
-            'info': info,
-            'prep': item['preps'].strip(),
-        }
+            lesson = {
+                'time': item['begtime'],
+                'week': week,
+                'name': item['title'],
+                'aud': item['auditories_verbose'],
+                'info': info,
+                'prep': item['preps'].strip(),
+            }
 
-        # Смотрим, создал ли уже нужный день в расписании.
-        if not is_there_dict_with_value_in_list(schedule, day):
-            schedule.append(
-                {
-                    'day': day,
-                    'lessons': []
-                }
-            )
+            # Смотрим, создал ли уже нужный день в расписании.
+            if not is_there_dict_with_value_in_list(schedule, day):
+                schedule.append(
+                    {
+                        'day': day,
+                        'lessons': []
+                    }
+                )
 
-        # Добавляем пары в нужный день.
-        for sch in schedule:
-            if sch['day'] == day:
-                if lesson in sch['lessons']:
+            # Добавляем пары в нужный день.
+            for sch in schedule:
+                if sch['day'] == day:
+                    if lesson in sch['lessons']:
+                        break
+                    sch['lessons'].append(lesson)
                     break
-                sch['lessons'].append(lesson)
-                break
 
         # Если нашлась другая группа или это последний элемент списка, сохраняем предыдущую.
         current_group = item['obozn']
@@ -144,20 +158,22 @@ def convert_schedule(pg_schedule: list) -> list:
             next_group = pg_schedule[item_index + 1]['obozn']
 
         if current_group != next_group or item_index == len(pg_schedule) - 1:
-            # Сортируем пары в дне по времени и подгруппе
-            for sch in schedule:
-                # Сортируем подгруппы
-                sch['lessons'] = sorted(sch['lessons'], key=lambda x: x['info'])
-                # Сортируем по времени
-                sch['lessons'] = sorted(sch['lessons'], key=lambda x: int(x['time'].replace(':', '')))
+            # Проверяем, что расписание не пустое
+            if schedule:
+                # Сортируем пары в дне по времени и подгруппе
+                for sch in schedule:
+                    # Сортируем подгруппы
+                    sch['lessons'] = sorted(sch['lessons'], key=lambda x: x['info'])
+                    # Сортируем по времени
+                    sch['lessons'] = sorted(sch['lessons'], key=lambda x: int(x['time'].replace(':', '')))
 
-            all_schedule.append({
-                'group': current_group,
-                'schedule': sorted(schedule, key=lambda x: get_dict_key(DAYS, x['day']))
-            })
+                all_schedule.append({
+                    'group': current_group,
+                    'schedule': sorted(schedule, key=lambda x: get_dict_key(DAYS, x['day']))
+                })
 
-            # Обнуляем расписание для слудующей группы
-            schedule = []
+                # Обнуляем расписание для слудующей группы
+                schedule = []
 
         item_index += 1  # Увеличиваем счетчик индекса.
     return all_schedule
