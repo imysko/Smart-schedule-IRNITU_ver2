@@ -263,7 +263,7 @@ def make_keyboard_choose_group_vk_page_2(groups=[]):
     return keyboard
 
 
-def make_keyboard_search_group(search_result=[], page=1):
+def make_keyboard_search_group(page, search_result=[]):
     """Кнопки выбора группы"""
 
     keyboard = {
@@ -277,14 +277,23 @@ def make_keyboard_search_group(search_result=[], page=1):
     for group in search_result:
         group = group["name"]
         overflow += 1
-        if overflow == 27:
+        if overflow == 25:
             list_keyboard_main.append(list_keyboard)
             list_keyboard = []
-            list_keyboard.append(parametres_for_buttons_start_menu_vk('Дальше', 'primary'))
-            list_keyboard.append(parametres_for_buttons_start_menu_vk('Основное меню', 'primary'))
-            list_keyboard_main.append(list_keyboard)
+            if page == 1:
+                list_keyboard.append(parametres_for_buttons_start_menu_vk('Основное меню', 'primary'))
+                list_keyboard.append(parametres_for_buttons_start_menu_vk('Дальше', 'positive'))
+                list_keyboard_main.append(list_keyboard)
+            elif page > 1:
+                list_keyboard.append(parametres_for_buttons_start_menu_vk('<==Назад', 'negative'))
+                list_keyboard.append(parametres_for_buttons_start_menu_vk('Дальше', 'positive'))
+                list_keyboard_main.append(list_keyboard)
+                list_keyboard_main.append([parametres_for_buttons_start_menu_vk('Основное меню', 'primary')])
+
+
+
         else:
-            if overflow < 28:
+            if overflow < 26:
                 if len(list_keyboard) == 3:
                     list_keyboard_main.append(list_keyboard)
                     list_keyboard = []
@@ -297,10 +306,10 @@ def make_keyboard_search_group(search_result=[], page=1):
                 list_keyboard.append(parametres_for_buttons_start_menu_vk(f'{group}', 'primary'))
                 list_keyboard_main_2.append(parametres_for_buttons_start_menu_vk(f'{group}', 'primary'))
 
-    if overflow < 28:
+    if overflow < 26:
         list_keyboard_main.append(list_keyboard)
         list_keyboard = []
-        list_keyboard.append(parametres_for_buttons_start_menu_vk('<==Назад', 'primary'))
+        list_keyboard.append(parametres_for_buttons_start_menu_vk('<==Назад', 'negative'))
         list_keyboard.append(parametres_for_buttons_start_menu_vk('Основное меню', 'primary'))
         list_keyboard_main.append(list_keyboard)
     else:
@@ -380,7 +389,7 @@ async def awkward_handler(ans: Message):
     if storage.get_search_list(ans.text) and ans.from_id not in Condition_request:
         request = storage.get_search_list(ans.text)
         request_word = ans.text
-        keyboard = make_keyboard_search_group(request, page)
+        keyboard = make_keyboard_search_group(page, request)
         list_search = [page, request_word]
         Condition_request[chat_id] = list_search
         await ans.answer("Результат поиска", keyboard=keyboard)
@@ -389,27 +398,20 @@ async def awkward_handler(ans: Message):
         Condition_request[ans.from_id][0] += 1
         request_word = Condition_request[ans.from_id][1]
         request = storage.get_search_list(request_word)[26*page:]
-        keyboard = make_keyboard_search_group(request, page)
+        keyboard = make_keyboard_search_group(page+1, request)
         await ans.answer(f"Страница {page+1}", keyboard=keyboard)
     elif ans.text == "<==Назад":
         Condition_request[ans.from_id][0] -= 1
         page = Condition_request[ans.from_id][0]
+        print(page)
         request_word = Condition_request[ans.from_id][1]
-        request = storage.get_search_list(request_word)[26 * page:]
-        keyboard = make_keyboard_search_group(request, page)
-        await ans.answer(f"Страница {page - 1}", keyboard=keyboard)
+        request = storage.get_search_list(request_word)[26 * (page-1):]
+        keyboard = make_keyboard_search_group(page, request)
+        await ans.answer(f"Страница {page}", keyboard=keyboard)
     elif ans.text == "Основное меню":
+        del Condition_request[ans.from_id]
         await ans.answer("Вы вышли из поиска", keyboard=make_keyboard_start_menu())
         await bot.state_dispenser.delete(ans.peer_id)
-
-    #
-    # else:
-
-    # else:
-    #     # page_counter = 0
-    #     # page_counter += 1
-    #     keyboard, condition = make_keyboard_search_group(storage.get_search_list(ans.text))
-    #     await ans.answer("Результат поиска", keyboard=keyboard)
 
 
 # ==================== Обработка команд ==================== #
