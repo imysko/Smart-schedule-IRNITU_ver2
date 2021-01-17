@@ -14,13 +14,11 @@ import pytz
 from datetime import datetime
 from vkbottle.bot import Bot, Message
 
-
 TOKEN = os.environ.get('VK')
 
 MAX_CALLBACK_RANGE = 41
 storage = MongodbService().get_instance()
 bot = Bot(TOKEN)  # TOKEN
-
 
 content_types = {
     'text': ['Расписание 🗓', 'Ближайшая пара ⏱', 'Расписание на сегодня 🍏', 'На текущую неделю',
@@ -36,6 +34,8 @@ TZ_IRKUTSK = pytz.timezone('Asia/Irkutsk')
 authorize = vk_api.VkApi(token=TOKEN)
 upload = VkUpload(authorize)
 map_image = "map.jpg"
+
+Condition_request = {}
 
 
 def parametres_for_buttons_start_menu_vk(text, color):
@@ -263,7 +263,7 @@ def make_keyboard_choose_group_vk_page_2(groups=[]):
     return keyboard
 
 
-def make_keyboard_search_group(search_result=[]):
+def make_keyboard_search_group(search_result=[], page=1):
     """Кнопки выбора группы"""
 
     keyboard = {
@@ -281,7 +281,7 @@ def make_keyboard_search_group(search_result=[]):
             list_keyboard_main.append(list_keyboard)
             list_keyboard = []
             list_keyboard.append(parametres_for_buttons_start_menu_vk('Дальше', 'primary'))
-            list_keyboard.append(parametres_for_buttons_start_menu_vk('<==Назад', 'primary'))
+            list_keyboard.append(parametres_for_buttons_start_menu_vk('Основное меню', 'primary'))
             list_keyboard_main.append(list_keyboard)
         else:
             if overflow < 28:
@@ -301,10 +301,10 @@ def make_keyboard_search_group(search_result=[]):
         list_keyboard_main.append(list_keyboard)
         list_keyboard = []
         list_keyboard.append(parametres_for_buttons_start_menu_vk('<==Назад', 'primary'))
+        list_keyboard.append(parametres_for_buttons_start_menu_vk('Основное меню', 'primary'))
         list_keyboard_main.append(list_keyboard)
     else:
         list_keyboard_main_2.append(list_keyboard)
-
 
     keyboard['buttons'] = list_keyboard_main
     keyboard = json.dumps(keyboard, ensure_ascii=False).encode('utf-8')
@@ -312,26 +312,6 @@ def make_keyboard_search_group(search_result=[]):
 
     return keyboard
 
-def make_keyboard_condition(list_condition):
-    keyboard = {
-        "one_time": False
-    }
-    list_keyboard_main = []
-    list_keyboard = []
-
-    for group in list_condition:
-        group = group["name"]
-
-
-    list_condition = list_condition['name']
-
-
-
-    # keyboard['buttons'] = list_keyboard_main
-    # keyboard = json.dumps(keyboard, ensure_ascii=False).encode('utf-8')
-    # keyboard = str(keyboard.decode('utf-8'))
-
-    # return list_condition
 
 def keyboard_condition(list_keyboard_main):
     """Следит за состоянием клавиатуры во время поиска"""
@@ -342,6 +322,7 @@ def keyboard_condition(list_keyboard_main):
     else:
         keyboard = list_keyboard_main
         return keyboard, 0
+
 
 def sep_space(name):
     '''Обрезает длину института, если тот больше 40 символов'''
@@ -387,20 +368,42 @@ def name_groups(groups=[]):
 
 class SuperStates(BaseStateGroup):
     SEARCH = 0
-    NEXT_PAGE = 1
 
 
 @bot.on.message(state=SuperStates.SEARCH)  # StateRule(SuperStates.AWKWARD_STATE)
 async def awkward_handler(ans: Message):
+    '''Стейт для работы поиска'''
+    global Condition_request
+    chat_id = ans.from_id
+    page = 1
 
-    # make_keyboard_condition(storage.get_search_list(ans.text))
+    if storage.get_search_list(ans.text) and ans.from_id not in Condition_request:
+        request = storage.get_search_list(ans.text)
+        request_word = ans.text
+        keyboard = make_keyboard_search_group(request, page)
+        list_search = [page, request_word]
+        Condition_request[chat_id] = list_search
+        await ans.answer("Результат поиска", keyboard=keyboard)
+    elif ans.text == "Дальше":
+        page = Condition_request[ans.from_id][0]
+        Condition_request[ans.from_id][0] += 1
+        request_word = Condition_request[ans.from_id][1]
+        request = storage.get_search_list(request_word)[26*page:]
+        keyboard = make_keyboard_search_group(request, page)
+        await ans.answer(f"Страница {page+1}", keyboard=keyboard)
+    elif ans.text == "<==Назад":
+        Condition_request[ans.from_id][0] -= 1
+        page = Condition_request[ans.from_id][0]
+        request_word = Condition_request[ans.from_id][1]
+        request = storage.get_search_list(request_word)[26 * page:]
+        keyboard = make_keyboard_search_group(request, page)
+        await ans.answer(f"Страница {page - 1}", keyboard=keyboard)
+    elif ans.text == "Основное меню":
+        await ans.answer("Вы вышли из поиска", keyboard=make_keyboard_start_menu())
+        await bot.state_dispenser.delete(ans.peer_id)
 
-    # if storage.get_search_list(ans.text):
-    #     keyboard = make_keyboard_search_group(storage.get_search_list(ans.text))
-
-    if ans.text == "Дальше":
-        await bot.state_dispenser.set(ans.peer_id, SuperStates.NEXT_PAGE)
-        await ans.answer()
+    #
+    # else:
 
     # else:
     #     # page_counter = 0
@@ -408,19 +411,20 @@ async def awkward_handler(ans: Message):
     #     keyboard, condition = make_keyboard_search_group(storage.get_search_list(ans.text))
     #     await ans.answer("Результат поиска", keyboard=keyboard)
 
+
 # ==================== Обработка команд ==================== #
 
 @bot.on.message(text="Поиск 🔎")
 async def die_handler(ans: Message):
-    print(111111111111)
-    await bot.state_dispenser.set(ans.peer_id, SuperStates.SEARCH)
-    return "Вы в поиске"
-
-
-@bot.on.message(state=SuperStates.NEXT_PAGE)
-async def awkward_handler(ans: Message):
-    return "ВСЁ ПОЛУЧИЛОСЬ"
-
+    chat_id = ans.from_id
+    user = storage.get_user(chat_id=chat_id)
+    if user:
+        await bot.state_dispenser.set(ans.peer_id, SuperStates.SEARCH)
+        return "Вы в поиске"
+    else:
+        await ans.answer('Привет\n')
+        await ans.answer('Для начала пройдите небольшую регистрацию😉\n')
+        await ans.answer('Выберите институт.', keyboard=make_keyboard_institutes(storage.get_institutes()))
 
 # Команда start
 @bot.on.message(text=сontent_commands['text'])
@@ -679,7 +683,7 @@ async def wrapper(ans: Message):
             await ans.answer('Выберите курс.',
                              keyboard=make_keyboard_choose_course_vk(storage.get_courses(message_inst)))
         else:
-            await ans.answer('Ради твоего удобства, я вывел клавиатуру со списком инстиутов ниже 😸👇🏻')
+            await ans.answer('Ради твоего удобства, я вывел клавиатуру со списком инстиутов ниже 😸👇🏻', keyboard=make_keyboard_institutes(storage.get_institutes()))
         return
 
     # Если нажал кнопку Назад к институтам
