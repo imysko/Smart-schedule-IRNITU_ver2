@@ -3,6 +3,7 @@ from functions.calculating_reminder_times import calculating_reminder_times
 from functions.near_lesson import get_near_lesson, get_now_lesson
 from functions.storage import MongodbService
 from vkbottle_types import BaseStateGroup
+from functions.logger import logger
 from vkbottle.bot import Message, Bot
 from vkbottle import Keyboard, KeyboardButtonColor, Text
 from functions.find_week import find_week
@@ -290,8 +291,6 @@ def make_keyboard_search_group(page, search_result=[]):
                 list_keyboard_main.append(list_keyboard)
                 list_keyboard_main.append([parametres_for_buttons_start_menu_vk('Основное меню', 'primary')])
 
-
-
         else:
             if overflow < 26:
                 if len(list_keyboard) == 3:
@@ -306,10 +305,16 @@ def make_keyboard_search_group(page, search_result=[]):
                 list_keyboard.append(parametres_for_buttons_start_menu_vk(f'{group}', 'primary'))
                 list_keyboard_main_2.append(parametres_for_buttons_start_menu_vk(f'{group}', 'primary'))
 
-    if overflow < 26:
+    if overflow < 26 and page > 1:
         list_keyboard_main.append(list_keyboard)
         list_keyboard = []
         list_keyboard.append(parametres_for_buttons_start_menu_vk('<==Назад', 'negative'))
+        list_keyboard.append(parametres_for_buttons_start_menu_vk('Основное меню', 'primary'))
+        list_keyboard_main.append(list_keyboard)
+
+    elif overflow < 26:
+        list_keyboard_main.append(list_keyboard)
+        list_keyboard = []
         list_keyboard.append(parametres_for_buttons_start_menu_vk('Основное меню', 'primary'))
         list_keyboard_main.append(list_keyboard)
     else:
@@ -322,15 +327,11 @@ def make_keyboard_search_group(page, search_result=[]):
     return keyboard
 
 
-def keyboard_condition(list_keyboard_main):
-    """Следит за состоянием клавиатуры во время поиска"""
-    if len(list_keyboard_main) > 27:
-        keyboard = list_keyboard_main[27:]
-        keyboard_condition = list_keyboard_main[:27]
-        return keyboard, keyboard_condition
-    else:
-        keyboard = list_keyboard_main
-        return keyboard, 0
+def make_keyboard_main_menu():
+    keyboard = Keyboard(one_time=False)
+    keyboard.row()
+    keyboard.add(Text(label="Основное меню"), color=KeyboardButtonColor.PRIMARY)
+    return keyboard
 
 
 def sep_space(name):
@@ -384,49 +385,110 @@ async def awkward_handler(ans: Message):
     '''Стейт для работы поиска'''
     global Condition_request
     chat_id = ans.from_id
+    data = ans.text
+    all_found_groups = []
     page = 1
 
-    if storage.get_search_list(ans.text) and ans.from_id not in Condition_request:
+    logger.info(f'Inline button data: {data}')
+
+    if storage.get_search_list(ans.text) and Condition_request[chat_id] == []:
         request = storage.get_search_list(ans.text)
         request_word = ans.text
         keyboard = make_keyboard_search_group(page, request)
-        list_search = [page, request_word]
+        for i in request:
+            all_found_groups.append(i['name'].lower())
+        list_search = [page, request_word, all_found_groups]
         Condition_request[chat_id] = list_search
         await ans.answer("Результат поиска", keyboard=keyboard)
+
+    elif ans.text == "Основное меню":
+        del Condition_request[ans.from_id]
+        await ans.answer("Основное меню", keyboard=make_keyboard_start_menu())
+        await bot.state_dispenser.delete(ans.peer_id)
+
     elif ans.text == "Дальше":
         page = Condition_request[ans.from_id][0]
         Condition_request[ans.from_id][0] += 1
         request_word = Condition_request[ans.from_id][1]
-        request = storage.get_search_list(request_word)[26*page:]
-        keyboard = make_keyboard_search_group(page+1, request)
-        await ans.answer(f"Страница {page+1}", keyboard=keyboard)
+        request = storage.get_search_list(request_word)[26 * page:]
+        keyboard = make_keyboard_search_group(page + 1, request)
+        await ans.answer(f"Страница {page + 1}", keyboard=keyboard)
+
     elif ans.text == "<==Назад":
         Condition_request[ans.from_id][0] -= 1
         page = Condition_request[ans.from_id][0]
-        print(page)
         request_word = Condition_request[ans.from_id][1]
-        request = storage.get_search_list(request_word)[26 * (page-1):]
+        request = storage.get_search_list(request_word)[26 * (page - 1):]
         keyboard = make_keyboard_search_group(page, request)
         await ans.answer(f"Страница {page}", keyboard=keyboard)
-    elif ans.text == "Основное меню":
-        del Condition_request[ans.from_id]
-        await ans.answer("Вы вышли из поиска", keyboard=make_keyboard_start_menu())
+
+
+    elif ('На текущую неделю' == data or 'На следующую неделю' == data):
+        group = Condition_request[ans.from_id][1]
+        schedule = storage.get_schedule(group=group)
+        if schedule['schedule'] == []:
+            await ans.answer('Расписание временно недоступно\nПопробуйте позже⏱')
+            add_statistics(action=data)
+            return
+
+        schedule = schedule['schedule']
+        week = find_week()
+
+        # меняем неделю
+        if data == 'На следующую неделю':
+            week = 'odd' if week == 'even' else 'even'
+
+        week_name = 'четная' if week == 'odd' else 'нечетная'
+
+        schedule_str = full_schedule_in_str(schedule, week=week)
+        await ans.answer(f'Расписание {group}\n'
+                         f'Неделя: {week_name}', keyboard=make_keyboard_start_menu())
+
+        for schedule in schedule_str:
+            await ans.answer(f'{schedule}')
         await bot.state_dispenser.delete(ans.peer_id)
+
+
+    elif ans.text.lower() in (i for i in Condition_request[ans.from_id][2]):
+        choose = ans.text
+        Condition_request[ans.from_id][1] = choose
+        schedule = storage.get_schedule(group=choose)
+        await ans.answer(f"Выберите неделю для группы {choose}", keyboard=make_keyboard_choose_schedule())
+
+    else:
+        if Condition_request[ans.from_id] and storage.get_search_list(ans.text):
+            request = storage.get_search_list(ans.text)
+            request_word = ans.text
+            keyboard = make_keyboard_search_group(page, request)
+            for i in request:
+                all_found_groups.append(i['name'].lower())
+            list_search = [page, request_word, all_found_groups]
+            Condition_request[chat_id] = list_search
+            await ans.answer("Результат поиска", keyboard=keyboard)
+
+        else:
+            Condition_request[chat_id][1] = ''
+            await ans.answer('Поиск не дал результатов 😕')
+            return
 
 
 # ==================== Обработка команд ==================== #
 
 @bot.on.message(text="Поиск 🔎")
 async def die_handler(ans: Message):
+    global Condition_request
     chat_id = ans.from_id
+    Condition_request[chat_id] = []
     user = storage.get_user(chat_id=chat_id)
     if user:
         await bot.state_dispenser.set(ans.peer_id, SuperStates.SEARCH)
-        return "Вы в поиске"
+        await ans.answer('Введите название группы или фамилию преподавателя\n'
+                         'Например: ИБб-18-1 или Иванов', keyboard=make_keyboard_main_menu())
     else:
         await ans.answer('Привет\n')
         await ans.answer('Для начала пройдите небольшую регистрацию😉\n')
         await ans.answer('Выберите институт.', keyboard=make_keyboard_institutes(storage.get_institutes()))
+
 
 # Команда start
 @bot.on.message(text=сontent_commands['text'])
@@ -685,7 +747,8 @@ async def wrapper(ans: Message):
             await ans.answer('Выберите курс.',
                              keyboard=make_keyboard_choose_course_vk(storage.get_courses(message_inst)))
         else:
-            await ans.answer('Ради твоего удобства, я вывел клавиатуру со списком инстиутов ниже 😸👇🏻', keyboard=make_keyboard_institutes(storage.get_institutes()))
+            await ans.answer('Ради твоего удобства, я вывел клавиатуру со списком инстиутов ниже 😸👇🏻',
+                             keyboard=make_keyboard_institutes(storage.get_institutes()))
         return
 
     # Если нажал кнопку Назад к институтам

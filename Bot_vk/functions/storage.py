@@ -84,7 +84,8 @@ class MongodbService(object):
 
     def get_search_list(self, search_words: str) -> list:
         """возвращает список групп на определённом курсе в определеннои слову"""
-        return list(self._db.groups.find(filter={'name': {'$regex': f'{search_words}*'}}))
+        return list(self._db.groups.find(filter={'name': {'$regex' : f'.*{search_words}.*', "$options": '/i'}}))
+
 
     def get_courses(self, institute='') -> list:
         """возвращает список курсов у определённого института"""
