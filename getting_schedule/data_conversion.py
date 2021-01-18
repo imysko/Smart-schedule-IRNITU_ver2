@@ -3,6 +3,9 @@ import pytz
 
 TIME_ZONE = pytz.timezone('Asia/Irkutsk')
 
+# Режим отладки (если включен, то не определяем текущее время - позволяет использовать старое расписание).
+DEBUG = False
+
 
 def convert_institutes(pg_institutes: list) -> list:
     """Преобразование формата институтов"""
@@ -94,7 +97,8 @@ def convert_schedule(pg_schedule: list) -> list:
 
     date_now = datetime.now(TIME_ZONE).date()
 
-    # date_now = date(2020, 12, 20)  # ДЛЯ ОТЛАДКИ!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    if DEBUG:
+        date_now = date(2020, 12, 20)  # ДЛЯ ОТЛАДКИ!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     # Сортируем массив, чтобы одинаковые группы стояли рядом.
     pg_schedule = sorted(pg_schedule, key=lambda x: x['obozn'])
@@ -183,8 +187,8 @@ def convert_teachers_schedule(pg_schedule: list) -> list:
     """Преобразование формата расписания преподавателей"""
 
     date_now = datetime.now(TIME_ZONE).date()
-
-    #date_now = date(2020, 12, 20)  # ДЛЯ ОТЛАДКИ!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    if DEBUG:
+        date_now = date(2020, 12, 20)  # ДЛЯ ОТЛАДКИ!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     # Сортируем массив, чтобы одинаковые преподаватели стояли рядом.
     pg_schedule = sorted(pg_schedule, key=lambda x: x['prep_id'])
