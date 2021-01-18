@@ -336,6 +336,11 @@ def make_keyboard_main_menu():
     keyboard.add(Text(label="Основное меню"), color=KeyboardButtonColor.PRIMARY)
     return keyboard
 
+def back_for_prep():
+    keyboard = Keyboard(one_time=False)
+    keyboard.row()
+    keyboard.add(Text(label="Назад к институтам"), color=KeyboardButtonColor.PRIMARY)
+    return keyboard
 
 def sep_space(name):
     '''Обрезает длину института, если тот больше 40 символов'''
@@ -400,16 +405,10 @@ async def awkward_handler(ans: Message):
     page = 1
     # Логирование для информации в рил-тайм
     logger.info(f'Inline button data: {data}')
-<<<<<<< Updated upstream
     # Условие для первичного входа пользователя
-    if (storage.get_search_list(ans.text) or storage.get_search_list_prep(ans.text)) and Condition_request[chat_id] == []:
-        # Результат запроса по группам
-=======
-
     if (storage.get_search_list(ans.text) or storage.get_search_list_prep(ans.text)) and Condition_request[
         chat_id] == []:
-        print(Condition_request)
->>>>>>> Stashed changes
+        # Результат запроса по группам
         request_group = storage.get_search_list(ans.text)
         # Результат запроса по преподам
         request_prep = storage.get_search_list_prep(ans.text)
@@ -443,6 +442,7 @@ async def awkward_handler(ans: Message):
         del Condition_request[ans.from_id]
         await ans.answer("Основное меню", keyboard=make_keyboard_start_menu())
         await bot.state_dispenser.delete(ans.peer_id)
+
     # Здесь уловие для слова "Дальше"
     elif ans.text == "Дальше":
         page = Condition_request[ans.from_id][0]
@@ -458,6 +458,7 @@ async def awkward_handler(ans: Message):
         request = request[26 * page:]
         keyboard = make_keyboard_search_group(page + 1, request)
         await ans.answer(f"Страница {page + 1}", keyboard=keyboard)
+
     # По аналогии со словом "<==Назад", только обратный процесс
     elif ans.text == "<==Назад":
         Condition_request[ans.from_id][0] -= 1
@@ -474,7 +475,7 @@ async def awkward_handler(ans: Message):
         keyboard = make_keyboard_search_group(page, request)
         await ans.answer(f"Страница {page}", keyboard=keyboard)
 
-    #Условие для вывода расписания для группы и преподавателя по неделям
+    # Условие для вывода расписания для группы и преподавателя по неделям
     elif ('На текущую неделю' == data or 'На следующую неделю' == data):
         group = Condition_request[ans.from_id][1]
         request_word = Condition_request[ans.from_id][1]
@@ -510,14 +511,12 @@ async def awkward_handler(ans: Message):
             await ans.answer(f'{schedule}')
         await bot.state_dispenser.delete(ans.peer_id)
 
-<<<<<<< Updated upstream
     # Условия для завершения поиска, тобишь окончательный выбор пользователя
-    elif (storage.get_search_list(ans.text) or storage.get_search_list_prep(ans.text)) and ans.text.lower() in (i for i in Condition_request[ans.from_id][2]):
-=======
-
-    elif (storage.get_search_list(ans.text) or storage.get_search_list_prep(ans.text)) and \
-            ans.text.lower() in (i for i in Condition_request[ans.from_id][2]):
->>>>>>> Stashed changes
+    elif (storage.get_search_list(ans.text) or storage.get_search_list_prep(ans.text)) and ans.text.lower() in (i for i
+                                                                                                                in
+                                                                                                                Condition_request[
+                                                                                                                    ans.from_id][
+                                                                                                                    2]):
         choose = ans.text
         Condition_request[ans.from_id][1] = choose
         request_word = Condition_request[ans.from_id][1]
@@ -567,7 +566,7 @@ async def awkward_handler(ans: Message):
 
 
 # ==================== Обработка команд ==================== #
- # Входим в стейт по кодовому слову "Поиск"
+# Входим в стейт по кодовому слову "Поиск"
 @bot.on.message(text="Поиск 🔎")
 async def die_handler(ans: Message):
     """Стейт поиска"""
@@ -854,7 +853,10 @@ async def wrapper(ans: Message):
             await ans.answer('📚Кто постигает новое, лелея старое,\n'
                              'Тот может быть учителем.\n'
                              'Конфуций')
-            await ans.answer('Введите свою Фамилию полностью. Например: Корняков')
+
+            await ans.answer('Введите своё ФИО полностью.\n'
+                             'Например: Корняков Михаил Викторович', keyboard=back_for_prep())
+
             return
 
         else:
@@ -868,7 +870,7 @@ async def wrapper(ans: Message):
         storage.delete_user_or_userdata(chat_id=chat_id)
         return
 
-    # Если нажал кнопку Назад к институтам
+    # Если нажал кнопку Назад к курсам
     if message == "Назад к курсам" and not 'group' in user.keys():
 
         await ans.answer('Выберите курс.', keyboard=make_keyboard_choose_course_vk(
@@ -882,12 +884,6 @@ async def wrapper(ans: Message):
         course = storage.get_courses(institute)
         # Тянем из базы список преподавателей, фамилии и инициалы, которые относятся к введенной фамилии
         prep_list = storage.get_prep(message)
-        prep_surname_list = []
-        # Режем инициалы, оставляя только фамилии
-        for _ in prep_list:
-            prep_surname_list.append(_['prep_short_name'].split(' ')[0])
-        print(prep_surname_list)
-
         # Если нажал кнопку курса
         if message in name_courses(course):
             # Записываем в базу данных выбранный курс
@@ -897,8 +893,9 @@ async def wrapper(ans: Message):
             await ans.answer(f'Вы выбрали: {message}\n')
             await ans.answer('Выберите группу.', keyboard=make_keyboard_choose_group_vk(groups))
             return
+
         # Если в базе всего одна запись с такой фамилией, то регаем препода
-        elif message in prep_surname_list and len(prep_surname_list) == 1:
+        elif prep_list:
             prep_name = prep_list[0]['prep']
             print(prep_list)
             await ans.answer(f'Вы успешно зарегистрировались, как {prep_name}!😊\n\n'
@@ -907,11 +904,9 @@ async def wrapper(ans: Message):
             storage.save_or_update_user(chat_id=chat_id, course='null')
             storage.save_or_update_user(chat_id=chat_id, group=prep_name)
             return
-        # Если в базе много записей с такой Фамилией, выдаем клавиатуру
-        elif message in prep_surname_list:
-            # ТУТ ПРОДОЛЖАЕМ РАБОТАТЬ!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            pass
-
+        elif not prep_list:
+            await ans.answer('Мы не смогли найти вас в базе преподавателей.\n'
+                             'Возможно вы неверно ввели своё ФИО.')
         else:
             await ans.answer('Не огорчай нас, мы же не просто так старались над клавиатурой 😼👇🏻')
         return
