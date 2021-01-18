@@ -82,7 +82,7 @@ def processing_groups_and_courses():
 def processing_schedule():
     """Обработка расписания"""
     print('Start processing_schedule...')
-    start_time = time.time()
+    start_time1 = time.time()
 
     try:
         pg_schedule = postgre_storage.get_schedule()
@@ -93,8 +93,27 @@ def processing_schedule():
         else:
             mongo_storage.delete_schedule()
 
-        end_time = time.time()
-        print('Processing_schedule successful.', f'Operation time: {end_time - start_time} seconds.')
+        end_time1 = time.time()
+        print('Processing_schedule successful.', f'Operation time: {end_time1 - start_time1} seconds.')
+
+        start_time2 = time.time()
+        try:
+            mongo_teachers_schedule = data_conversion.convert_teachers_schedule(pg_schedule)
+
+            if mongo_teachers_schedule:
+                mongo_storage.save_teachers_schedule(mongo_teachers_schedule)
+            else:
+                mongo_storage.delete_teachers_schedule()
+
+            end_time2 = time.time()
+            print('Processing_teachers_schedule successful.', f'Operation time: {end_time2 - start_time2} seconds.')
+        except PyMongoError as e:
+            print('Mongo error:\n', e)
+        except psycopg2.OperationalError as e:
+            print('Postgre error:\n', e)
+        except Exception as e:
+            print('convert_teachers_schedule error:\n', e)
+
 
     except PyMongoError as e:
         print('Mongo error:\n', e)
