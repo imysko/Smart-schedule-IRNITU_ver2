@@ -53,6 +53,7 @@ def get_schedule() -> list:
                            "vacpara.begtime, "
                            "everyweek, "
                            "prepods.preps, "
+                           "prepods.id_61 as prep_id, "
                            "auditories_verbose, "
                            "day, "
                            "nt, "
