@@ -46,13 +46,14 @@ def get_schedule() -> list:
     """Получение расписания групп из PostgreSQL"""
     with closing(psycopg2.connect(**db_params)) as conn:
         with conn.cursor(cursor_factory=DictCursor) as cursor:
-            # Вместо id института подставляется сразу название.
+
             cursor.execute("SELECT "
                            "groups.obozn, "
                            "dend,"
                            "vacpara.begtime, "
                            "everyweek, "
                            "prepods.preps, "
+                           "prepods.prep as prep_short_name, "
                            "prepods.id_61 as prep_id, "
                            "auditories_verbose, "
                            "day, "
