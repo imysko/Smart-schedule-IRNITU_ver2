@@ -47,6 +47,19 @@ def convert_courses(mongo_groups: list) -> list:
     return courses
 
 
+def convert_teachers(pg_teachers: list) -> list:
+    mongo_teachers = pg_teachers
+    for teacher in mongo_teachers:
+        teacher['prep'] = teacher['prep'].strip()
+        teacher['prep_short_name'] = teacher['prep_short_name'].strip()
+
+        # Удаляем пустого преподавателя
+        if not teacher['prep'] and not teacher['prep_short_name']:
+            mongo_teachers.remove(teacher)
+
+    return mongo_teachers
+
+
 DAYS = {
     1: 'понедельник',
     2: 'вторник',

@@ -46,6 +46,11 @@ class MongodbService(object):
         """Удаляем расписание (очищаем коллекцию schedule)"""
         return self._db.schedule.drop()
 
+    def save_teachers(self, groups: list):
+        """Сохраняет список преподавателей в коллекцию prepods"""
+        self._db.prepods.drop()  # очищаем старые записи в коллекции
+        return self._db.prepods.insert_many(groups)
+
     def save_teachers_schedule(self, schedule: list):
         """Сохраняет расписание преподавателей в коллекцию prepods_schedule"""
         self._db.prepods_schedule.drop()  # очищаем старые записи в коллекции

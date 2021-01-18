@@ -79,6 +79,28 @@ def processing_groups_and_courses():
         print('convert_groups error:\n', e)
 
 
+def processing_teachers():
+    """Обработка преподавателей"""
+    print('Start processing_teachers...')
+    start_time = time.time()
+
+    try:
+        pg_teachers = postgre_storage.get_teachers()
+        mongo_teachers = sorted(data_conversion.convert_teachers(pg_teachers),
+                                key=lambda x: x['prep'])  # Сортируем массив
+        mongo_storage.save_teachers(mongo_teachers)
+
+        end_time = time.time()
+        print('Processing_teachers successful.', f'Operation time: {end_time - start_time} seconds.')
+
+    except PyMongoError as e:
+        print('Mongo error:\n', e)
+    except psycopg2.OperationalError as e:
+        print('Postgre error:\n', e)
+    except Exception as e:
+        print('convert_teachers error:\n', e)
+
+
 def processing_schedule():
     """Обработка расписания"""
     print('Start processing_schedule...')
@@ -133,6 +155,9 @@ def main():
 
         # Группы и курсы
         processing_groups_and_courses()
+
+        # Преподаватели
+        processing_teachers()
 
         # Расписание
         processing_schedule()
