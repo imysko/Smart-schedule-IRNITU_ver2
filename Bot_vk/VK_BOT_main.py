@@ -1,4 +1,4 @@
-from functions.creating_schedule import full_schedule_in_str, get_one_day_schedule_in_str, get_next_day_schedule_in_str
+from functions.creating_schedule import full_schedule_in_str, full_schedule_in_str_prep, get_one_day_schedule_in_str, get_next_day_schedule_in_str
 from functions.calculating_reminder_times import calculating_reminder_times
 from functions.near_lesson import get_near_lesson, get_now_lesson
 from functions.storage import MongodbService
@@ -276,7 +276,7 @@ def make_keyboard_search_group(page, search_result=[]):
     list_keyboard = []
     overflow = 0
     for group in search_result:
-        group = group["name"]
+        group = group['search']
         overflow += 1
         if overflow == 25:
             list_keyboard_main.append(list_keyboard)
@@ -387,17 +387,28 @@ async def awkward_handler(ans: Message):
     chat_id = ans.from_id
     data = ans.text
     all_found_groups = []
+    all_found_prep = []
     page = 1
 
     logger.info(f'Inline button data: {data}')
 
-    if storage.get_search_list(ans.text) and Condition_request[chat_id] == []:
-        request = storage.get_search_list(ans.text)
+    if (storage.get_search_list(ans.text) or storage.get_search_list_prep(ans.text)) and Condition_request[chat_id] == []:
+        print(Condition_request)
+        request_group = storage.get_search_list(ans.text)
+        request_prep = storage.get_search_list_prep(ans.text)
+        for i in request_group:
+            i['search'] = i.pop('name')
+        for i in request_prep:
+            i['search'] = i.pop('prep_short_name')
         request_word = ans.text
+        request = request_group + request_prep
         keyboard = make_keyboard_search_group(page, request)
-        for i in request:
-            all_found_groups.append(i['name'].lower())
-        list_search = [page, request_word, all_found_groups]
+        for i in request_group:
+            all_found_groups.append(i['search'].lower())
+        for i in request_prep:
+            all_found_prep.append(i['search'].lower())
+        all_found_results = all_found_groups + all_found_prep
+        list_search = [page, request_word, all_found_results]
         Condition_request[chat_id] = list_search
         await ans.answer("Результат поиска", keyboard=keyboard)
 
@@ -410,7 +421,14 @@ async def awkward_handler(ans: Message):
         page = Condition_request[ans.from_id][0]
         Condition_request[ans.from_id][0] += 1
         request_word = Condition_request[ans.from_id][1]
-        request = storage.get_search_list(request_word)[26 * page:]
+        request_group = storage.get_search_list(request_word)
+        request_prep = storage.get_search_list_prep(request_word)
+        for i in request_group:
+            i['search'] = i.pop('name')
+        for i in request_prep:
+            i['search'] = i.pop('prep_short_name')
+        request = request_group + request_prep
+        request = request[26 * page:]
         keyboard = make_keyboard_search_group(page + 1, request)
         await ans.answer(f"Страница {page + 1}", keyboard=keyboard)
 
@@ -418,14 +436,29 @@ async def awkward_handler(ans: Message):
         Condition_request[ans.from_id][0] -= 1
         page = Condition_request[ans.from_id][0]
         request_word = Condition_request[ans.from_id][1]
-        request = storage.get_search_list(request_word)[26 * (page - 1):]
+        request_group = storage.get_search_list(request_word)
+        request_prep = storage.get_search_list_prep(request_word)
+        for i in request_group:
+            i['search'] = i.pop('name')
+        for i in request_prep:
+            i['search'] = i.pop('prep_short_name')
+        request = request_group + request_prep
+        request = request[26 * (page - 1):]
         keyboard = make_keyboard_search_group(page, request)
         await ans.answer(f"Страница {page}", keyboard=keyboard)
 
 
     elif ('На текущую неделю' == data or 'На следующую неделю' == data):
         group = Condition_request[ans.from_id][1]
-        schedule = storage.get_schedule(group=group)
+        request_word = Condition_request[ans.from_id][1]
+        request_group = storage.get_search_list(request_word)
+        request_prep = storage.get_search_list_prep(request_word)
+        if request_group:
+            schedule = storage.get_schedule(group=group)
+            print(schedule)
+        elif request_prep:
+            schedule = request_prep[0]
+            print(schedule)
         if schedule['schedule'] == []:
             await ans.answer('Расписание временно недоступно\nПопробуйте позже⏱')
             add_statistics(action=data)
@@ -439,8 +472,11 @@ async def awkward_handler(ans: Message):
             week = 'odd' if week == 'even' else 'even'
 
         week_name = 'четная' if week == 'odd' else 'нечетная'
+        if request_group:
+            schedule_str = full_schedule_in_str(schedule, week=week)
+        elif request_prep:
+            schedule_str = full_schedule_in_str_prep(schedule, week=week)
 
-        schedule_str = full_schedule_in_str(schedule, week=week)
         await ans.answer(f'Расписание {group}\n'
                          f'Неделя: {week_name}', keyboard=make_keyboard_start_menu())
 
@@ -449,20 +485,40 @@ async def awkward_handler(ans: Message):
         await bot.state_dispenser.delete(ans.peer_id)
 
 
-    elif storage.get_search_list(ans.text) and ans.text.lower() in (i for i in Condition_request[ans.from_id][2]):
+    elif (storage.get_search_list(ans.text) or storage.get_search_list_prep(ans.text)) and ans.text.lower() in (i for i in Condition_request[ans.from_id][2]):
         choose = ans.text
         Condition_request[ans.from_id][1] = choose
-        schedule = storage.get_schedule(group=choose)
-        await ans.answer(f"Выберите неделю для группы {choose}", keyboard=make_keyboard_choose_schedule())
+        request_word = Condition_request[ans.from_id][1]
+        request_group = storage.get_search_list(request_word)
+        request_prep = storage.get_search_list_prep(request_word)
+        for i in request_group:
+            i['search'] = i.pop('name')
+        for i in request_prep:
+            i['search'] = i.pop('prep_short_name')
+        if request_group:
+            await ans.answer(f"Выберите неделю для группы {choose}", keyboard=make_keyboard_choose_schedule())
+        elif request_prep:
+            await ans.answer(f"Выберите неделю для преподавателя {request_prep[0]['prep']}", keyboard=make_keyboard_choose_schedule())
+        else:
+            return
 
     else:
-        if Condition_request[ans.from_id] and storage.get_search_list(ans.text):
-            request = storage.get_search_list(ans.text)
+        if Condition_request[ans.from_id] and storage.get_search_list(ans.text) or storage.get_search_list_prep(ans.text):
+            request_group = storage.get_search_list(ans.text)
+            request_prep = storage.get_search_list_prep(ans.text)
+            for i in request_group:
+                i['search'] = i.pop('name')
+            for i in request_prep:
+                i['search'] = i.pop('prep_short_name')
             request_word = ans.text
+            request = request_group + request_prep
             keyboard = make_keyboard_search_group(page, request)
-            for i in request:
-                all_found_groups.append(i['name'].lower())
-            list_search = [page, request_word, all_found_groups]
+            for i in request_group:
+                all_found_groups.append(i['search'].lower())
+            for i in request_prep:
+                all_found_prep.append(i['search'].lower())
+            all_found_results = all_found_groups + all_found_prep
+            list_search = [page, request_word, all_found_results]
             Condition_request[chat_id] = list_search
             await ans.answer("Результат поиска", keyboard=keyboard)
 

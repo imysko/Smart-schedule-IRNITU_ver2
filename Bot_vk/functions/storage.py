@@ -84,14 +84,22 @@ class MongodbService(object):
 
     def get_search_list(self, search_words: str) -> list:
         """возвращает список групп на определённом курсе в определеннои слову"""
-        return list(self._db.groups.find(filter={'name': {'$regex' : f'.*{search_words}.*', "$options": '/i'}}))
+        return list(self._db.groups.find(filter={'name': {'$regex': f'.*{search_words}.*', "$options": '/i'}}))
 
+    def get_search_list_prep(self, search_words: str) -> list:
+        """возвращает список групп на определённом курсе в определеннои слову"""
+        return list(self._db.prepods_schedule.find(
+            filter={'prep_short_name': {'$regex': f'.*{search_words}.*', "$options": '/i'}}))
 
     def get_courses(self, institute='') -> list:
         """возвращает список курсов у определённого института"""
         return list(self._db.courses.find(filter={'institute': {'$regex': f'{institute}*'}}))
 
     def get_schedule(self, group):
+        """возвращает расписание группы"""
+        return self._db.schedule.find_one(filter={'group': group})
+
+    def get_schedule_prep(self, group):
         """возвращает расписание группы"""
         return self._db.schedule.find_one(filter={'group': group})
 
