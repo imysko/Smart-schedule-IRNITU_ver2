@@ -255,7 +255,19 @@ def convert_teachers_schedule(pg_schedule: list) -> list:
                 if sch['day'] == day:
                     if lesson in sch['lessons']:
                         break
-                    sch['lessons'].append(lesson)
+
+                    # Проверяем есть ли уже занятие в расписании
+                    for day_lesson in sch['lessons']:
+                        # Если есть, добавляем только группу
+                        if lesson['time'] == day_lesson['time'] \
+                                and lesson['week'] == day_lesson['week'] \
+                                and lesson['name'] == day_lesson['name'] \
+                                and lesson['aud'] == day_lesson['aud'] \
+                                and lesson['info'] == day_lesson['info']:
+                            day_lesson['groups'].append(item['obozn'])
+                            break
+                    else:  # Если нет, добавляем полностью пару.
+                        sch['lessons'].append(lesson)
                     break
 
         # Если нашелся другой преподаватель или это последний элемент списка, сохраняем.
