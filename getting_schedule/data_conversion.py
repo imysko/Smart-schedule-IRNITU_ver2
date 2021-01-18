@@ -4,7 +4,7 @@ import pytz
 TIME_ZONE = pytz.timezone('Asia/Irkutsk')
 
 # Режим отладки (если включен, то не определяем текущее время - позволяет использовать старое расписание).
-DEBUG = False
+DEBUG = True
 
 
 def convert_institutes(pg_institutes: list) -> list:
@@ -148,7 +148,7 @@ def convert_schedule(pg_schedule: list) -> list:
                 'name': item['title'],
                 'aud': item['auditories_verbose'],
                 'info': info,
-                'prep': item['preps'].strip(),
+                'prep': item['preps'].strip().strip('.'),
             }
 
             # Смотрим, создал ли уже нужный день в расписании.
