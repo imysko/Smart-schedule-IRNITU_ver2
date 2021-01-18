@@ -449,7 +449,7 @@ async def awkward_handler(ans: Message):
         await bot.state_dispenser.delete(ans.peer_id)
 
 
-    elif ans.text.lower() in (i for i in Condition_request[ans.from_id][2]):
+    elif storage.get_search_list(ans.text) and ans.text.lower() in (i for i in Condition_request[ans.from_id][2]):
         choose = ans.text
         Condition_request[ans.from_id][1] = choose
         schedule = storage.get_schedule(group=choose)
@@ -467,9 +467,13 @@ async def awkward_handler(ans: Message):
             await ans.answer("Результат поиска", keyboard=keyboard)
 
         else:
-            Condition_request[chat_id][1] = ''
-            await ans.answer('Поиск не дал результатов 😕')
-            return
+            if len(Condition_request[chat_id]) == 3:
+                Condition_request[chat_id][1] = ''
+                await ans.answer('Поиск не дал результатов 😕')
+                return
+            else:
+                await ans.answer('Поиск не дал результатов 😕')
+                return
 
 
 # ==================== Обработка команд ==================== #
