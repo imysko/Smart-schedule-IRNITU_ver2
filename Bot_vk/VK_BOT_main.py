@@ -657,16 +657,16 @@ async def scheduler(ans: Message):
     data = ans.text
     user = storage.get_user(chat_id=chat_id)
 
-    if 'Расписание 🗓' == data and user:
+    if 'Расписание 🗓' == data and user.get('group'):
         await ans.answer('Выберите период\n', keyboard=make_keyboard_choose_schedule())
         add_statistics(action='Расписание')
 
-    if ('На текущую неделю' == data or 'На следующую неделю' == data) and user:
+    if ('На текущую неделю' == data or 'На следующую неделю' == data) and user.get('group'):
         # Если курс нуль, тогда это преподаватель
-        if storage.get_user(chat_id=chat_id)['course'] != "null":
+        if storage.get_user(chat_id=chat_id)['course'] != None:
             group = storage.get_user(chat_id=chat_id)['group']
             schedule = storage.get_schedule(group=group)
-        elif storage.get_user(chat_id=chat_id)['course'] == "null":
+        elif storage.get_user(chat_id=chat_id)['course'] == None:
             group = storage.get_user(chat_id=chat_id)['group']
             schedule = storage.get_schedule_prep(group=group)
         if schedule['schedule'] == []:
@@ -683,9 +683,9 @@ async def scheduler(ans: Message):
 
         week_name = 'четная' if week == 'odd' else 'нечетная'
 
-        if storage.get_user(chat_id=chat_id)['course'] != "null":
+        if storage.get_user(chat_id=chat_id)['course'] != None:
             schedule_str = full_schedule_in_str(schedule, week=week)
-        elif storage.get_user(chat_id=chat_id)['course'] == "null":
+        elif storage.get_user(chat_id=chat_id)['course'] == None:
             schedule_str = full_schedule_in_str_prep(schedule, week=week)
 
         await ans.answer(f'Расписание {group}\n'
@@ -698,12 +698,12 @@ async def scheduler(ans: Message):
 
 
 
-    elif 'Расписание на сегодня 🍏' == data and user:
+    elif 'Расписание на сегодня 🍏' == data and user.get('group'):
         # Если курс нуль, тогда это преподаватель
-        if storage.get_user(chat_id=chat_id)['course'] != "null":
+        if storage.get_user(chat_id=chat_id)['course'] != None:
             group = storage.get_user(chat_id=chat_id)['group']
             schedule = storage.get_schedule(group=group)
-        elif storage.get_user(chat_id=chat_id)['course'] == "null":
+        elif storage.get_user(chat_id=chat_id)['course'] == None:
             group = storage.get_user(chat_id=chat_id)['group']
             schedule = storage.get_schedule_prep(group=group)
         if not schedule:
@@ -714,9 +714,9 @@ async def scheduler(ans: Message):
         schedule = schedule['schedule']
         week = find_week()
         # Если курс нуль, тогда это преподаватель
-        if storage.get_user(chat_id=chat_id)['course'] != "null":
+        if storage.get_user(chat_id=chat_id)['course'] != None:
             schedule_one_day = get_one_day_schedule_in_str(schedule=schedule, week=week)
-        elif storage.get_user(chat_id=chat_id)['course'] == "null":
+        elif storage.get_user(chat_id=chat_id)['course'] == None:
             schedule_one_day = get_one_day_schedule_in_str_prep(schedule=schedule, week=week)
         if not schedule_one_day:
             await ans.answer('Сегодня пар нет 😎')
@@ -724,12 +724,12 @@ async def scheduler(ans: Message):
         await ans.answer(f'{schedule_one_day}')
         add_statistics(action='Расписание на сегодня')
 
-    elif 'Расписание на завтра 🍎' == data and user:
+    elif 'Расписание на завтра 🍎' == data and user.get('group'):
         # Если курс нуль, тогда это преподаватель
-        if storage.get_user(chat_id=chat_id)['course'] != "null":
+        if storage.get_user(chat_id=chat_id)['course'] != None:
             group = storage.get_user(chat_id=chat_id)['group']
             schedule = storage.get_schedule(group=group)
-        elif storage.get_user(chat_id=chat_id)['course'] == "null":
+        elif storage.get_user(chat_id=chat_id)['course'] == None:
             group = storage.get_user(chat_id=chat_id)['group']
             schedule = storage.get_schedule_prep(group=group)
         if not schedule:
@@ -747,9 +747,9 @@ async def scheduler(ans: Message):
             else:
                 week = 'all'
 
-        if storage.get_user(chat_id=chat_id)['course'] != "null":
+        if storage.get_user(chat_id=chat_id)['course'] != None:
             schedule_next_day = get_next_day_schedule_in_str(schedule=schedule, week=week)
-        elif storage.get_user(chat_id=chat_id)['course'] == "null":
+        elif storage.get_user(chat_id=chat_id)['course'] == None:
             schedule_next_day = get_next_day_schedule_in_str_prep(schedule=schedule, week=week)
 
         if not schedule_next_day:
@@ -758,17 +758,17 @@ async def scheduler(ans: Message):
         await ans.answer(f'{schedule_next_day}')
         add_statistics(action='Расписание на завтра')
 
-    elif 'Ближайшая пара ⏱' in data and user:
+    elif 'Ближайшая пара ⏱' in data and user.get('group'):
         await ans.answer('Ближайшая пара', keyboard=make_keyboard_nearlesson())
         add_statistics(action='Ближайшая пара')
         return
 
 
-    elif 'Текущая' in data and user:
-        if storage.get_user(chat_id=chat_id)['course'] != "null":
+    elif 'Текущая' in data and user.get('group'):
+        if storage.get_user(chat_id=chat_id)['course'] != None:
             group = storage.get_user(chat_id=chat_id)['group']
             schedule = storage.get_schedule(group=group)
-        elif storage.get_user(chat_id=chat_id)['course'] == "null":
+        elif storage.get_user(chat_id=chat_id)['course'] == None:
             group = storage.get_user(chat_id=chat_id)['group']
             schedule = storage.get_schedule_prep(group=group)
         if not schedule:
@@ -789,7 +789,7 @@ async def scheduler(ans: Message):
 
         now_lessons_str = ''
 
-        if storage.get_user(chat_id=chat_id)['course'] != "null":
+        if storage.get_user(chat_id=chat_id)['course'] != None:
             for near_lesson in now_lessons:
                 name = near_lesson['name']
                 if name == 'свободно':
@@ -809,7 +809,7 @@ async def scheduler(ans: Message):
                                    f'{info} {prep}\n'
             now_lessons_str += '-------------------------------------------\n'
 
-        elif storage.get_user(chat_id=chat_id)['course'] == "null":
+        elif storage.get_user(chat_id=chat_id)['course'] == None:
             for near_lesson in now_lessons:
                 name = near_lesson['name']
                 if name == 'свободно':
@@ -829,17 +829,15 @@ async def scheduler(ans: Message):
                                    f'{info} {groups}\n'
             now_lessons_str += '-------------------------------------------\n'
 
-
-
         await ans.answer(f'🧠Текущая пара🧠\n'f'{now_lessons_str}', keyboard=make_keyboard_start_menu())
 
         add_statistics(action='Текущая')
 
-    elif 'Следующая' in data and user:
-        if storage.get_user(chat_id=chat_id)['course'] != "null":
+    elif 'Следующая' in data and user.get('group'):
+        if storage.get_user(chat_id=chat_id)['course'] != None:
             group = storage.get_user(chat_id=chat_id)['group']
             schedule = storage.get_schedule(group=group)
-        elif storage.get_user(chat_id=chat_id)['course'] == "null":
+        elif storage.get_user(chat_id=chat_id)['course'] == None:
             group = storage.get_user(chat_id=chat_id)['group']
             schedule = storage.get_schedule_prep(group=group)
         if not schedule:
@@ -860,7 +858,7 @@ async def scheduler(ans: Message):
 
         near_lessons_str = ''
 
-        if storage.get_user(chat_id=chat_id)['course'] != "null":
+        if storage.get_user(chat_id=chat_id)['course'] != None:
             for near_lesson in near_lessons:
                 name = near_lesson['name']
                 if name == 'свободно':
@@ -883,7 +881,7 @@ async def scheduler(ans: Message):
             near_lessons_str += '-------------------------------------------\n'
             await ans.answer(f'🧠Ближайшая пара🧠\n'f'{near_lessons_str}', keyboard=make_keyboard_start_menu())
 
-        elif storage.get_user(chat_id=chat_id)['course'] == "null":
+        elif storage.get_user(chat_id=chat_id)['course'] == None:
             for near_lesson in near_lessons:
                 name = near_lesson['name']
                 if name == 'свободно':
@@ -968,8 +966,10 @@ async def wrapper(ans: Message):
     elif not 'course' in user.keys():
         institute = user['institute']
         course = storage.get_courses(institute)
+        prep_list = []
         # Тянем из базы список преподавателей, фамилии и инициалы, которые относятся к введенной фамилии
-        prep_list = storage.get_prep(message)
+        if not course:
+            prep_list = storage.get_prep(message)
         # Если нажал кнопку курса
         if message in name_courses(course):
             # Записываем в базу данных выбранный курс
@@ -986,10 +986,22 @@ async def wrapper(ans: Message):
             await ans.answer(f'Вы успешно зарегистрировались, как {prep_name}!😊\n\n'
                              'Для того чтобы пройти регистрацию повторно, напишите сообщение "Регистрация"\n',
                              keyboard=make_keyboard_start_menu())
-            storage.save_or_update_user(chat_id=chat_id, course='null')
+            storage.save_or_update_user(chat_id=chat_id, course=None)
             storage.save_or_update_user(chat_id=chat_id, group=prep_name)
             return
+        # Если преподавателя не нашли
         elif not prep_list:
+            # # Делим введенное фио на части и ищем по каждой в базе
+            # for name_unit in message.split():
+            #     prep_list = storage.get_search_list_prep(name_unit)
+            #     if prep_list:
+            #         keyboard = Keyboard(one_time=False)
+            #         for i in prep_list:
+            #             keyboard.row()
+            #             keyboard.add(Text(label=i['prep']), color=KeyboardButtonColor.PRIMARY)
+            #         await ans.answer('Возможно Вы имели в виду', keyboard=keyboard)
+            #         return
+
             await ans.answer('Мы не смогли найти вас в базе преподавателей.\n'
                              'Возможно вы неверно ввели своё ФИО.')
         else:
@@ -1018,7 +1030,7 @@ async def wrapper(ans: Message):
                 await ans.answer('Я очень сомневаюсь, что твоей группы нет в списке ниже 😉')
         return
 
-    elif 'Напоминание 📣' in message and user:
+    elif 'Напоминание 📣' in message and user.get('group'):
         time = user['notifications']
         # Проверяем стату напоминания
         if not time:
@@ -1027,7 +1039,7 @@ async def wrapper(ans: Message):
 
         add_statistics(action='Напоминание')
 
-    elif 'Настройки' in message and user:
+    elif 'Настройки' in message and user.get('group'):
         time = user['notifications']
         await ans.answer('Настройка напоминаний ⚙\n\n'
                          'Укажите за сколько минут до начала пары должно приходить сообщение',
@@ -1070,18 +1082,18 @@ async def wrapper(ans: Message):
         await ans.answer(f'{get_notifications_status(time)}', keyboard=make_keyboard_start_menu())
 
 
-    elif 'Основное меню' in message and user:
+    elif 'Основное меню' in message and user.get('group'):
         await ans.answer('Основное меню', keyboard=make_keyboard_start_menu())
         add_statistics(action='Основное меню')
 
-    elif '<==Назад' == message and user:
+    elif '<==Назад' == message and user.get('group'):
         await ans.answer('Основное меню', keyboard=make_keyboard_start_menu())
 
     elif 'Далее' in message:
         await ans.answer('Далее', keyboard=make_keyboard_choose_group_vk_page_2())
 
 
-    elif 'Список команд' == message and user:
+    elif 'Список команд' == message and user.get('group'):
         await ans.answer('Список команд:\n'
                          'Авторы - список авторов \n'
                          'Регистрация- повторная регистрация\n'
@@ -1090,7 +1102,7 @@ async def wrapper(ans: Message):
         add_statistics(action='help')
         return
 
-    elif 'Другое ⚡' == message and user:
+    elif 'Другое ⚡' == message and user.get('group'):
         await ans.answer('Другое', keyboard=make_keyboard_extra())
 
         add_statistics(action='help')
