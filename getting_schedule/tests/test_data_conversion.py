@@ -125,6 +125,33 @@ class TestScheduleToolsMethods(unittest.TestCase):
         result = schedule_tools.is_there_dict_with_value_in_list(input_value_list, input_value_key)
         self.assertTrue(result)
 
+    def test_forming_info_data_NtAndNgroup_returnInfoLekcia(self):
+        input_value_nt = 1
+        input_value_ngroup = None
+
+        expected = '( Лекция )'
+
+        result = schedule_tools.forming_info_data(nt=input_value_nt, ngroup=input_value_ngroup)
+        self.assertEqual(result, expected)
+
+    def test_forming_info_data_NtAndNgroup_returnInfoPraktika(self):
+        input_value_nt = 2
+        input_value_ngroup = 1
+
+        expected = '( Практ. подгруппа 1 )'
+
+        result = schedule_tools.forming_info_data(nt=input_value_nt, ngroup=input_value_ngroup)
+        self.assertEqual(result, expected)
+
+    def test_forming_info_data_NtAndNgroup_returnInfoLaba(self):
+        input_value_nt = 3
+        input_value_ngroup = 2
+
+        expected = '( Лаб. раб. подгруппа 2 )'
+
+        result = schedule_tools.forming_info_data(nt=input_value_nt, ngroup=input_value_ngroup)
+        self.assertEqual(result, expected)
+
 
 class TestScheduleConversionMethods(unittest.TestCase):
 
@@ -935,6 +962,7 @@ class TestScheduleConversionMethods(unittest.TestCase):
 
         result = convert_schedule(input_value)
         self.assertEqual(result, expected)
+
 
 class TestTeachersScheduleConversionMethods(unittest.TestCase):
     """Расписание преподавателей."""
