@@ -105,7 +105,7 @@ class MongodbService(object):
 
     def get_schedule_prep(self, group):
         """возвращает расписание преподавателя"""
-        return self._db.schedule.find_one(filter={'group': group})
+        return self._db.prepods_schedule.find_one(filter={'prep': group})
 
     def save_statistics(self, action: str, date: str, time: str):
         statistics = {

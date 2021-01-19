@@ -1,5 +1,5 @@
 from functions.creating_schedule import full_schedule_in_str, full_schedule_in_str_prep, get_one_day_schedule_in_str, \
-    get_next_day_schedule_in_str
+    get_next_day_schedule_in_str, get_one_day_schedule_in_str_prep, get_next_day_schedule_in_str_prep
 from functions.calculating_reminder_times import calculating_reminder_times
 from functions.near_lesson import get_near_lesson, get_now_lesson
 from functions.storage import MongodbService
@@ -336,11 +336,13 @@ def make_keyboard_main_menu():
     keyboard.add(Text(label="Основное меню"), color=KeyboardButtonColor.PRIMARY)
     return keyboard
 
+
 def back_for_prep():
     keyboard = Keyboard(one_time=False)
     keyboard.row()
     keyboard.add(Text(label="Назад к институтам"), color=KeyboardButtonColor.PRIMARY)
     return keyboard
+
 
 def sep_space(name):
     '''Обрезает длину института, если тот больше 40 символов'''
@@ -660,8 +662,13 @@ async def scheduler(ans: Message):
         add_statistics(action='Расписание')
 
     if ('На текущую неделю' == data or 'На следующую неделю' == data) and user:
-        group = storage.get_user(chat_id=chat_id)['group']
-        schedule = storage.get_schedule(group=group)
+        # Если курс нуль, тогда это преподаватель
+        if storage.get_user(chat_id=chat_id)['course'] != "null":
+            group = storage.get_user(chat_id=chat_id)['group']
+            schedule = storage.get_schedule(group=group)
+        elif storage.get_user(chat_id=chat_id)['course'] == "null":
+            group = storage.get_user(chat_id=chat_id)['group']
+            schedule = storage.get_schedule_prep(group=group)
         if schedule['schedule'] == []:
             await ans.answer('Расписание временно недоступно\nПопробуйте позже⏱')
             add_statistics(action=data)
@@ -676,7 +683,11 @@ async def scheduler(ans: Message):
 
         week_name = 'четная' if week == 'odd' else 'нечетная'
 
-        schedule_str = full_schedule_in_str(schedule, week=week)
+        if storage.get_user(chat_id=chat_id)['course'] != "null":
+            schedule_str = full_schedule_in_str(schedule, week=week)
+        elif storage.get_user(chat_id=chat_id)['course'] == "null":
+            schedule_str = full_schedule_in_str_prep(schedule, week=week)
+
         await ans.answer(f'Расписание {group}\n'
                          f'Неделя: {week_name}', keyboard=make_keyboard_start_menu())
 
@@ -688,8 +699,13 @@ async def scheduler(ans: Message):
 
 
     elif 'Расписание на сегодня 🍏' == data and user:
-        group = storage.get_user(chat_id=chat_id)['group']
-        schedule = storage.get_schedule(group=group)
+        # Если курс нуль, тогда это преподаватель
+        if storage.get_user(chat_id=chat_id)['course'] != "null":
+            group = storage.get_user(chat_id=chat_id)['group']
+            schedule = storage.get_schedule(group=group)
+        elif storage.get_user(chat_id=chat_id)['course'] == "null":
+            group = storage.get_user(chat_id=chat_id)['group']
+            schedule = storage.get_schedule_prep(group=group)
         if not schedule:
             await ans.answer('Расписание временно недоступно🚫😣\n'
                              'Попробуйте позже⏱', keyboard=make_keyboard_start_menu())
@@ -697,7 +713,11 @@ async def scheduler(ans: Message):
             return
         schedule = schedule['schedule']
         week = find_week()
-        schedule_one_day = get_one_day_schedule_in_str(schedule=schedule, week=week)
+        # Если курс нуль, тогда это преподаватель
+        if storage.get_user(chat_id=chat_id)['course'] != "null":
+            schedule_one_day = get_one_day_schedule_in_str(schedule=schedule, week=week)
+        elif storage.get_user(chat_id=chat_id)['course'] == "null":
+            schedule_one_day = get_one_day_schedule_in_str_prep(schedule=schedule, week=week)
         if not schedule_one_day:
             await ans.answer('Сегодня пар нет 😎')
             return
@@ -705,8 +725,13 @@ async def scheduler(ans: Message):
         add_statistics(action='Расписание на сегодня')
 
     elif 'Расписание на завтра 🍎' == data and user:
-        group = storage.get_user(chat_id=chat_id)['group']
-        schedule = storage.get_schedule(group=group)
+        # Если курс нуль, тогда это преподаватель
+        if storage.get_user(chat_id=chat_id)['course'] != "null":
+            group = storage.get_user(chat_id=chat_id)['group']
+            schedule = storage.get_schedule(group=group)
+        elif storage.get_user(chat_id=chat_id)['course'] == "null":
+            group = storage.get_user(chat_id=chat_id)['group']
+            schedule = storage.get_schedule_prep(group=group)
         if not schedule:
             await ans.answer('Расписание временно недоступно🚫😣\n'
                              'Попробуйте позже⏱', keyboard=make_keyboard_start_menu())
@@ -722,7 +747,11 @@ async def scheduler(ans: Message):
             else:
                 week = 'all'
 
-        schedule_next_day = get_next_day_schedule_in_str(schedule=schedule, week=week)
+        if storage.get_user(chat_id=chat_id)['course'] != "null":
+            schedule_next_day = get_next_day_schedule_in_str(schedule=schedule, week=week)
+        elif storage.get_user(chat_id=chat_id)['course'] == "null":
+            schedule_next_day = get_next_day_schedule_in_str_prep(schedule=schedule, week=week)
+
         if not schedule_next_day:
             await ans.answer('Завтра пар нет 😎')
             return
@@ -736,8 +765,12 @@ async def scheduler(ans: Message):
 
 
     elif 'Текущая' in data and user:
-        group = storage.get_user(chat_id=chat_id)['group']
-        schedule = storage.get_schedule(group=group)
+        if storage.get_user(chat_id=chat_id)['course'] != "null":
+            group = storage.get_user(chat_id=chat_id)['group']
+            schedule = storage.get_schedule(group=group)
+        elif storage.get_user(chat_id=chat_id)['course'] == "null":
+            group = storage.get_user(chat_id=chat_id)['group']
+            schedule = storage.get_schedule_prep(group=group)
         if not schedule:
             await ans.answer('Расписание временно недоступно🚫😣\n'
                              'Попробуйте позже⏱', keyboard=make_keyboard_start_menu())
@@ -747,7 +780,6 @@ async def scheduler(ans: Message):
         week = find_week()
 
         now_lessons = get_now_lesson(schedule=schedule, week=week)
-        print(now_lessons)
 
         # если пар нет
         if not now_lessons:
@@ -756,31 +788,59 @@ async def scheduler(ans: Message):
             return
 
         now_lessons_str = ''
-        for near_lesson in now_lessons:
-            name = near_lesson['name']
-            if name == 'свободно':
-                await ans.answer('Сейчас пары нет, можете отдохнуть)', keyboard=make_keyboard_start_menu())
-                return
-            now_lessons_str += '-------------------------------------------\n'
-            aud = near_lesson['aud']
-            if aud:
-                aud = f'Аудитория: {aud}\n'
-            time = near_lesson['time']
-            info = near_lesson['info'].replace(",", "")
-            prep = near_lesson['prep']
 
-            now_lessons_str += f'{time}\n' \
-                               f'{aud}' \
-                               f'👉{name}\n' \
-                               f'{info} {prep}\n'
-        now_lessons_str += '-------------------------------------------\n'
+        if storage.get_user(chat_id=chat_id)['course'] != "null":
+            for near_lesson in now_lessons:
+                name = near_lesson['name']
+                if name == 'свободно':
+                    await ans.answer('Сейчас пары нет, можете отдохнуть)', keyboard=make_keyboard_start_menu())
+                    return
+                now_lessons_str += '-------------------------------------------\n'
+                aud = near_lesson['aud']
+                if aud:
+                    aud = f'Аудитория: {aud}\n'
+                time = near_lesson['time']
+                info = near_lesson['info'].replace(",", "")
+                prep = near_lesson['prep']
+
+                now_lessons_str += f'{time}\n' \
+                                   f'{aud}' \
+                                   f'👉{name}\n' \
+                                   f'{info} {prep}\n'
+            now_lessons_str += '-------------------------------------------\n'
+
+        elif storage.get_user(chat_id=chat_id)['course'] == "null":
+            for near_lesson in now_lessons:
+                name = near_lesson['name']
+                if name == 'свободно':
+                    await ans.answer('Сейчас пары нет, можете отдохнуть)', keyboard=make_keyboard_start_menu())
+                    return
+                now_lessons_str += '-------------------------------------------\n'
+                aud = near_lesson['aud']
+                if aud:
+                    aud = f'Аудитория: {aud}\n'
+                time = near_lesson['time']
+                info = near_lesson['info'].replace(",", "")
+
+                now_lessons_str += f'{time}\n' \
+                                   f'{aud}' \
+                                   f'👉{name}\n' \
+                                   f'{info}\n'
+            now_lessons_str += '-------------------------------------------\n'
+
+
+
         await ans.answer(f'🧠Текущая пара🧠\n'f'{now_lessons_str}', keyboard=make_keyboard_start_menu())
 
         add_statistics(action='Текущая')
 
     elif 'Следующая' in data and user:
-        group = storage.get_user(chat_id=chat_id)['group']
-        schedule = storage.get_schedule(group=group)
+        if storage.get_user(chat_id=chat_id)['course'] != "null":
+            group = storage.get_user(chat_id=chat_id)['group']
+            schedule = storage.get_schedule(group=group)
+        elif storage.get_user(chat_id=chat_id)['course'] == "null":
+            group = storage.get_user(chat_id=chat_id)['group']
+            schedule = storage.get_schedule_prep(group=group)
         if not schedule:
             await ans.answer('Расписание временно недоступно🚫😣\n'
                              'Попробуйте позже⏱', keyboard=make_keyboard_start_menu())
@@ -798,25 +858,47 @@ async def scheduler(ans: Message):
             return
 
         near_lessons_str = ''
-        for near_lesson in near_lessons:
-            name = near_lesson['name']
-            if name == 'свободно':
-                await ans.answer('Сегодня больше пар нет 😎', keyboard=make_keyboard_start_menu())
-                return
-            near_lessons_str += '-------------------------------------------\n'
-            aud = near_lesson['aud']
-            if aud:
-                aud = f'Аудитория: {aud}\n'
-            time = near_lesson['time']
-            info = near_lesson['info'].replace(",", "")
-            prep = near_lesson['prep']
 
-            near_lessons_str += f'{time}\n' \
-                                f'{aud}' \
-                                f'👉{name}\n' \
-                                f'{info} {prep}\n'
-        near_lessons_str += '-------------------------------------------\n'
-        await ans.answer(f'🧠Ближайшая пара🧠\n'f'{near_lessons_str}', keyboard=make_keyboard_start_menu())
+        if storage.get_user(chat_id=chat_id)['course'] != "null":
+            for near_lesson in near_lessons:
+                name = near_lesson['name']
+                if name == 'свободно':
+                    await ans.answer('Сегодня больше пар нет 😎', keyboard=make_keyboard_start_menu())
+                    return
+                near_lessons_str += '-------------------------------------------\n'
+                aud = near_lesson['aud']
+                if aud:
+                    aud = f'Аудитория: {aud}\n'
+                time = near_lesson['time']
+                info = near_lesson['info'].replace(",", "")
+                prep = near_lesson['prep']
+
+                near_lessons_str += f'{time}\n' \
+                                    f'{aud}' \
+                                    f'👉{name}\n' \
+                                    f'{info} {prep}\n'
+            near_lessons_str += '-------------------------------------------\n'
+            await ans.answer(f'🧠Ближайшая пара🧠\n'f'{near_lessons_str}', keyboard=make_keyboard_start_menu())
+
+        elif storage.get_user(chat_id=chat_id)['course'] == "null":
+            for near_lesson in near_lessons:
+                name = near_lesson['name']
+                if name == 'свободно':
+                    await ans.answer('Сегодня больше пар нет 😎', keyboard=make_keyboard_start_menu())
+                    return
+                near_lessons_str += '-------------------------------------------\n'
+                aud = near_lesson['aud']
+                if aud:
+                    aud = f'Аудитория: {aud}\n'
+                time = near_lesson['time']
+                info = near_lesson['info'].replace(",", "")
+
+                near_lessons_str += f'{time}\n' \
+                                    f'{aud}' \
+                                    f'👉{name}\n' \
+                                    f'{info}\n'
+            near_lessons_str += '-------------------------------------------\n'
+            await ans.answer(f'🧠Ближайшая пара🧠\n'f'{near_lessons_str}', keyboard=make_keyboard_start_menu())
 
         add_statistics(action='Следующая')
 
@@ -897,7 +979,6 @@ async def wrapper(ans: Message):
         # Если в базе всего одна запись с такой фамилией, то регаем препода
         elif prep_list:
             prep_name = prep_list[0]['prep']
-            print(prep_list)
             await ans.answer(f'Вы успешно зарегистрировались, как {prep_name}!😊\n\n'
                              'Для того чтобы пройти регистрацию повторно, напишите сообщение "Регистрация"\n',
                              keyboard=make_keyboard_start_menu())
