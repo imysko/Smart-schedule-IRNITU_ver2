@@ -159,11 +159,12 @@ def get_one_day_schedule_in_str_prep(schedule: list, week: str) -> str:
                         aud = f'Аудитория: {aud}\n'
                     time = lesson['time']
                     info = lesson['info'].replace(",", "")
+                    groups = ', '.join(lesson['groups'])
 
                     lessons_str += f'{time}\n' \
                                    f'{aud}' \
                                    f'👉{name}\n' \
-                                   f'{info}'
+                                   f'{info} {groups}'
                 lessons_str += '\n-------------------------------------------\n'
 
             return f'\n🍏{day}🍏\n{lessons_str}'
@@ -196,11 +197,12 @@ def get_next_day_schedule_in_str_prep(schedule: list, week: str) -> str:
                         aud = f'Аудитория: {aud}\n'
                     time = lesson['time']
                     info = lesson['info'].replace(",", "")
+                    groups = ', '.join(lesson['groups'])
 
                     lessons_str += f'{time}\n' \
                                    f'{aud}' \
                                    f'👉{name}\n' \
-                                   f'{info}'
+                                   f'{info} {groups}'
                 lessons_str += '\n-------------------------------------------\n'
 
             return f'\n🍎{day}🍎\n{lessons_str}'
@@ -233,11 +235,12 @@ def full_schedule_in_str_prep(schedule: list, week: str) -> list:
                     aud = f'Аудитория: {aud}\n'
                 time = lesson['time']
                 info = lesson['info'].replace(",", "")
+                groups = ', '.join(lesson['groups'])
 
                 lessons_str += f'{time}\n' \
                                f'{aud}' \
                                f'👉{name}\n' \
-                               f'{info}'
+                               f'{info} {groups}'
 
             lessons_str += '\n-------------------------------------------\n'
 

@@ -821,11 +821,12 @@ async def scheduler(ans: Message):
                     aud = f'Аудитория: {aud}\n'
                 time = near_lesson['time']
                 info = near_lesson['info'].replace(",", "")
+                groups = ', '.join(near_lesson['groups'])
 
                 now_lessons_str += f'{time}\n' \
                                    f'{aud}' \
                                    f'👉{name}\n' \
-                                   f'{info}\n'
+                                   f'{info} {groups}\n'
             now_lessons_str += '-------------------------------------------\n'
 
 
@@ -870,6 +871,7 @@ async def scheduler(ans: Message):
                 if aud:
                     aud = f'Аудитория: {aud}\n'
                 time = near_lesson['time']
+
                 info = near_lesson['info'].replace(",", "")
                 prep = near_lesson['prep']
 
@@ -877,6 +879,7 @@ async def scheduler(ans: Message):
                                     f'{aud}' \
                                     f'👉{name}\n' \
                                     f'{info} {prep}\n'
+
             near_lessons_str += '-------------------------------------------\n'
             await ans.answer(f'🧠Ближайшая пара🧠\n'f'{near_lessons_str}', keyboard=make_keyboard_start_menu())
 
@@ -892,11 +895,12 @@ async def scheduler(ans: Message):
                     aud = f'Аудитория: {aud}\n'
                 time = near_lesson['time']
                 info = near_lesson['info'].replace(",", "")
+                groups = ', '.join(near_lesson['groups'])
 
                 near_lessons_str += f'{time}\n' \
                                     f'{aud}' \
                                     f'👉{name}\n' \
-                                    f'{info}\n'
+                                    f'{info} {groups}\n'
             near_lessons_str += '-------------------------------------------\n'
             await ans.answer(f'🧠Ближайшая пара🧠\n'f'{near_lessons_str}', keyboard=make_keyboard_start_menu())
 
