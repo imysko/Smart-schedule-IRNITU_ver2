@@ -67,3 +67,5 @@ def sorting_lessons_in_a_day_by_time_and_ngroup(schedule: list):
         sch['lessons'] = sorted(sch['lessons'], key=lambda x: x['info'])
         # Сортируем по времени
         sch['lessons'] = sorted(sch['lessons'], key=lambda x: int(x['time'].replace(':', '')))
+
+    return schedule

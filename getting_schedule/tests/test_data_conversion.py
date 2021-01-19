@@ -125,6 +125,60 @@ class TestScheduleToolsMethods(unittest.TestCase):
         result = schedule_tools.is_there_dict_with_value_in_list(input_value_list, input_value_key)
         self.assertTrue(result)
 
+    def test_getting_week_and_day_of_week_pqLesson_retunEvenSreda(self):
+        input_value = {
+            'obozn': '',
+            'begtime': '10:00',
+            'everyweek': 1,
+            'preps': '',
+            'auditories_verbose': '',
+            'day': 3,
+            'nt': None,
+            'title': '',
+            'ngroup': None,
+            'dend': datetime.date(2021, 4, 12)
+        }
+        expected = ('even', 'среда')
+
+        result = schedule_tools.getting_week_and_day_of_week(input_value)
+        self.assertEqual(result, expected)
+
+    def test_getting_week_and_day_of_week_pqLesson_retunOddPatnica(self):
+        input_value = {
+            'obozn': '',
+            'begtime': '10:00',
+            'everyweek': 1,
+            'preps': '',
+            'auditories_verbose': '',
+            'day': 12,
+            'nt': None,
+            'title': '',
+            'ngroup': None,
+            'dend': datetime.date(2021, 4, 12)
+        }
+        expected = ('odd', 'пятница')
+
+        result = schedule_tools.getting_week_and_day_of_week(input_value)
+        self.assertEqual(result, expected)
+
+    def test_is_there_dict_with_value_in_list_ListWithDictWithoutKey_false(self):
+        input_value_list = [
+            {'dda': '', 'day': []},
+            {'day': 'cxxc', 'sa': 12},
+            {'day': {}}
+        ]
+
+        input_value_key = 'right_value'
+        result = schedule_tools.is_there_dict_with_value_in_list(input_value_list, input_value_key)
+        self.assertFalse(result)
+
+    def test_is_there_dict_with_value_in_list_EmptyList_false(self):
+        input_value_list = []
+
+        input_value_key = 'right_value'
+        result = schedule_tools.is_there_dict_with_value_in_list(input_value_list, input_value_key)
+        self.assertFalse(result)
+
     def test_forming_info_data_NtAndNgroup_returnInfoLekcia(self):
         input_value_nt = 1
         input_value_ngroup = None
@@ -150,6 +204,208 @@ class TestScheduleToolsMethods(unittest.TestCase):
         expected = '( Лаб. раб. подгруппа 2 )'
 
         result = schedule_tools.forming_info_data(nt=input_value_nt, ngroup=input_value_ngroup)
+        self.assertEqual(result, expected)
+
+    def test_sorting_lessons_in_a_day_by_time_and_ngroup_ReturnLessonsInRightOrder(self):
+        input_value = [
+            {
+                'day': 'среда',
+                'lessons': [
+
+                    {
+                        'time': '10:00',
+                        'week': 'all',
+                        'name': 'les_2',
+                        'aud': '',
+                        'info': '( Лекция )',
+                        'prep': '',
+                    },
+                    {
+                        'time': '8:15',
+                        'week': 'all',
+                        'name': 'les_1',
+                        'aud': '',
+                        'info': '( Лекция )',
+                        'prep': '',
+                    },
+                    {
+                        'time': '11:45',
+                        'week': 'all',
+                        'name': 'les_3',
+                        'aud': '',
+                        'info': '( Лекция )',
+                        'prep': '',
+                    }
+                ]
+            },
+
+            {
+                'day': 'пятница',
+                'lessons': [
+                    {
+                        'time': '20:15',
+                        'week': 'all',
+                        'name': 'les_5',
+                        'aud': '',
+                        'info': '( Лекция )',
+                        'prep': '',
+                    },
+
+                    {
+                        'time': '18:45',
+                        'week': 'all',
+                        'name': 'les_4',
+                        'aud': '',
+                        'info': '( Лекция )',
+                        'prep': '',
+                    }
+
+                ]
+            }
+        ]
+
+        expected = [
+            {
+                'day': 'среда',
+                'lessons': [
+                    {
+                        'time': '8:15',
+                        'week': 'all',
+                        'name': 'les_1',
+                        'aud': '',
+                        'info': '( Лекция )',
+                        'prep': '',
+                    },
+                    {
+                        'time': '10:00',
+                        'week': 'all',
+                        'name': 'les_2',
+                        'aud': '',
+                        'info': '( Лекция )',
+                        'prep': '',
+                    },
+                    {
+                        'time': '11:45',
+                        'week': 'all',
+                        'name': 'les_3',
+                        'aud': '',
+                        'info': '( Лекция )',
+                        'prep': '',
+                    }
+                ]
+            },
+
+            {
+                'day': 'пятница',
+                'lessons': [
+
+                    {
+                        'time': '18:45',
+                        'week': 'all',
+                        'name': 'les_4',
+                        'aud': '',
+                        'info': '( Лекция )',
+                        'prep': '',
+                    },
+                    {
+                        'time': '20:15',
+                        'week': 'all',
+                        'name': 'les_5',
+                        'aud': '',
+                        'info': '( Лекция )',
+                        'prep': '',
+                    }
+                ]
+            }
+        ]
+
+        result = schedule_tools.sorting_lessons_in_a_day_by_time_and_ngroup(input_value)
+        self.assertEqual(result, expected)
+
+    def test_sorting_lessons_in_a_day_by_time_and_ngroup_ReturnSubgroupsInRightOrder(self):
+        input_value = [
+            {
+                'day': 'среда',
+                'lessons': [
+                    {
+                        'time': '10:00',
+                        'week': 'all',
+                        'name': 'les_2',
+                        'aud': '',
+                        'info': '( Практ. подгруппа 2 )',
+                        'prep': '',
+                    },
+                    {
+                        'time': '10:00',
+                        'week': 'all',
+                        'name': 'les_1',
+                        'aud': '',
+                        'info': '( Практ. подгруппа 1 )',
+                        'prep': '',
+                    },
+                    {
+                        'time': '11:45',
+                        'week': 'all',
+                        'name': 'les_4',
+                        'aud': '',
+                        'info': '( Лаб. раб. подгруппа 2 )',
+                        'prep': '',
+                    },
+                    {
+                        'time': '11:45',
+                        'week': 'all',
+                        'name': 'les_3',
+                        'aud': '',
+                        'info': '( Лаб. раб. подгруппа 1 )',
+                        'prep': '',
+                    },
+
+                ]
+            }
+        ]
+
+        expected = [
+            {
+                'day': 'среда',
+                'lessons': [
+                    {
+                        'time': '10:00',
+                        'week': 'all',
+                        'name': 'les_1',
+                        'aud': '',
+                        'info': '( Практ. подгруппа 1 )',
+                        'prep': '',
+                    },
+                    {
+                        'time': '10:00',
+                        'week': 'all',
+                        'name': 'les_2',
+                        'aud': '',
+                        'info': '( Практ. подгруппа 2 )',
+                        'prep': '',
+                    },
+                    {
+                        'time': '11:45',
+                        'week': 'all',
+                        'name': 'les_3',
+                        'aud': '',
+                        'info': '( Лаб. раб. подгруппа 1 )',
+                        'prep': '',
+                    },
+                    {
+                        'time': '11:45',
+                        'week': 'all',
+                        'name': 'les_4',
+                        'aud': '',
+                        'info': '( Лаб. раб. подгруппа 2 )',
+                        'prep': '',
+                    },
+
+                ]
+            }
+        ]
+
+        result = schedule_tools.sorting_lessons_in_a_day_by_time_and_ngroup(input_value)
         self.assertEqual(result, expected)
 
 
@@ -407,60 +663,6 @@ class TestScheduleConversionMethods(unittest.TestCase):
         result = convert_schedule(input_value)
         self.assertEqual(result, expected)
 
-    def test_getting_week_and_day_of_week_pqLesson_retunEvenSreda(self):
-        input_value = {
-            'obozn': '',
-            'begtime': '10:00',
-            'everyweek': 1,
-            'preps': '',
-            'auditories_verbose': '',
-            'day': 3,
-            'nt': None,
-            'title': '',
-            'ngroup': None,
-            'dend': datetime.date(2021, 4, 12)
-        }
-        expected = ('even', 'среда')
-
-        result = schedule_tools.getting_week_and_day_of_week(input_value)
-        self.assertEqual(result, expected)
-
-    def test_getting_week_and_day_of_week_pqLesson_retunOddPatnica(self):
-        input_value = {
-            'obozn': '',
-            'begtime': '10:00',
-            'everyweek': 1,
-            'preps': '',
-            'auditories_verbose': '',
-            'day': 12,
-            'nt': None,
-            'title': '',
-            'ngroup': None,
-            'dend': datetime.date(2021, 4, 12)
-        }
-        expected = ('odd', 'пятница')
-
-        result = schedule_tools.getting_week_and_day_of_week(input_value)
-        self.assertEqual(result, expected)
-
-    def test_is_there_dict_with_value_in_list_ListWithDictWithoutKey_false(self):
-        input_value_list = [
-            {'dda': '', 'day': []},
-            {'day': 'cxxc', 'sa': 12},
-            {'day': {}}
-        ]
-
-        input_value_key = 'right_value'
-        result = schedule_tools.is_there_dict_with_value_in_list(input_value_list, input_value_key)
-        self.assertFalse(result)
-
-    def test_is_there_dict_with_value_in_list_EmptyList_false(self):
-        input_value_list = []
-
-        input_value_key = 'right_value'
-        result = schedule_tools.is_there_dict_with_value_in_list(input_value_list, input_value_key)
-        self.assertFalse(result)
-
     @mock.patch('data_conversion.datetime')
     def test_convert_schedule_aFewDictInListOneGroup_DaysInRightOrder(self, mock_dt):
         mock_dt.now(TIME_ZONE).date = mock.Mock(return_value=datetime.date(2021, 1, 15))
@@ -593,140 +795,6 @@ class TestScheduleConversionMethods(unittest.TestCase):
                 ]
             }
         ]
-        result = convert_schedule(input_value)
-        self.assertEqual(result, expected)
-
-    @mock.patch('data_conversion.datetime')
-    def test_convert_schedule_aFewDictInListOneDay_LessonsInRightOrder(self, mock_dt):
-        mock_dt.now(TIME_ZONE).date = mock.Mock(return_value=datetime.date(2021, 1, 15))
-
-        input_value = [
-            {'obozn': 'ТХб-18-2', 'begtime': '18:45', 'everyweek': 2,
-             'preps': '', 'auditories_verbose': '', 'day': 3,
-             'nt': 1, 'title': 'les_4', 'ngroup': None, 'dend': datetime.date(2021, 4, 12)},
-            {'obozn': 'ТХб-18-2', 'begtime': '10:00', 'everyweek': 2,
-             'preps': '', 'auditories_verbose': '', 'day': 3,
-             'nt': 1, 'title': 'les_2', 'ngroup': None, 'dend': datetime.date(2021, 4, 12)},
-            {'obozn': 'ТХб-18-2', 'begtime': '11:45', 'everyweek': 2,
-             'preps': '', 'auditories_verbose': '', 'day': 3,
-             'nt': 1, 'title': 'les_3', 'ngroup': None, 'dend': datetime.date(2021, 4, 12)},
-            {'obozn': 'ТХб-18-2', 'begtime': '8:15', 'everyweek': 2,
-             'preps': '', 'auditories_verbose': '', 'day': 3,
-             'nt': 1, 'title': 'les_1', 'ngroup': None, 'dend': datetime.date(2021, 4, 12)},
-        ]
-
-        expected = [
-            {
-                'group': 'ТХб-18-2',
-                'schedule': [
-                    {
-                        'day': 'среда',
-                        'lessons': [
-                            {
-                                'time': '8:15',
-                                'week': 'all',
-                                'name': 'les_1',
-                                'aud': '',
-                                'info': '( Лекция )',
-                                'prep': '',
-                            },
-                            {
-                                'time': '10:00',
-                                'week': 'all',
-                                'name': 'les_2',
-                                'aud': '',
-                                'info': '( Лекция )',
-                                'prep': '',
-                            },
-                            {
-                                'time': '11:45',
-                                'week': 'all',
-                                'name': 'les_3',
-                                'aud': '',
-                                'info': '( Лекция )',
-                                'prep': '',
-                            },
-                            {
-                                'time': '18:45',
-                                'week': 'all',
-                                'name': 'les_4',
-                                'aud': '',
-                                'info': '( Лекция )',
-                                'prep': '',
-                            }
-                        ]
-                    }
-                ]
-            }
-        ]
-
-        result = convert_schedule(input_value)
-        self.assertEqual(result, expected)
-
-    @mock.patch('data_conversion.datetime')
-    def test_convert_schedule_aFewDictInListOneDay_SubgroupsInRightOrder(self, mock_dt):
-        mock_dt.now(TIME_ZONE).date = mock.Mock(return_value=datetime.date(2021, 1, 15))
-
-        input_value = [
-            {'obozn': 'ТХб-18-2', 'begtime': '10:00', 'everyweek': 2,
-             'preps': '', 'auditories_verbose': '', 'day': 3,
-             'nt': 2, 'title': 'les_2', 'ngroup': 2, 'dend': datetime.date(2021, 4, 12)},
-            {'obozn': 'ТХб-18-2', 'begtime': '10:00', 'everyweek': 2,
-             'preps': '', 'auditories_verbose': '', 'day': 3,
-             'nt': 2, 'title': 'les_1', 'ngroup': 1, 'dend': datetime.date(2021, 4, 12)},
-            {'obozn': 'ТХб-18-2', 'begtime': '11:45', 'everyweek': 2,
-             'preps': '', 'auditories_verbose': '', 'day': 3,
-             'nt': 3, 'title': 'les_4', 'ngroup': 2, 'dend': datetime.date(2021, 4, 12)},
-            {'obozn': 'ТХб-18-2', 'begtime': '11:45', 'everyweek': 2,
-             'preps': '', 'auditories_verbose': '', 'day': 3,
-             'nt': 3, 'title': 'les_3', 'ngroup': 1, 'dend': datetime.date(2021, 4, 12)},
-        ]
-
-        expected = [
-            {
-                'group': 'ТХб-18-2',
-                'schedule': [
-                    {
-                        'day': 'среда',
-                        'lessons': [
-                            {
-                                'time': '10:00',
-                                'week': 'all',
-                                'name': 'les_1',
-                                'aud': '',
-                                'info': '( Практ. подгруппа 1 )',
-                                'prep': '',
-                            },
-                            {
-                                'time': '10:00',
-                                'week': 'all',
-                                'name': 'les_2',
-                                'aud': '',
-                                'info': '( Практ. подгруппа 2 )',
-                                'prep': '',
-                            },
-                            {
-                                'time': '11:45',
-                                'week': 'all',
-                                'name': 'les_3',
-                                'aud': '',
-                                'info': '( Лаб. раб. подгруппа 1 )',
-                                'prep': '',
-                            },
-                            {
-                                'time': '11:45',
-                                'week': 'all',
-                                'name': 'les_4',
-                                'aud': '',
-                                'info': '( Лаб. раб. подгруппа 2 )',
-                                'prep': '',
-                            }
-                        ]
-                    }
-                ]
-            }
-        ]
-
         result = convert_schedule(input_value)
         self.assertEqual(result, expected)
 
