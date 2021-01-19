@@ -2,7 +2,9 @@ import unittest
 from unittest import mock
 
 from data_conversion import convert_institutes, convert_groups, convert_courses, convert_schedule, \
-    getting_week_and_day_of_week, is_there_dict_with_value_in_list
+    convert_teachers_schedule
+
+from functions import schedule_tools
 
 import datetime
 import pytz
@@ -91,6 +93,37 @@ class TestCoursesConversionMethods(unittest.TestCase):
         input_value = []
         with self.assertRaises(ValueError):
             convert_courses(input_value)
+
+
+class TestScheduleToolsMethods(unittest.TestCase):
+    def test_getting_week_and_day_of_week_pqLesson_retunAllPonedelnick(self):
+        input_value = {
+            'obozn': '',
+            'begtime': '10:00',
+            'everyweek': 2,
+            'preps': '',
+            'auditories_verbose': '',
+            'day': 1,
+            'nt': None,
+            'title': '',
+            'ngroup': None,
+            'dend': datetime.date(2021, 4, 12)
+        }
+        expected = ('all', 'понедельник')
+
+        result = schedule_tools.getting_week_and_day_of_week(input_value)
+        self.assertEqual(result, expected)
+
+    def test_is_there_dict_with_value_in_list_ListWithDictWithKey_true(self):
+        input_value_list = [
+            {'dadsa': '', 'day': 'right_value'},
+            {'day': '', 'asd': 12},
+            {'day': {}}
+        ]
+
+        input_value_key = 'right_value'
+        result = schedule_tools.is_there_dict_with_value_in_list(input_value_list, input_value_key)
+        self.assertTrue(result)
 
 
 class TestScheduleConversionMethods(unittest.TestCase):
@@ -347,24 +380,6 @@ class TestScheduleConversionMethods(unittest.TestCase):
         result = convert_schedule(input_value)
         self.assertEqual(result, expected)
 
-    def test_getting_week_and_day_of_week_pqLesson_retunAllPonedelnick(self):
-        input_value = {
-            'obozn': '',
-            'begtime': '10:00',
-            'everyweek': 2,
-            'preps': '',
-            'auditories_verbose': '',
-            'day': 1,
-            'nt': None,
-            'title': '',
-            'ngroup': None,
-            'dend': datetime.date(2021, 4, 12)
-        }
-        expected = ('all', 'понедельник')
-
-        result = getting_week_and_day_of_week(input_value)
-        self.assertEqual(result, expected)
-
     def test_getting_week_and_day_of_week_pqLesson_retunEvenSreda(self):
         input_value = {
             'obozn': '',
@@ -380,7 +395,7 @@ class TestScheduleConversionMethods(unittest.TestCase):
         }
         expected = ('even', 'среда')
 
-        result = getting_week_and_day_of_week(input_value)
+        result = schedule_tools.getting_week_and_day_of_week(input_value)
         self.assertEqual(result, expected)
 
     def test_getting_week_and_day_of_week_pqLesson_retunOddPatnica(self):
@@ -398,19 +413,8 @@ class TestScheduleConversionMethods(unittest.TestCase):
         }
         expected = ('odd', 'пятница')
 
-        result = getting_week_and_day_of_week(input_value)
+        result = schedule_tools.getting_week_and_day_of_week(input_value)
         self.assertEqual(result, expected)
-
-    def test_is_there_dict_with_value_in_list_ListWithDictWithKey_true(self):
-        input_value_list = [
-            {'dadsa': '', 'day': 'right_value'},
-            {'day': '', 'asd': 12},
-            {'day': {}}
-        ]
-
-        input_value_key = 'right_value'
-        result = is_there_dict_with_value_in_list(input_value_list, input_value_key)
-        self.assertTrue(result)
 
     def test_is_there_dict_with_value_in_list_ListWithDictWithoutKey_false(self):
         input_value_list = [
@@ -420,14 +424,14 @@ class TestScheduleConversionMethods(unittest.TestCase):
         ]
 
         input_value_key = 'right_value'
-        result = is_there_dict_with_value_in_list(input_value_list, input_value_key)
+        result = schedule_tools.is_there_dict_with_value_in_list(input_value_list, input_value_key)
         self.assertFalse(result)
 
     def test_is_there_dict_with_value_in_list_EmptyList_false(self):
         input_value_list = []
 
         input_value_key = 'right_value'
-        result = is_there_dict_with_value_in_list(input_value_list, input_value_key)
+        result = schedule_tools.is_there_dict_with_value_in_list(input_value_list, input_value_key)
         self.assertFalse(result)
 
     @mock.patch('data_conversion.datetime')
@@ -930,6 +934,155 @@ class TestScheduleConversionMethods(unittest.TestCase):
         expected = []
 
         result = convert_schedule(input_value)
+        self.assertEqual(result, expected)
+
+class TestTeachersScheduleConversionMethods(unittest.TestCase):
+    """Расписание преподавателей."""
+
+    @mock.patch('data_conversion.datetime')
+    def test_convert_teachers_schedule_PgScheduleOneTeacherTwoLessons_returnMongoSchedule(self, mock_dt):
+        # Устанавливаем текущее время.
+        mock_dt.now(TIME_ZONE).date = mock.Mock(return_value=datetime.date(2021, 1, 15))
+
+        input_value = [
+            {'obozn': 'ИБб-18-1', 'begtime': '10:00', 'everyweek': 2,
+             'preps': 'Преп 1   ', 'prep_short_name': 'Преп В.В.    ',
+             'prep_id': 123, 'auditories_verbose': '', 'day': 3,
+             'nt': 1, 'title': 'les_1', 'ngroup': None, 'dend': datetime.date(2021, 1, 16)},
+            {'obozn': 'ИБб-18-2', 'begtime': '10:00', 'everyweek': 2,
+             'preps': 'Преп 1   ', 'prep_short_name': 'Преп В.В.    ',
+             'prep_id': 123, 'auditories_verbose': '', 'day': 3,
+             'nt': 1, 'title': 'les_1', 'ngroup': None, 'dend': datetime.date(2021, 1, 16)},
+            {'obozn': 'ИБб-18-1', 'begtime': '11:45', 'everyweek': 2,
+             'preps': 'Преп 1   ', 'prep_short_name': 'Преп В.В.    ',
+             'prep_id': 123, 'auditories_verbose': '', 'day': 3,
+             'nt': 2, 'title': 'les_2', 'ngroup': 1, 'dend': datetime.date(2021, 1, 16)}
+        ]
+
+        expected = [
+            {
+                'prep': 'Преп 1',
+                'prep_short_name': 'Преп В.В.',
+                'pg_id': 123,
+                'schedule': [
+                    {
+                        'day': 'среда',
+                        'lessons': [
+                            {
+                                'time': '10:00',
+                                'week': 'all',
+                                'name': 'les_1',
+                                'aud': '',
+                                'info': '( Лекция )',
+                                'groups': ['ИБб-18-1', 'ИБб-18-2']
+                            },
+                            {
+                                'time': '11:45',
+                                'week': 'all',
+                                'name': 'les_2',
+                                'aud': '',
+                                'info': '( Практ. подгруппа 1 )',
+                                'groups': ['ИБб-18-1']
+                            },
+                        ]
+                    }
+                ]
+            }
+        ]
+
+        result = convert_teachers_schedule(input_value)
+        self.assertEqual(result, expected)
+
+    @mock.patch('data_conversion.datetime')
+    def test_convert_teachers_schedule_PgScheduleTwoTeacher_returnMongoSchedule(self, mock_dt):
+        # Устанавливаем текущее время.
+        mock_dt.now(TIME_ZONE).date = mock.Mock(return_value=datetime.date(2021, 1, 15))
+
+        input_value = [
+            {'obozn': 'ИБб-18-1', 'begtime': '10:00', 'everyweek': 2,
+             'preps': 'Преп 1   ', 'prep_short_name': 'Преп В.В.    ',
+             'prep_id': 123, 'auditories_verbose': '', 'day': 3,
+             'nt': 1, 'title': 'les_1', 'ngroup': None, 'dend': datetime.date(2021, 1, 16)},
+            {'obozn': 'ИБб-18-2', 'begtime': '10:00', 'everyweek': 2,
+             'preps': 'Преп 2   ', 'prep_short_name': 'Преп 2 A.A.    ',
+             'prep_id': 456, 'auditories_verbose': '', 'day': 3,
+             'nt': 1, 'title': 'les_2', 'ngroup': None, 'dend': datetime.date(2021, 1, 16)},
+            {'obozn': 'ИБб-18-1', 'begtime': '11:45', 'everyweek': 2,
+             'preps': 'Преп 1   ', 'prep_short_name': 'Преп В.В.    ',
+             'prep_id': 123, 'auditories_verbose': '', 'day': 3,
+             'nt': 2, 'title': 'les_3', 'ngroup': 1, 'dend': datetime.date(2021, 1, 16)}
+        ]
+
+        expected = [
+            {
+                'prep': 'Преп 1',
+                'prep_short_name': 'Преп В.В.',
+                'pg_id': 123,
+                'schedule': [
+                    {
+                        'day': 'среда',
+                        'lessons': [
+                            {
+                                'time': '10:00',
+                                'week': 'all',
+                                'name': 'les_1',
+                                'aud': '',
+                                'info': '( Лекция )',
+                                'groups': ['ИБб-18-1']
+                            },
+                            {
+                                'time': '11:45',
+                                'week': 'all',
+                                'name': 'les_3',
+                                'aud': '',
+                                'info': '( Практ. подгруппа 1 )',
+                                'groups': ['ИБб-18-1']
+                            },
+                        ]
+                    }
+                ]
+            },
+
+            {
+                'prep': 'Преп 2',
+                'prep_short_name': 'Преп 2 A.A.',
+                'pg_id': 456,
+                'schedule': [
+                    {
+                        'day': 'среда',
+                        'lessons': [
+                            {
+                                'time': '10:00',
+                                'week': 'all',
+                                'name': 'les_2',
+                                'aud': '',
+                                'info': '( Лекция )',
+                                'groups': ['ИБб-18-2']
+                            },
+                        ]
+                    }
+                ]
+            },
+        ]
+
+        result = convert_teachers_schedule(input_value)
+        self.assertEqual(result, expected)
+
+    @mock.patch('data_conversion.datetime')
+    def test_convert_schedule_PgScheduleWithNotValidDate_returnEmptyList(self, mock_dt):
+        # Устанавливаем текущее время.
+        mock_dt.now(TIME_ZONE).date = mock.Mock(return_value=datetime.date(2021, 1, 17))
+
+        input_value = [
+            {'obozn': 'ИБб-18-1', 'begtime': '10:00', 'everyweek': 2,
+             'preps': '', 'prep_short_name': '',
+             'prep_id': 123, 'auditories_verbose': '', 'day': 3,
+             'nt': 2, 'title': 'les_1', 'ngroup': 1, 'dend': datetime.date(2021, 1, 16)},
+        ]
+
+        expected = []
+
+        result = convert_teachers_schedule(input_value)
         self.assertEqual(result, expected)
 
     if __name__ == '__main__':
