@@ -69,3 +69,8 @@ def sorting_lessons_in_a_day_by_time_and_ngroup(schedule: list):
         sch['lessons'] = sorted(sch['lessons'], key=lambda x: int(x['time'].replace(':', '')))
 
     return schedule
+
+
+def days_in_right_order(schedule: list) -> list:
+    schedule = sorted(schedule, key=lambda x: get_dict_key(DAYS, x['day']))
+    return schedule

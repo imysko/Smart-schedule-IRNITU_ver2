@@ -408,6 +408,205 @@ class TestScheduleToolsMethods(unittest.TestCase):
         result = schedule_tools.sorting_lessons_in_a_day_by_time_and_ngroup(input_value)
         self.assertEqual(result, expected)
 
+    def test_days_in_right_order(self):
+        input_value = [
+            {
+                'day': 'суббота',
+                'lessons': [
+                    {
+                        'time': '10:00',
+                        'week': 'all',
+                        'name': 'les_8',
+                        'aud': '',
+                        'info': '( Лекция )',
+                        'prep': '',
+                    }
+                ],
+            },
+            {
+                'day': 'понедельник',
+                'lessons': [
+                    {
+                        'time': '10:00',
+                        'week': 'all',
+                        'name': 'les_1',
+                        'aud': '',
+                        'info': '( Лекция )',
+                        'prep': '',
+                    },
+                    {
+                        'time': '10:00',
+                        'week': 'all',
+                        'name': 'les_2',
+                        'aud': '',
+                        'info': '( Лекция )',
+                        'prep': '',
+                    }
+                ],
+            },
+            {
+                'day': 'среда',
+                'lessons': [
+                    {
+                        'time': '10:00',
+                        'week': 'all',
+                        'name': 'les_4',
+                        'aud': '',
+                        'info': '( Лекция )',
+                        'prep': '',
+                    },
+                    {
+                        'time': '10:00',
+                        'week': 'odd',
+                        'name': 'les_5',
+                        'aud': '',
+                        'info': '( Лекция )',
+                        'prep': '',
+                    }
+                ],
+            },
+            {
+                'day': 'пятница',
+                'lessons': [
+                    {
+                        'time': '10:00',
+                        'week': 'all',
+                        'name': 'les_7',
+                        'aud': '',
+                        'info': '( Лекция )',
+                        'prep': '',
+                    }
+                ],
+            },
+            {
+                'day': 'вторник',
+                'lessons': [
+                    {
+                        'time': '10:00',
+                        'week': 'all',
+                        'name': 'les_3',
+                        'aud': '',
+                        'info': '( Лекция )',
+                        'prep': '',
+                    }
+                ],
+            },
+
+            {
+                'day': 'четверг',
+                'lessons': [
+                    {
+                        'time': '10:00',
+                        'week': 'all',
+                        'name': 'les_6',
+                        'aud': '',
+                        'info': '( Лекция )',
+                        'prep': '',
+                    }
+                ],
+            },
+
+        ]
+        expected = [
+            {
+                'day': 'понедельник',
+                'lessons': [
+                    {
+                        'time': '10:00',
+                        'week': 'all',
+                        'name': 'les_1',
+                        'aud': '',
+                        'info': '( Лекция )',
+                        'prep': '',
+                    },
+                    {
+                        'time': '10:00',
+                        'week': 'all',
+                        'name': 'les_2',
+                        'aud': '',
+                        'info': '( Лекция )',
+                        'prep': '',
+                    }
+                ],
+            },
+            {
+                'day': 'вторник',
+                'lessons': [
+                    {
+                        'time': '10:00',
+                        'week': 'all',
+                        'name': 'les_3',
+                        'aud': '',
+                        'info': '( Лекция )',
+                        'prep': '',
+                    }
+                ],
+            },
+            {
+                'day': 'среда',
+                'lessons': [
+                    {
+                        'time': '10:00',
+                        'week': 'all',
+                        'name': 'les_4',
+                        'aud': '',
+                        'info': '( Лекция )',
+                        'prep': '',
+                    },
+                    {
+                        'time': '10:00',
+                        'week': 'odd',
+                        'name': 'les_5',
+                        'aud': '',
+                        'info': '( Лекция )',
+                        'prep': '',
+                    }
+                ],
+            },
+            {
+                'day': 'четверг',
+                'lessons': [
+                    {
+                        'time': '10:00',
+                        'week': 'all',
+                        'name': 'les_6',
+                        'aud': '',
+                        'info': '( Лекция )',
+                        'prep': '',
+                    }
+                ],
+            },
+            {
+                'day': 'пятница',
+                'lessons': [
+                    {
+                        'time': '10:00',
+                        'week': 'all',
+                        'name': 'les_7',
+                        'aud': '',
+                        'info': '( Лекция )',
+                        'prep': '',
+                    }
+                ],
+            },
+            {
+                'day': 'суббота',
+                'lessons': [
+                    {
+                        'time': '10:00',
+                        'week': 'all',
+                        'name': 'les_8',
+                        'aud': '',
+                        'info': '( Лекция )',
+                        'prep': '',
+                    }
+                ],
+            }
+        ]
+
+        result = schedule_tools.days_in_right_order(input_value)
+        self.assertEqual(result, expected)
+
 
 class TestScheduleConversionMethods(unittest.TestCase):
 
@@ -656,141 +855,6 @@ class TestScheduleConversionMethods(unittest.TestCase):
                                 'prep': 'Юрьева Лена Валерьевна',
                             }
                         ]
-                    }
-                ]
-            }
-        ]
-        result = convert_schedule(input_value)
-        self.assertEqual(result, expected)
-
-    @mock.patch('data_conversion.datetime')
-    def test_convert_schedule_aFewDictInListOneGroup_DaysInRightOrder(self, mock_dt):
-        mock_dt.now(TIME_ZONE).date = mock.Mock(return_value=datetime.date(2021, 1, 15))
-
-        input_value = [
-            {'obozn': 'ТХб-18-2', 'begtime': '10:00', 'everyweek': 2,
-             'preps': '', 'auditories_verbose': '', 'day': 3,
-             'nt': 1, 'title': 'les_4', 'ngroup': None, 'dend': datetime.date(2021, 4, 12)},
-            {'obozn': 'ТХб-18-2', 'begtime': '10:00', 'everyweek': 2,
-             'preps': '', 'auditories_verbose': '', 'day': 1,
-             'nt': 1, 'title': 'les_1', 'ngroup': None, 'dend': datetime.date(2021, 4, 12)},
-            {'obozn': 'ТХб-18-2', 'begtime': '10:00', 'everyweek': 1,
-             'preps': '', 'auditories_verbose': '', 'day': 10,
-             'nt': 1, 'title': 'les_5', 'ngroup': None, 'dend': datetime.date(2021, 4, 12)},
-            {'obozn': 'ТХб-18-2', 'begtime': '10:00', 'everyweek': 2,
-             'preps': '', 'auditories_verbose': '', 'day': 1,
-             'nt': 1, 'title': 'les_2', 'ngroup': None, 'dend': datetime.date(2021, 4, 12)},
-            {'obozn': 'ТХб-18-2', 'begtime': '10:00', 'everyweek': 2,
-             'preps': '', 'auditories_verbose': '', 'day': 4,
-             'nt': 1, 'title': 'les_6', 'ngroup': None, 'dend': datetime.date(2021, 4, 12)},
-            {'obozn': 'ТХб-18-2', 'begtime': '10:00', 'everyweek': 2,
-             'preps': '', 'auditories_verbose': '', 'day': 6,
-             'nt': 1, 'title': 'les_8', 'ngroup': None, 'dend': datetime.date(2021, 4, 12)},
-            {'obozn': 'ТХб-18-2', 'begtime': '10:00', 'everyweek': 2,
-             'preps': '', 'auditories_verbose': '', 'day': 5,
-             'nt': 1, 'title': 'les_7', 'ngroup': None, 'dend': datetime.date(2021, 4, 12)},
-            {'obozn': 'ТХб-18-2', 'begtime': '10:00', 'everyweek': 2,
-             'preps': '', 'auditories_verbose': '', 'day': 2,
-             'nt': 1, 'title': 'les_3', 'ngroup': None, 'dend': datetime.date(2021, 4, 12)}
-
-        ]
-        expected = [
-            {
-                'group': 'ТХб-18-2',
-                'schedule': [
-                    {
-                        'day': 'понедельник',
-                        'lessons': [
-                            {
-                                'time': '10:00',
-                                'week': 'all',
-                                'name': 'les_1',
-                                'aud': '',
-                                'info': '( Лекция )',
-                                'prep': '',
-                            },
-                            {
-                                'time': '10:00',
-                                'week': 'all',
-                                'name': 'les_2',
-                                'aud': '',
-                                'info': '( Лекция )',
-                                'prep': '',
-                            }
-                        ],
-                    },
-                    {
-                        'day': 'вторник',
-                        'lessons': [
-                            {
-                                'time': '10:00',
-                                'week': 'all',
-                                'name': 'les_3',
-                                'aud': '',
-                                'info': '( Лекция )',
-                                'prep': '',
-                            }
-                        ],
-                    },
-                    {
-                        'day': 'среда',
-                        'lessons': [
-                            {
-                                'time': '10:00',
-                                'week': 'all',
-                                'name': 'les_4',
-                                'aud': '',
-                                'info': '( Лекция )',
-                                'prep': '',
-                            },
-                            {
-                                'time': '10:00',
-                                'week': 'odd',
-                                'name': 'les_5',
-                                'aud': '',
-                                'info': '( Лекция )',
-                                'prep': '',
-                            }
-                        ],
-                    },
-                    {
-                        'day': 'четверг',
-                        'lessons': [
-                            {
-                                'time': '10:00',
-                                'week': 'all',
-                                'name': 'les_6',
-                                'aud': '',
-                                'info': '( Лекция )',
-                                'prep': '',
-                            }
-                        ],
-                    },
-                    {
-                        'day': 'пятница',
-                        'lessons': [
-                            {
-                                'time': '10:00',
-                                'week': 'all',
-                                'name': 'les_7',
-                                'aud': '',
-                                'info': '( Лекция )',
-                                'prep': '',
-                            }
-                        ],
-                    },
-                    {
-                        'day': 'суббота',
-                        'lessons': [
-                            {
-                                'time': '10:00',
-                                'week': 'all',
-                                'name': 'les_8',
-                                'aud': '',
-                                'info': '( Лекция )',
-                                'prep': '',
-                            }
-                        ],
                     }
                 ]
             }

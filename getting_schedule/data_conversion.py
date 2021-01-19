@@ -130,7 +130,7 @@ def convert_schedule(pg_schedule: list) -> list:
 
                 all_schedule.append({
                     'group': current_group,
-                    'schedule': sorted(schedule, key=lambda x: schedule_tools.get_dict_key(DAYS, x['day']))
+                    'schedule': schedule_tools.days_in_right_order(schedule)
                 })
 
                 # Обнуляем расписание для слудующей группы
@@ -218,7 +218,7 @@ def convert_teachers_schedule(pg_schedule: list) -> list:
                     'prep': item['preps'].strip(),
                     'prep_short_name': item['prep_short_name'].strip(),
                     'pg_id': current_prep_id,
-                    'schedule': sorted(schedule, key=lambda x: schedule_tools.get_dict_key(DAYS, x['day']))
+                    'schedule': schedule_tools.days_in_right_order(schedule)
                 })
 
                 # Обнуляем расписание для слудующего преподавателя
