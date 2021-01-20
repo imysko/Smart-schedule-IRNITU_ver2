@@ -50,11 +50,7 @@ def get_teachers() -> list:
             cursor.execute("SELECT "
                            "preps as prep, "
                            "prep as prep_short_name, "
-                           "id_61 as prep_id, "
-                           "dolzh, "
-                           "zvanie, "
-                           "stepen,"
-                           "raspprep "
+                           "id_61 as prep_id "
                            "from prepods")
             rows = cursor.fetchall()
             teachers = [dict(teacher) for teacher in rows]
