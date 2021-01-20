@@ -63,7 +63,7 @@ class MongodbService(object):
 
     def save_auditories_schedule(self, schedule: list):
         """Сохраняет расписание аудиторий в коллекцию auditories_schedule"""
-        self._db.prepods_schedule.drop()  # очищаем старые записи в коллекции
+        self._db.auditories_schedule.drop()  # очищаем старые записи в коллекции
         return self._db.auditories_schedule.insert_many(schedule)
 
     def delete_auditories_schedule(self):
