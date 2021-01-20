@@ -17,7 +17,7 @@ from vkbottle.bot import Bot, Message
 
 TOKEN = os.environ.get('VK')
 
-#Обьявление некоторых глбальных переменных
+# Обьявление некоторых глбальных переменных
 
 MAX_CALLBACK_RANGE = 41
 storage = MongodbService().get_instance()
@@ -38,7 +38,9 @@ authorize = vk_api.VkApi(token=TOKEN)
 upload = VkUpload(authorize)
 map_image = "map.jpg"
 
+# Глобальные переменные
 Condition_request = {}
+prep_reg = {}
 
 
 def parametres_for_buttons_start_menu_vk(text, color):
@@ -238,6 +240,7 @@ def make_keyboard_choose_group_vk(groups=[]):
 
     return keyboard
 
+
 def make_keyboard_choose_group_vk_page_2(groups=[]):
     """ Клавиатура для групп после переполнения первой """
 
@@ -373,6 +376,7 @@ def name_institutes(institutes=[]):
         list_institutes.append(name)
     return list_institutes
 
+
 def name_courses(courses=[]):
     """ Храним список всех курсов """
 
@@ -381,6 +385,7 @@ def name_courses(courses=[]):
         name = i['name']
         list_courses.append(name)
     return list_courses
+
 
 def name_groups(groups=[]):
     """ Храним список всех групп """
@@ -404,6 +409,7 @@ def add_statistics(action: str):
 
 class SuperStates(BaseStateGroup):
     SEARCH = 0
+    PREP_REG = 1
 
 
 @bot.on.message(state=SuperStates.SEARCH)  # StateRule(SuperStates.AWKWARD_STATE)
@@ -583,6 +589,108 @@ async def awkward_handler(ans: Message):
                 return
 
 
+@bot.on.message(state=SuperStates.PREP_REG)  # StateRule(SuperStates.AWKWARD_STATE)
+async def awkward_handler(ans: Message):
+    global prep_reg
+    chat_id = ans.from_id
+    message = ans.text
+    page = 1
+    prep_list = storage.get_prep(message)
+    if prep_list:
+        prep_name = prep_list[0]['prep']
+        storage.save_or_update_user(chat_id=chat_id, group=prep_name, course='None')
+        await bot.state_dispenser.delete(ans.peer_id)
+        await ans.answer(f'Вы успешно зарегистрировались, как {prep_name}!😊\n\n'
+                         'Для того чтобы пройти регистрацию повторно, напишите сообщение "Регистрация"\n',
+                         keyboard=make_keyboard_start_menu())
+        return
+
+    # Если преподавателя не нашли
+    elif not prep_list and not prep_reg[chat_id]:
+        # Делим введенное фио на части и ищем по каждой в базе
+        prep_list = []
+        prep_list_2 = []
+        for name_unit in message.split():
+            for i in storage.get_search_list_prep(name_unit):
+                prep_list.append(i['prep'])
+            if prep_list and prep_list_2:
+                prep_list_2 = list(set(prep_list) & set(prep_list_2))
+            elif prep_list and not (prep_list_2):
+                prep_list_2 = prep_list
+            prep_list = []
+        print(prep_list_2)
+        if not prep_list_2:
+            prep_list_2 = None
+        prep_list_reg = [page, prep_list_2]
+        prep_reg[chat_id] = prep_list_reg
+        if prep_reg[chat_id][1]:
+            prep_list_2 = prep_reg[chat_id][1]
+            keyboard = Keyboard(one_time=False)
+            for i in prep_list_2[:8]:
+                keyboard.row()
+                keyboard.add(Text(label=i), color=KeyboardButtonColor.PRIMARY)
+            keyboard.row()
+            keyboard.add(Text(label='Назад к институтам'), color=KeyboardButtonColor.PRIMARY)
+            if len(prep_list_2) > 8:
+                keyboard.add(Text(label='Далее'), color=KeyboardButtonColor.PRIMARY)
+            await ans.answer('Возможно Вы имели в виду', keyboard=keyboard)
+            return
+        else:
+            storage.delete_user_or_userdata(chat_id)
+            await ans.answer('Мы не смогли найти вас в базе преподавателей.\n'
+                             'Возможно вы неверно ввели своё ФИО.',
+                             keyboard=make_keyboard_institutes(storage.get_institutes()))
+            await bot.state_dispenser.delete(ans.peer_id)
+    if message == "Назад к институтам":
+        await ans.answer('Назад к институтам', keyboard=make_keyboard_institutes(storage.get_institutes()))
+        storage.delete_user_or_userdata(chat_id)
+        await bot.state_dispenser.delete(ans.peer_id)
+
+    if message == 'Далее':
+        prep_reg[chat_id][0] += 1
+        page = prep_reg[chat_id][0]
+        prep_list_2 = prep_reg[chat_id][1]
+        keyboard = Keyboard(one_time=False)
+        if len(prep_list_2) - (page - 1) * 8 >= 8:
+            for i in prep_list_2[(page - 1) * 8:(page - 1) * 8 + 8]:
+                keyboard.row()
+                keyboard.add(Text(label=i['prep']), color=KeyboardButtonColor.PRIMARY)
+            keyboard.row()
+            keyboard.add(Text(label='Назад'), color=KeyboardButtonColor.PRIMARY)
+            keyboard.add(Text(label='Далее'), color=KeyboardButtonColor.PRIMARY)
+            keyboard.row()
+            keyboard.add(Text(label='Назад к институтам'), color=KeyboardButtonColor.PRIMARY)
+        else:
+            for i in prep_list_2[(page - 1) * 8: len(prep_list_2)]:
+                keyboard.row()
+                keyboard.add(Text(label=i), color=KeyboardButtonColor.PRIMARY)
+            keyboard.row()
+            keyboard.add(Text(label='Назад'), color=KeyboardButtonColor.PRIMARY)
+            keyboard.add(Text(label='Назад к институтам'), color=KeyboardButtonColor.PRIMARY)
+        await ans.answer(f'Страница {page}', keyboard=keyboard)
+
+    if message == 'Назад':
+        prep_reg[chat_id][0] -= 1
+        page = prep_reg[chat_id][0]
+        prep_list_2 = prep_reg[chat_id][1]
+        keyboard = Keyboard(one_time=False)
+        for i in prep_list_2[(page - 1) * 8:page * 8]:
+            keyboard.row()
+            keyboard.add(Text(label=i), color=KeyboardButtonColor.PRIMARY)
+        keyboard.row()
+        if page != 1:
+            keyboard.add(Text(label='Назад'), color=KeyboardButtonColor.PRIMARY)
+            keyboard.add(Text(label='Далее'), color=KeyboardButtonColor.PRIMARY)
+            keyboard.row()
+            keyboard.add(Text(label='Назад к институтам'), color=KeyboardButtonColor.PRIMARY)
+        elif page == 1:
+            keyboard.add(Text(label='Назад к институтам'), color=KeyboardButtonColor.PRIMARY)
+            keyboard.add(Text(label='Далее'), color=KeyboardButtonColor.PRIMARY)
+        await ans.answer(f'Страница {page}', keyboard=keyboard)
+
+    return
+
+
 # ==================== Обработка команд ==================== #
 # Входим в стейт по кодовому слову "Поиск"
 @bot.on.message(text="Поиск 🔎")
@@ -679,10 +787,10 @@ async def scheduler(ans: Message):
 
     if ('На текущую неделю' == data or 'На следующую неделю' == data) and user.get('group'):
         # Если курс нуль, тогда это преподаватель
-        if storage.get_user(chat_id=chat_id)['course'] != None:
+        if storage.get_user(chat_id=chat_id)['course'] != 'None':
             group = storage.get_user(chat_id=chat_id)['group']
             schedule = storage.get_schedule(group=group)
-        elif storage.get_user(chat_id=chat_id)['course'] == None:
+        elif storage.get_user(chat_id=chat_id)['course'] == 'None':
             group = storage.get_user(chat_id=chat_id)['group']
             schedule = storage.get_schedule_prep(group=group)
         if schedule['schedule'] == []:
@@ -699,9 +807,9 @@ async def scheduler(ans: Message):
 
         week_name = 'четная' if week == 'odd' else 'нечетная'
 
-        if storage.get_user(chat_id=chat_id)['course'] != None:
+        if storage.get_user(chat_id=chat_id)['course'] != 'None':
             schedule_str = full_schedule_in_str(schedule, week=week)
-        elif storage.get_user(chat_id=chat_id)['course'] == None:
+        elif storage.get_user(chat_id=chat_id)['course'] == 'None':
             schedule_str = full_schedule_in_str_prep(schedule, week=week)
 
         await ans.answer(f'Расписание {group}\n'
@@ -716,10 +824,10 @@ async def scheduler(ans: Message):
 
     elif 'Расписание на сегодня 🍏' == data and user.get('group'):
         # Если курс нуль, тогда это преподаватель
-        if storage.get_user(chat_id=chat_id)['course'] != None:
+        if storage.get_user(chat_id=chat_id)['course'] != 'None':
             group = storage.get_user(chat_id=chat_id)['group']
             schedule = storage.get_schedule(group=group)
-        elif storage.get_user(chat_id=chat_id)['course'] == None:
+        elif storage.get_user(chat_id=chat_id)['course'] == 'None':
             group = storage.get_user(chat_id=chat_id)['group']
             schedule = storage.get_schedule_prep(group=group)
         if not schedule:
@@ -730,9 +838,9 @@ async def scheduler(ans: Message):
         schedule = schedule['schedule']
         week = find_week()
         # Если курс нуль, тогда это преподаватель
-        if storage.get_user(chat_id=chat_id)['course'] != None:
+        if storage.get_user(chat_id=chat_id)['course'] != 'None':
             schedule_one_day = get_one_day_schedule_in_str(schedule=schedule, week=week)
-        elif storage.get_user(chat_id=chat_id)['course'] == None:
+        elif storage.get_user(chat_id=chat_id)['course'] == 'None':
             schedule_one_day = get_one_day_schedule_in_str_prep(schedule=schedule, week=week)
         if not schedule_one_day:
             await ans.answer('Сегодня пар нет 😎')
@@ -742,10 +850,10 @@ async def scheduler(ans: Message):
 
     elif 'Расписание на завтра 🍎' == data and user.get('group'):
         # Если курс нуль, тогда это преподаватель
-        if storage.get_user(chat_id=chat_id)['course'] != None:
+        if storage.get_user(chat_id=chat_id)['course'] != 'None':
             group = storage.get_user(chat_id=chat_id)['group']
             schedule = storage.get_schedule(group=group)
-        elif storage.get_user(chat_id=chat_id)['course'] == None:
+        elif storage.get_user(chat_id=chat_id)['course'] == 'None':
             group = storage.get_user(chat_id=chat_id)['group']
             schedule = storage.get_schedule_prep(group=group)
         if not schedule:
@@ -763,9 +871,9 @@ async def scheduler(ans: Message):
             else:
                 week = 'all'
 
-        if storage.get_user(chat_id=chat_id)['course'] != None:
+        if storage.get_user(chat_id=chat_id)['course'] != 'None':
             schedule_next_day = get_next_day_schedule_in_str(schedule=schedule, week=week)
-        elif storage.get_user(chat_id=chat_id)['course'] == None:
+        elif storage.get_user(chat_id=chat_id)['course'] == 'None':
             schedule_next_day = get_next_day_schedule_in_str_prep(schedule=schedule, week=week)
 
         if not schedule_next_day:
@@ -781,10 +889,10 @@ async def scheduler(ans: Message):
 
 
     elif 'Текущая' in data and user.get('group'):
-        if storage.get_user(chat_id=chat_id)['course'] != None:
+        if storage.get_user(chat_id=chat_id)['course'] != 'None':
             group = storage.get_user(chat_id=chat_id)['group']
             schedule = storage.get_schedule(group=group)
-        elif storage.get_user(chat_id=chat_id)['course'] == None:
+        elif storage.get_user(chat_id=chat_id)['course'] == 'None':
             group = storage.get_user(chat_id=chat_id)['group']
             schedule = storage.get_schedule_prep(group=group)
         if not schedule:
@@ -805,7 +913,7 @@ async def scheduler(ans: Message):
 
         now_lessons_str = ''
 
-        if storage.get_user(chat_id=chat_id)['course'] != None:
+        if storage.get_user(chat_id=chat_id)['course'] != 'None':
             for near_lesson in now_lessons:
                 name = near_lesson['name']
                 if name == 'свободно':
@@ -825,7 +933,7 @@ async def scheduler(ans: Message):
                                    f'{info} {prep}\n'
             now_lessons_str += '-------------------------------------------\n'
 
-        elif storage.get_user(chat_id=chat_id)['course'] == None:
+        elif storage.get_user(chat_id=chat_id)['course'] == 'None':
             for near_lesson in now_lessons:
                 name = near_lesson['name']
                 if name == 'свободно':
@@ -850,10 +958,10 @@ async def scheduler(ans: Message):
         add_statistics(action='Текущая')
 
     elif 'Следующая' in data and user.get('group'):
-        if storage.get_user(chat_id=chat_id)['course'] != None:
+        if storage.get_user(chat_id=chat_id)['course'] != 'None':
             group = storage.get_user(chat_id=chat_id)['group']
             schedule = storage.get_schedule(group=group)
-        elif storage.get_user(chat_id=chat_id)['course'] == None:
+        elif storage.get_user(chat_id=chat_id)['course'] == 'None':
             group = storage.get_user(chat_id=chat_id)['group']
             schedule = storage.get_schedule_prep(group=group)
         if not schedule:
@@ -874,7 +982,7 @@ async def scheduler(ans: Message):
 
         near_lessons_str = ''
 
-        if storage.get_user(chat_id=chat_id)['course'] != None:
+        if storage.get_user(chat_id=chat_id)['course'] != 'None':
             for near_lesson in near_lessons:
                 name = near_lesson['name']
                 if name == 'свободно':
@@ -897,7 +1005,7 @@ async def scheduler(ans: Message):
             near_lessons_str += '-------------------------------------------\n'
             await ans.answer(f'🧠Ближайшая пара🧠\n'f'{near_lessons_str}', keyboard=make_keyboard_start_menu())
 
-        elif storage.get_user(chat_id=chat_id)['course'] == None:
+        elif storage.get_user(chat_id=chat_id)['course'] == 'None':
             for near_lesson in near_lessons:
                 name = near_lesson['name']
                 if name == 'свободно':
@@ -921,6 +1029,26 @@ async def scheduler(ans: Message):
         add_statistics(action='Следующая')
 
 
+@bot.on.message(text="Преподаватель")
+async def die_handler2(ans: Message):
+    """Стейт поиска"""
+    global prep_reg
+
+    chat_id = ans.from_id
+    user = storage.get_user(chat_id)
+    message_inst = ans.text
+    prep_reg[chat_id] = []
+    storage.save_or_update_user(chat_id=chat_id, institute=message_inst)
+    await ans.answer(f'Вы выбрали: {message_inst}\n')
+    await ans.answer('📚Кто постигает новое, лелея старое,\n'
+                     'Тот может быть учителем.\n'
+                     'Конфуций')
+
+    await ans.answer('Введите своё ФИО полностью.\n'
+                     'Например: Корняков Михаил Викторович', keyboard=back_for_prep())
+    await bot.state_dispenser.set(ans.peer_id, SuperStates.PREP_REG)
+
+
 @bot.on.message()
 async def wrapper(ans: Message):
     '''Регистрация пользователя'''
@@ -928,6 +1056,7 @@ async def wrapper(ans: Message):
     message_inst = ans.text
     message = ans.text
     user = storage.get_user(chat_id)
+    print(user)
 
     # Сохраняет в месседж полное название универ для корректного сравнения
     institutes = name_institutes(storage.get_institutes())
@@ -946,23 +1075,20 @@ async def wrapper(ans: Message):
             await ans.answer(f'Вы выбрали: {message_inst}\n')
             await ans.answer('Выберите курс.',
                              keyboard=make_keyboard_choose_course_vk(storage.get_courses(message_inst)))
+
         # Пользователь выбрал Преподаватель
-        elif message_inst == "Преподаватель":
-            storage.save_or_update_user(chat_id=chat_id, institute=message_inst)
-            await ans.answer(f'Вы выбрали: {message_inst}\n')
-            await ans.answer('📚Кто постигает новое, лелея старое,\n'
-                             'Тот может быть учителем.\n'
-                             'Конфуций')
 
-            await ans.answer('Введите своё ФИО полностью.\n'
-                             'Например: Корняков Михаил Викторович', keyboard=back_for_prep())
-
-            return
-
-        else:
-            await ans.answer('Ради твоего удобства, я вывел клавиатуру со списком инстиутов ниже 😸👇🏻',
-                             keyboard=make_keyboard_institutes(storage.get_institutes()))
-        return
+        # elif message_inst == "Преподаватель":
+        #     storage.save_or_update_user(chat_id=chat_id, institute=message_inst)
+        #     await ans.answer(f'Вы выбрали: {message_inst}\n')
+        #     await ans.answer('📚Кто постигает новое, лелея старое,\n'
+        #                      'Тот может быть учителем.\n'
+        #                      'Конфуций')
+        #
+        #     await ans.answer('Введите своё ФИО полностью.\n'
+        #                      'Например: Корняков Михаил Викторович', keyboard=back_for_prep())
+        #
+        #     return
 
     # Если нажал кнопку Назад к институтам
     if message == "Назад к институтам" and not 'course' in user.keys():
@@ -982,10 +1108,10 @@ async def wrapper(ans: Message):
     elif not 'course' in user.keys():
         institute = user['institute']
         course = storage.get_courses(institute)
-        prep_list = []
+        # prep_list = []
         # Тянем из базы список преподавателей, фамилии и инициалы, которые относятся к введенной фамилии
-        if not course:
-            prep_list = storage.get_prep(message)
+        # if not course:
+        #     prep_list = storage.get_prep(message)
         # Если нажал кнопку курса
         if message in name_courses(course):
             # Записываем в базу данных выбранный курс
@@ -996,27 +1122,27 @@ async def wrapper(ans: Message):
             await ans.answer('Выберите группу.', keyboard=make_keyboard_choose_group_vk(groups))
             return
 
-        # Если в базе всего одна запись с такой фамилией, то регаем препода
-        elif prep_list:
-            prep_name = prep_list[0]['prep']
-            await ans.answer(f'Вы успешно зарегистрировались, как {prep_name}!😊\n\n'
-                             'Для того чтобы пройти регистрацию повторно, напишите сообщение "Регистрация"\n',
-                             keyboard=make_keyboard_start_menu())
-            storage.save_or_update_user(chat_id=chat_id, course=None)
-            storage.save_or_update_user(chat_id=chat_id, group=prep_name)
-            return
-        # Если преподавателя не нашли
-        elif not prep_list:
-            # # Делим введенное фио на части и ищем по каждой в базе
-            # for name_unit in message.split():
-            #     prep_list = storage.get_search_list_prep(name_unit)
-            #     if prep_list:
-            #         keyboard = Keyboard(one_time=False)
-            #         for i in prep_list:
-            #             keyboard.row()
-            #             keyboard.add(Text(label=i['prep']), color=KeyboardButtonColor.PRIMARY)
-            #         await ans.answer('Возможно Вы имели в виду', keyboard=keyboard)
-            #         return
+            # Если в базе всего одна запись с такой фамилией, то регаем препода
+            # elif prep_list:
+            #     prep_name = prep_list[0]['prep']
+            #     await ans.answer(f'Вы успешно зарегистрировались, как {prep_name}!😊\n\n'
+            #                      'Для того чтобы пройти регистрацию повторно, напишите сообщение "Регистрация"\n',
+            #                      keyboard=make_keyboard_start_menu())
+            #     storage.save_or_update_user(chat_id=chat_id, course='None')
+            #     storage.save_or_update_user(chat_id=chat_id, group=prep_name)
+            #     return
+            # # Если преподавателя не нашли
+            # elif not prep_list:
+            #     # # Делим введенное фио на части и ищем по каждой в базе
+            #     # for name_unit in message.split():
+            #     #     prep_list = storage.get_search_list_prep(name_unit)
+            #     #     if prep_list:
+            #     #         keyboard = Keyboard(one_time=False)
+            #     #         for i in prep_list:
+            #     #             keyboard.row()
+            #     #             keyboard.add(Text(label=i['prep']), color=KeyboardButtonColor.PRIMARY)
+            #     #         await ans.answer('Возможно Вы имели в виду', keyboard=keyboard)
+            #     #         return
 
             await ans.answer('Мы не смогли найти вас в базе преподавателей.\n'
                              'Возможно вы неверно ввели своё ФИО.')
