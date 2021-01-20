@@ -42,6 +42,37 @@ class MongodbService(object):
         self._db.schedule.drop()  # очищаем старые записи в коллекции
         return self._db.schedule.insert_many(schedule)
 
+    def delete_schedule(self):
+        """Удаляем расписание (очищаем коллекцию schedule)"""
+        return self._db.schedule.drop()
+
+    def save_teachers(self, groups: list):
+        """Сохраняет список преподавателей в коллекцию prepods"""
+        self._db.prepods.drop()  # очищаем старые записи в коллекции
+        return self._db.prepods.insert_many(groups)
+
+    def save_teachers_schedule(self, schedule: list):
+        """Сохраняет расписание преподавателей в коллекцию prepods_schedule"""
+        self._db.prepods_schedule.drop()  # очищаем старые записи в коллекции
+        return self._db.prepods_schedule.insert_many(schedule)
+
+    def delete_teachers_schedule(self):
+        """Удаляем расписание преподавателей (очищаем коллекцию prepods_schedule)"""
+        return self._db.prepods_schedule.drop()
+
+
+    def save_auditories_schedule(self, schedule: list):
+        """Сохраняет расписание аудиторий в коллекцию auditories_schedule"""
+        self._db.auditories_schedule.drop()  # очищаем старые записи в коллекции
+        return self._db.auditories_schedule.insert_many(schedule)
+
+    def delete_auditories_schedule(self):
+        """Удаляем расписание аудиторий (очищаем коллекцию auditories_schedule)"""
+        return self._db.auditories_schedule.drop()
+
+
+
+
     def save_status(self, date, time, getting_schedule_time_hours):
         """Сохраняет время последнего обращения к PostgreSQL"""
         status = {
