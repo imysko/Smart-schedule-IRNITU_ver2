@@ -17,6 +17,8 @@ from vkbottle.bot import Bot, Message
 
 TOKEN = os.environ.get('VK')
 
+#Обьявление некоторых глбальных переменных
+
 MAX_CALLBACK_RANGE = 41
 storage = MongodbService().get_instance()
 bot = Bot(TOKEN)  # TOKEN
@@ -62,8 +64,10 @@ def get_notifications_status(time):
     return notifications_status
 
 
+# ==================== Создание основных клавиатур и кнопок ==================== #
+
 def make_inline_keyboard_notifications():
-    """Кнопка 'Настройка уведомлений'"""
+    """ Кнопка 'Настройка уведомлений' """
     keyboard = Keyboard(one_time=False)
     keyboard.row()
     keyboard.add(Text(label='Настройки ⚙'), color=KeyboardButtonColor.PRIMARY)
@@ -73,7 +77,7 @@ def make_inline_keyboard_notifications():
 
 
 def make_keyboard_start_menu():
-    """Создаём основные кнопки"""
+    """ Клавиатура основного меню """
     keyboard = Keyboard(one_time=False)
     keyboard.row()
     keyboard.add(Text(label="Расписание 🗓"), color=KeyboardButtonColor.PRIMARY)
@@ -89,7 +93,7 @@ def make_keyboard_start_menu():
 
 
 def make_keyboard_commands():
-    """Создаём кнопки команд"""
+    """ Клавиатура текстовых команд"""
     keyboard = Keyboard(one_time=False)
     keyboard.row()
     # keyboard.add(Text(label="about"), color=KeyboardButtonColor.PRIMARY)
@@ -103,6 +107,7 @@ def make_keyboard_commands():
 
 
 def make_keyboard_extra():
+    """ Клавиатура дополнительных кнопок меню - Другое"""
     keyboard = Keyboard(one_time=False)
     keyboard.row()
     keyboard.add(Text(label="Список команд"), color=KeyboardButtonColor.PRIMARY)
@@ -114,7 +119,7 @@ def make_keyboard_extra():
 
 
 def make_keyboard_nearlesson():
-    """Создаём основные кнопки"""
+    """ Клавиатура выбора недели """
     keyboard = Keyboard(one_time=False)
     keyboard.row()
     keyboard.add(Text(label="Текущая"), color=KeyboardButtonColor.PRIMARY)
@@ -125,26 +130,26 @@ def make_keyboard_nearlesson():
 
 
 def make_inline_keyboard_set_notifications(time=0):
-    """кнопки настройки уведомлений"""
+    """ Клавиатура настройки уведомлений """
+
     if time != 0:
         text_check = f'{time} мин'
     else:
         text_check = 'off'
 
     keyboard = Keyboard(one_time=False)
-
     keyboard.row()
     keyboard.add(Text(label="-"), color=KeyboardButtonColor.PRIMARY)
     keyboard.add(Text(label=text_check), color=KeyboardButtonColor.PRIMARY)
     keyboard.add(Text(label='+'), color=KeyboardButtonColor.PRIMARY)
     keyboard.row()
     keyboard.add(Text(label="Сохранить"), color=KeyboardButtonColor.SECONDARY)
-
     return keyboard
 
 
 def make_keyboard_institutes(institutes=[]):
-    """Кнопки выбора института"""
+    """ Клавитура выбора института """
+
     keyboard = {
         "one_time": False
     }
@@ -167,7 +172,8 @@ def make_keyboard_institutes(institutes=[]):
 
 
 def make_keyboard_choose_course_vk(courses):
-    '''Создаёт клавиатуру для выбора курса'''
+    """ Клавиатура для выбора курса """
+
     keyboard = {
         "one_time": False
     }
@@ -187,7 +193,8 @@ def make_keyboard_choose_course_vk(courses):
 
 
 def make_keyboard_choose_group_vk(groups=[]):
-    """Кнопки выбора группы"""
+    """ Клавитура выбора группы """
+
     keyboard = {
         "one_time": False
     }
@@ -231,20 +238,9 @@ def make_keyboard_choose_group_vk(groups=[]):
 
     return keyboard
 
-
-def make_keyboard_choose_schedule():
-    '''Создаёт клавиатуру для выбора недели'''
-    keyboard = Keyboard(one_time=False)
-    keyboard.row()
-    keyboard.add(Text(label="На текущую неделю"), color=KeyboardButtonColor.PRIMARY)
-    keyboard.add(Text(label="На следующую неделю"), color=KeyboardButtonColor.PRIMARY)
-    keyboard.row()
-    keyboard.add(Text(label="Основное меню"), color=KeyboardButtonColor.SECONDARY)
-    return keyboard
-
-
 def make_keyboard_choose_group_vk_page_2(groups=[]):
-    '''Создаёт клавиатуру для групп после переполнения первой'''
+    """ Клавиатура для групп после переполнения первой """
+
     keyboard = {
         "one_time": False
     }
@@ -267,8 +263,20 @@ def make_keyboard_choose_group_vk_page_2(groups=[]):
     return keyboard
 
 
+def make_keyboard_choose_schedule():
+    """ Клавиатура для выбора недели """
+
+    keyboard = Keyboard(one_time=False)
+    keyboard.row()
+    keyboard.add(Text(label="На текущую неделю"), color=KeyboardButtonColor.PRIMARY)
+    keyboard.add(Text(label="На следующую неделю"), color=KeyboardButtonColor.PRIMARY)
+    keyboard.row()
+    keyboard.add(Text(label="Основное меню"), color=KeyboardButtonColor.SECONDARY)
+    return keyboard
+
+
 def make_keyboard_search_group(page, search_result=[]):
-    """Кнопки выбора группы"""
+    """ Клавиатура поиска по группе """
 
     keyboard = {
         "one_time": False
@@ -331,6 +339,8 @@ def make_keyboard_search_group(page, search_result=[]):
 
 
 def make_keyboard_main_menu():
+    """ Клавиатура выхода в основное меню """
+
     keyboard = Keyboard(one_time=False)
     keyboard.row()
     keyboard.add(Text(label="Основное меню"), color=KeyboardButtonColor.PRIMARY)
@@ -338,6 +348,8 @@ def make_keyboard_main_menu():
 
 
 def back_for_prep():
+    """ Клавиатура перехода к старту регистрации для преподавателей """
+
     keyboard = Keyboard(one_time=False)
     keyboard.row()
     keyboard.add(Text(label="Назад к институтам"), color=KeyboardButtonColor.PRIMARY)
@@ -345,43 +357,47 @@ def back_for_prep():
 
 
 def sep_space(name):
-    '''Обрезает длину института, если тот больше 40 символов'''
+    """ Обрезает длину института, если тот больше 40 символов """
+
     dlina = abs(len(name) - MAX_CALLBACK_RANGE)
     name = name[:len(name) - dlina - 5]
     return name
 
 
 def name_institutes(institutes=[]):
-    '''Храним список всех институтов'''
+    """ Храним список всех институтов """
+
     list_institutes = []
     for i in institutes:
         name = i['name']
         list_institutes.append(name)
     return list_institutes
 
-
 def name_courses(courses=[]):
-    '''Храним список всех институтов'''
+    """ Храним список всех курсов """
+
     list_courses = []
     for i in courses:
         name = i['name']
         list_courses.append(name)
     return list_courses
 
-
-def add_statistics(action: str):
-    date_now = datetime.now(TZ_IRKUTSK).strftime('%d.%m.%Y')
-    time_now = datetime.now(TZ_IRKUTSK).strftime('%H:%M')
-    storage.save_statistics(action=action, date=date_now, time=time_now)
-
-
 def name_groups(groups=[]):
-    '''Храним список всех групп'''
+    """ Храним список всех групп """
+
     list_groups = []
     for i in groups:
         name = i['name']
         list_groups.append(name)
     return list_groups
+
+
+def add_statistics(action: str):
+    """ Схоранение статистики   """
+
+    date_now = datetime.now(TZ_IRKUTSK).strftime('%d.%m.%Y')
+    time_now = datetime.now(TZ_IRKUTSK).strftime('%H:%M')
+    storage.save_statistics(action=action, date=date_now, time=time_now)
 
 
 # ==================== ПОИСК ==================== #
