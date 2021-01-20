@@ -1,6 +1,6 @@
-import postgre_storage
+from functions import postgre_storage
 import data_conversion
-from mongo_storage import MongodbService
+from functions.mongo_storage import MongodbService
 
 from pymongo.errors import PyMongoError
 import psycopg2
