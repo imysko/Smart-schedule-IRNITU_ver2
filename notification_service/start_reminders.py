@@ -1,4 +1,4 @@
-"""Запуск напоминаний от вк и tg в двух потокках"""
+"""Запуск напоминаний от вк и tg в двух потоках"""
 
 from threading import Thread
 import reminders_tg

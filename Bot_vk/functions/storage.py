@@ -86,17 +86,17 @@ class MongodbService(object):
         """возвращает список групп по слову из поиска"""
         return list(self._db.groups.find(filter={'name': {'$regex': f'.*{search_words}.*', "$options": '/i'}}))
 
-    # def get_search_list_prep(self, search_words: str) -> list:
-    #     """возвращает список преподавателей по слову из поиска"""
-    #     return list(self._db.prepods_schedule.find(
-    #         filter={'prep_short_name': {'$regex': f'.*{search_words}.*', "$options": '/i'}}))
-
-
-    # Поиск по ФИО преподавателя или его части
     def get_search_list_prep(self, search_words: str) -> list:
         """возвращает список преподавателей по слову из поиска"""
         return list(self._db.prepods_schedule.find(
-            filter={'prep': {'$regex': f"(^{search_words}\s.*)|(.*\s{search_words}\s.*)|(.*\s{search_words}$)", "$options": '/i'}}))
+            filter={'prep_short_name': {'$regex': f'.*{search_words}.*', "$options": '/i'}}))
+
+
+    # Поиск по ФИО преподавателя или его части
+    # def get_search_list_prep(self, search_words: str) -> list:
+    #     """возвращает список преподавателей по слову из поиска"""
+    #     return list(self._db.prepods_schedule.find(
+    #         filter={'prep': {'$regex': f"(^{search_words}\s.*)|(.*\s{search_words}\s.*)|(.*\s{search_words}$)", "$options": '/i'}}))
 
     def get_courses(self, institute='') -> list:
         """возвращает список курсов у определённого института"""
