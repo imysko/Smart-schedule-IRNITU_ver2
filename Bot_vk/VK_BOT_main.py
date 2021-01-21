@@ -45,6 +45,7 @@ map_image = "map.jpg"
 # Глобальные переменные
 Condition_request = {}
 prep_reg = {}
+aud_list = {}
 
 
 def get_notifications_status(time):
@@ -103,6 +104,7 @@ def add_statistics(action: str):
 class SuperStates(BaseStateGroup):
     SEARCH = 0
     PREP_REG = 1
+    AUD_SEARCH = 2
 
 
 @bot.on.message(state=SuperStates.SEARCH)  # Стейт для работы поиска
@@ -296,6 +298,78 @@ async def start_prep_reg(ans: Message):
     await ans.answer('Введите своё ФИО полностью.\n'
                      'Например: Корняков Михаил Викторович', keyboard=back_for_prep())
     await bot.state_dispenser.set(ans.peer_id, SuperStates.PREP_REG)
+
+@bot.on.message(text="Аудитории")  # Вхождение в стейт поиска аудитории
+async def start_aud_search(ans: Message):
+    """Вхождение в стейт поиска аудитории"""
+    global aud_list
+    chat_id = ans.from_id
+    aud_list[chat_id] = []
+    await ans.answer('Введите интересующую аудитрию\n'
+                     'Например: Ж-317, или Ж317', keyboard=make_keyboard_main_menu())
+
+    await bot.state_dispenser.set(ans.peer_id, SuperStates.AUD_SEARCH)
+
+
+@bot.on.message(state=SuperStates.AUD_SEARCH)  # Стейт поиска по аудиториям
+async def aud_search(ans: Message):
+    """Стейт поиска по аудиториям"""
+    global aud_list
+    chat_id = ans.from_id
+    message = ans.text
+    page = 1
+    aud_list[chat_id] = storage.get_schedule_aud(ans.text)
+    all_results = []
+    for i in aud_list[chat_id]:
+        all_results.append(i['aud'])
+
+    if len(all_results) == 1:
+        await ans.answer(f'Выберите неделю для аудитории {aud_list[chat_id][0].get("aud")}', keyboard=make_keyboard_choose_schedule())
+
+
+        
+    elif len(storage.get_schedule_aud(ans.text)) > 1 and aud_list[chat_id] == []:
+
+        for i in aud_list[chat_id]:
+            i['search'] = i.pop('aud')
+        await ans.answer(f'Выберите неделю для аудитории {aud_list[chat_id][0].get("aud")}',
+                         keyboard=make_keyboard_search_group(page, aud_list[chat_id]))
+
+
+
+    elif ans.text == "Дальше":
+        page = Condition_request[ans.from_id][0]
+        Condition_request[ans.from_id][0] += 1
+        request_word = Condition_request[ans.from_id][1]
+        request_group = storage.get_search_list(request_word)
+        request_prep = storage.get_search_list_prep(request_word)
+        for i in request_group:
+            i['search'] = i.pop('name')
+        for i in request_prep:
+            i['search'] = i.pop('prep_short_name')
+        request = request_group + request_prep
+        request = request[26 * page:]
+        keyboard = make_keyboard_search_group(page + 1, request)
+        await ans.answer(f"Страница {page + 1}", keyboard=keyboard)
+
+
+
+    # По аналогии со словом "<==Назад", только обратный процесс
+    elif ans.text == "<==Назад":
+        Condition_request[ans.from_id][0] -= 1
+        page = Condition_request[ans.from_id][0]
+        request_word = Condition_request[ans.from_id][1]
+        request_group = storage.get_search_list(request_word)
+        request_prep = storage.get_search_list_prep(request_word)
+        for i in request_group:
+            i['search'] = i.pop('name')
+        for i in request_prep:
+            i['search'] = i.pop('prep_short_name')
+        request = request_group + request_prep
+        request = request[26 * (page - 1):]
+        keyboard = make_keyboard_search_group(page, request)
+        await ans.answer(f"Страница {page}", keyboard=keyboard)
+
 
 
 @bot.on.message(state=SuperStates.PREP_REG)  # Стейт регистрации преподавателей
