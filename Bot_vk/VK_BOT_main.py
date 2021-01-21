@@ -589,7 +589,7 @@ async def search(ans: Message):
                 return
 
 @bot.on.message(text="Преподаватель") # Вхождение в стейт регистрации преподавателей
-async def prep_reg(ans: Message):
+async def start_prep_reg(ans: Message):
     """Вхождение в стейт регистрации преподавателей"""
     global prep_reg
 
@@ -606,8 +606,8 @@ async def prep_reg(ans: Message):
                      'Например: Корняков Михаил Викторович', keyboard=back_for_prep())
     await bot.state_dispenser.set(ans.peer_id, SuperStates.PREP_REG)
 
-@bot.on.message(state=SuperStates.PREP_REG)  #
-async def start_reg_prep(ans: Message):
+@bot.on.message(state=SuperStates.PREP_REG)  # Стейт регистрации преподавателей
+async def reg_prep(ans: Message):
     """Стейт регистрации преподавателей"""
     global prep_reg
     chat_id = ans.from_id
