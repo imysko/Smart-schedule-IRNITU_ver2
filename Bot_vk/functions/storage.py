@@ -93,10 +93,10 @@ class MongodbService(object):
 
 
     # Поиск по ФИО преподавателя или его части
-    # def get_search_list_prep(self, search_words: str) -> list:
-    #     """возвращает список преподавателей по слову из поиска"""
-    #     return list(self._db.prepods_schedule.find(
-    #         filter={'prep': {'$regex': f"(^{search_words}\s.*)|(.*\s{search_words}\s.*)|(.*\s{search_words}$)", "$options": '/i'}}))
+    def get_register_list_prep(self, search_words: str) -> list:
+        """возвращает список преподавателей по слову из поиска"""
+        return list(self._db.prepods_schedule.find(
+            filter={'prep': {'$regex': f"(^{search_words}\s.*)|(.*\s{search_words}\s.*)|(.*\s{search_words}$)", "$options": '/i'}}))
 
     def get_courses(self, institute='') -> list:
         """возвращает список курсов у определённого института"""

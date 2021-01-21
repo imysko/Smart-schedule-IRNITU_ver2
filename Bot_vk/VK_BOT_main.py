@@ -89,7 +89,7 @@ def make_keyboard_start_menu():
     keyboard.row()
     keyboard.add(Text(label="Расписание на завтра 🍎"), color=KeyboardButtonColor.SECONDARY)
     keyboard.row()
-    keyboard.add(Text(label="Напоминание 📣"), color=KeyboardButtonColor.PRIMARY)
+    keyboard.add(Text(label="Поиск 🔎"), color=KeyboardButtonColor.PRIMARY)
     keyboard.add(Text(label="Другое ⚡"), color=KeyboardButtonColor.PRIMARY)
     return keyboard
 
@@ -114,7 +114,7 @@ def make_keyboard_extra():
     keyboard.row()
     keyboard.add(Text(label="Список команд"), color=KeyboardButtonColor.PRIMARY)
     keyboard.row()
-    keyboard.add(Text(label="Поиск 🔎"), color=KeyboardButtonColor.SECONDARY)
+    keyboard.add(Text(label="Напоминание 📣"), color=KeyboardButtonColor.SECONDARY)
     keyboard.row()
     keyboard.add(Text(label="<==Назад"), color=KeyboardButtonColor.SECONDARY)
     return keyboard
@@ -412,8 +412,8 @@ class SuperStates(BaseStateGroup):
     PREP_REG = 1
 
 
-@bot.on.message(state=SuperStates.SEARCH)  # StateRule(SuperStates.AWKWARD_STATE)
-async def awkward_handler(ans: Message):
+@bot.on.message(state=SuperStates.SEARCH)  # Стейт для работы поиска
+async def search(ans: Message):
     '''Стейт для работы поиска'''
     # Глобальная переменная(словарь), которая хранит в себе 3 состояния (номер страницы; слово, которые находим; список соответствия для выхода по условию в стейте)
     global Condition_request
@@ -588,9 +588,27 @@ async def awkward_handler(ans: Message):
                 await ans.answer('Поиск не дал результатов 😕')
                 return
 
+@bot.on.message(text="Преподаватель") # Вхождение в стейт регистрации преподавателей
+async def prep_reg(ans: Message):
+    """Вхождение в стейт регистрации преподавателей"""
+    global prep_reg
 
-@bot.on.message(state=SuperStates.PREP_REG)  # StateRule(SuperStates.AWKWARD_STATE)
-async def awkward_handler(ans: Message):
+    chat_id = ans.from_id
+    message_inst = ans.text
+    prep_reg[chat_id] = []
+    storage.save_or_update_user(chat_id=chat_id, institute=message_inst, course='None')
+    await ans.answer(f'Вы выбрали: {message_inst}\n')
+    await ans.answer('📚Кто постигает новое, лелея старое,\n'
+                     'Тот может быть учителем.\n'
+                     'Конфуций')
+
+    await ans.answer('Введите своё ФИО полностью.\n'
+                     'Например: Корняков Михаил Викторович', keyboard=back_for_prep())
+    await bot.state_dispenser.set(ans.peer_id, SuperStates.PREP_REG)
+
+@bot.on.message(state=SuperStates.PREP_REG)  #
+async def start_reg_prep(ans: Message):
+    """Стейт регистрации преподавателей"""
     global prep_reg
     chat_id = ans.from_id
     message = ans.text
@@ -611,7 +629,7 @@ async def awkward_handler(ans: Message):
         prep_list = []
         prep_list_2 = []
         for name_unit in message.split():
-            for i in storage.get_search_list_prep(name_unit):
+            for i in storage.get_register_list_prep(name_unit):
                 prep_list.append(i['prep'])
             if prep_list and prep_list_2:
                 prep_list_2 = list(set(prep_list) & set(prep_list_2))
@@ -693,9 +711,9 @@ async def awkward_handler(ans: Message):
 
 # ==================== Обработка команд ==================== #
 # Входим в стейт по кодовому слову "Поиск"
-@bot.on.message(text="Поиск 🔎")
+@bot.on.message(text="Поиск 🔎") #Вхождение в стейт поиска
 async def die_handler(ans: Message):
-    """Стейт поиска"""
+    """Вхождение в стейт поиска"""
     # глобальная переменная(словарь), которая хранит в себе 3 состояния (номер страницы; слово, которые находим; список соответствия для выхода по условию в стейте)
     global Condition_request
     # ID пользователя
@@ -1029,26 +1047,6 @@ async def scheduler(ans: Message):
         add_statistics(action='Следующая')
 
 
-@bot.on.message(text="Преподаватель")
-async def die_handler2(ans: Message):
-    """Стейт поиска"""
-    global prep_reg
-
-    chat_id = ans.from_id
-    user = storage.get_user(chat_id)
-    message_inst = ans.text
-    prep_reg[chat_id] = []
-    storage.save_or_update_user(chat_id=chat_id, institute=message_inst)
-    await ans.answer(f'Вы выбрали: {message_inst}\n')
-    await ans.answer('📚Кто постигает новое, лелея старое,\n'
-                     'Тот может быть учителем.\n'
-                     'Конфуций')
-
-    await ans.answer('Введите своё ФИО полностью.\n'
-                     'Например: Корняков Михаил Викторович', keyboard=back_for_prep())
-    await bot.state_dispenser.set(ans.peer_id, SuperStates.PREP_REG)
-
-
 @bot.on.message()
 async def wrapper(ans: Message):
     '''Регистрация пользователя'''
@@ -1076,19 +1074,6 @@ async def wrapper(ans: Message):
             await ans.answer('Выберите курс.',
                              keyboard=make_keyboard_choose_course_vk(storage.get_courses(message_inst)))
 
-        # Пользователь выбрал Преподаватель
-
-        # elif message_inst == "Преподаватель":
-        #     storage.save_or_update_user(chat_id=chat_id, institute=message_inst)
-        #     await ans.answer(f'Вы выбрали: {message_inst}\n')
-        #     await ans.answer('📚Кто постигает новое, лелея старое,\n'
-        #                      'Тот может быть учителем.\n'
-        #                      'Конфуций')
-        #
-        #     await ans.answer('Введите своё ФИО полностью.\n'
-        #                      'Например: Корняков Михаил Викторович', keyboard=back_for_prep())
-        #
-        #     return
 
     # Если нажал кнопку Назад к институтам
     if message == "Назад к институтам" and not 'course' in user.keys():
@@ -1108,10 +1093,6 @@ async def wrapper(ans: Message):
     elif not 'course' in user.keys():
         institute = user['institute']
         course = storage.get_courses(institute)
-        # prep_list = []
-        # Тянем из базы список преподавателей, фамилии и инициалы, которые относятся к введенной фамилии
-        # if not course:
-        #     prep_list = storage.get_prep(message)
         # Если нажал кнопку курса
         if message in name_courses(course):
             # Записываем в базу данных выбранный курс
@@ -1121,31 +1102,6 @@ async def wrapper(ans: Message):
             await ans.answer(f'Вы выбрали: {message}\n')
             await ans.answer('Выберите группу.', keyboard=make_keyboard_choose_group_vk(groups))
             return
-
-            # Если в базе всего одна запись с такой фамилией, то регаем препода
-            # elif prep_list:
-            #     prep_name = prep_list[0]['prep']
-            #     await ans.answer(f'Вы успешно зарегистрировались, как {prep_name}!😊\n\n'
-            #                      'Для того чтобы пройти регистрацию повторно, напишите сообщение "Регистрация"\n',
-            #                      keyboard=make_keyboard_start_menu())
-            #     storage.save_or_update_user(chat_id=chat_id, course='None')
-            #     storage.save_or_update_user(chat_id=chat_id, group=prep_name)
-            #     return
-            # # Если преподавателя не нашли
-            # elif not prep_list:
-            #     # # Делим введенное фио на части и ищем по каждой в базе
-            #     # for name_unit in message.split():
-            #     #     prep_list = storage.get_search_list_prep(name_unit)
-            #     #     if prep_list:
-            #     #         keyboard = Keyboard(one_time=False)
-            #     #         for i in prep_list:
-            #     #             keyboard.row()
-            #     #             keyboard.add(Text(label=i['prep']), color=KeyboardButtonColor.PRIMARY)
-            #     #         await ans.answer('Возможно Вы имели в виду', keyboard=keyboard)
-            #     #         return
-
-            await ans.answer('Мы не смогли найти вас в базе преподавателей.\n'
-                             'Возможно вы неверно ввели своё ФИО.')
         else:
             await ans.answer('Не огорчай нас, мы же не просто так старались над клавиатурой 😼👇🏻')
         return
@@ -1214,7 +1170,10 @@ async def wrapper(ans: Message):
 
         group = storage.get_user(chat_id=chat_id)['group']
 
-        schedule = storage.get_schedule(group=group)['schedule']
+        if storage.get_user(chat_id=chat_id)['course'] == "None":
+            schedule = storage.get_schedule_prep(group=group)['schedule']
+        else:
+            schedule = storage.get_schedule(group=group)['schedule']
         if time > 0:
             reminders = calculating_reminder_times(schedule=schedule, time=int(time))
         else:
