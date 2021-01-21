@@ -1,3 +1,16 @@
+from datetime import datetime, date
+import pytz
+
+from functions import schedule_tools
+
+TIME_ZONE = pytz.timezone('Asia/Irkutsk')
+
+# Режим отладки (если включен, то не определяем текущее время - позволяет использовать старое расписание).
+DEBUG = True
+
+DAYS = schedule_tools.DAYS
+
+
 def convert_institutes(pg_institutes: list) -> list:
     """Преобразование формата институтов"""
     if not pg_institutes:
@@ -38,53 +51,31 @@ def convert_courses(mongo_groups: list) -> list:
     return courses
 
 
-DAYS = {
-    1: 'понедельник',
-    2: 'вторник',
-    3: 'среда',
-    4: 'четверг',
-    5: 'пятница',
-    6: 'суббота',
-    7: 'воскресенье'
-}
+def convert_teachers(pg_teachers: list) -> list:
+    """Преобразование формата преподавателей"""
 
+    if not pg_teachers:
+        raise ValueError('Данные не могут быть пустыми')
 
-def getting_week_and_day_of_week(pg_lesson: dict) -> tuple:
-    """Определение четности недели и дня недели"""
+    mongo_teachers = pg_teachers
+    for teacher in mongo_teachers:
+        teacher['prep'] = teacher['prep'].strip()
+        teacher['prep_short_name'] = teacher['prep_short_name'].strip()
 
-    if pg_lesson['everyweek'] == 2:
-        week = 'all'
-        day = DAYS[pg_lesson['day']]
-    else:
-        if pg_lesson['day'] <= 7:
-            week = 'even'
-            day = DAYS[pg_lesson['day']]
-        else:
-            week = 'odd'
-            day = DAYS[pg_lesson['day'] - 7]
+        # Удаляем пустого преподавателя
+        if not teacher['prep'] and not teacher['prep_short_name']:
+            mongo_teachers.remove(teacher)
 
-    return week, day
-
-
-def is_there_dict_with_value_in_list(input_list_with_dict: list, value: str) -> bool:
-    if not input_list_with_dict:
-        return False
-
-    for dict_item in input_list_with_dict:
-        if value in dict_item.values():
-            return True
-    return False
-
-
-def get_dict_key(d, value):
-    """Получение ключа по значеню словаря"""
-    for k, v in d.items():
-        if v == value:
-            return k
+    return mongo_teachers
 
 
 def convert_schedule(pg_schedule: list) -> list:
     """Преобразование формата расписания"""
+
+    date_now = datetime.now(TIME_ZONE).date()
+
+    if DEBUG:
+        date_now = date(2020, 12, 20)  # ДЛЯ ОТЛАДКИ!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     # Сортируем массив, чтобы одинаковые группы стояли рядом.
     pg_schedule = sorted(pg_schedule, key=lambda x: x['obozn'])
@@ -95,47 +86,40 @@ def convert_schedule(pg_schedule: list) -> list:
 
     item_index = 0  # Счетчик индекса.
     for item in pg_schedule:
-        week, day = getting_week_and_day_of_week(item)
 
-        # Определяем вид пары и подгруппу.
-        if item['nt'] == 1:
-            info = '( Лекция )'
-        elif item['nt'] == 2:
-            if item['ngroup']:
-                info = f'( Практ. подгруппа {item["ngroup"]} )'
-            else:
-                info = '( Практ. )'
-        else:
-            if item['ngroup']:
-                info = f'( Лаб. раб. подгруппа {item["ngroup"]} )'
-            else:
-                info = f'( Лаб. раб. )'
+        # Проверяем, что расписание действует
+        if date_now <= item['dend']:
 
-        lesson = {
-            'time': item['begtime'],
-            'week': week,
-            'name': item['title'],
-            'aud': item['auditories_verbose'],
-            'info': info,
-            'prep': item['preps'].strip(),
-        }
+            week, day = schedule_tools.getting_week_and_day_of_week(item)
 
-        # Смотрим, создал ли уже нужный день в расписании.
-        if not is_there_dict_with_value_in_list(schedule, day):
-            schedule.append(
-                {
-                    'day': day,
-                    'lessons': []
-                }
-            )
+            # Определяем вид пары и подгруппу.
+            info = schedule_tools.forming_info_data(nt=item['nt'], ngroup=item["ngroup"])
 
-        # Добавляем пары в нужный день.
-        for sch in schedule:
-            if sch['day'] == day:
-                if lesson in sch['lessons']:
+            lesson = {
+                'time': item['begtime'],
+                'week': week,
+                'name': item['title'],
+                'aud': item['auditories_verbose'],
+                'info': info,
+                'prep': item['preps'].strip().strip('.'),
+            }
+
+            # Смотрим, создал ли уже нужный день в расписании.
+            if not schedule_tools.is_there_dict_with_value_in_list(schedule, day):
+                schedule.append(
+                    {
+                        'day': day,
+                        'lessons': []
+                    }
+                )
+
+            # Добавляем пары в нужный день.
+            for sch in schedule:
+                if sch['day'] == day:
+                    if lesson in sch['lessons']:
+                        break
+                    sch['lessons'].append(lesson)
                     break
-                sch['lessons'].append(lesson)
-                break
 
         # Если нашлась другая группа или это последний элемент списка, сохраняем предыдущую.
         current_group = item['obozn']
@@ -144,20 +128,192 @@ def convert_schedule(pg_schedule: list) -> list:
             next_group = pg_schedule[item_index + 1]['obozn']
 
         if current_group != next_group or item_index == len(pg_schedule) - 1:
-            # Сортируем пары в дне по времени и подгруппе
+            # Проверяем, что расписание не пустое
+            if schedule:
+                # Сортируем пары в дне по времени и подгруппе
+                schedule_tools.sorting_lessons_in_a_day_by_time_and_ngroup(schedule=schedule)
+
+                all_schedule.append({
+                    'group': current_group,
+                    'schedule': schedule_tools.days_in_right_order(schedule)
+                })
+
+                # Обнуляем расписание для слудующей группы
+                schedule = []
+
+        item_index += 1  # Увеличиваем счетчик индекса.
+    return all_schedule
+
+
+def convert_teachers_schedule(pg_schedule: list) -> list:
+    """Преобразование формата расписания преподавателей"""
+
+    date_now = datetime.now(TIME_ZONE).date()
+    if DEBUG:
+        date_now = date(2020, 12, 20)  # ДЛЯ ОТЛАДКИ!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+    # Сортируем массив, чтобы одинаковые преподаватели стояли рядом.
+    pg_schedule = sorted(pg_schedule, key=lambda x: x['prep_id'])
+
+    all_schedule = []
+
+    schedule = []  # Расписание преподавателя.
+
+    item_index = 0  # Счетчик индекса.
+    for item in pg_schedule:
+
+        # Проверяем, что расписание действует
+        if date_now <= item['dend']:
+
+            week, day = schedule_tools.getting_week_and_day_of_week(item)
+
+            # Определяем вид пары и подгруппу.
+            info = schedule_tools.forming_info_data(nt=item['nt'], ngroup=item["ngroup"])
+
+            lesson = {
+                'time': item['begtime'],
+                'week': week,
+                'name': item['title'],
+                'aud': item['auditories_verbose'],
+                'info': info,
+                'groups': [item['obozn']],
+            }
+
+            # Смотрим, создал ли уже нужный день в расписании.
+            if not schedule_tools.is_there_dict_with_value_in_list(schedule, day):
+                schedule.append(
+                    {
+                        'day': day,
+                        'lessons': []
+                    }
+                )
+
+            # Добавляем пары в нужный день.
             for sch in schedule:
-                # Сортируем подгруппы
-                sch['lessons'] = sorted(sch['lessons'], key=lambda x: x['info'])
-                # Сортируем по времени
-                sch['lessons'] = sorted(sch['lessons'], key=lambda x: int(x['time'].replace(':', '')))
+                if sch['day'] == day:
+                    if lesson in sch['lessons']:
+                        break
 
-            all_schedule.append({
-                'group': current_group,
-                'schedule': sorted(schedule, key=lambda x: get_dict_key(DAYS, x['day']))
-            })
+                    # Проверяем есть ли уже занятие в расписании
+                    for day_lesson in sch['lessons']:
+                        # Если есть, добавляем только группу
+                        if lesson['time'] == day_lesson['time'] \
+                                and lesson['week'] == day_lesson['week'] \
+                                and lesson['name'] == day_lesson['name'] \
+                                and lesson['aud'] == day_lesson['aud'] \
+                                and lesson['info'] == day_lesson['info']:
+                            day_lesson['groups'].append(item['obozn'])
+                            break
+                    else:  # Если нет, добавляем полностью пару.
+                        sch['lessons'].append(lesson)
+                    break
 
-            # Обнуляем расписание для слудующей группы
-            schedule = []
+        # Если нашелся другой преподаватель или это последний элемент списка, сохраняем.
+        current_prep_id = item['prep_id']
+        next_prep_id = ''
+        if item_index != len(pg_schedule) - 1:
+            next_prep_id = pg_schedule[item_index + 1]['prep_id']
+
+        if current_prep_id != next_prep_id or item_index == len(pg_schedule) - 1:
+            # Проверяем, что расписание не пустое
+            if schedule:
+                schedule_tools.sorting_lessons_in_a_day_by_time_and_ngroup(schedule=schedule)
+
+                all_schedule.append({
+                    'prep': item['preps'].strip(),
+                    'prep_short_name': item['prep_short_name'].strip(),
+                    'pg_id': current_prep_id,
+                    'schedule': schedule_tools.days_in_right_order(schedule)
+                })
+
+                # Обнуляем расписание для слудующего преподавателя
+                schedule = []
+
+        item_index += 1  # Увеличиваем счетчик индекса.
+    return all_schedule
+
+
+def convert_auditories_schedule(pg_schedule: list) -> list:
+    """Преобразование формата расписания аудиторий"""
+
+    date_now = datetime.now(TIME_ZONE).date()
+    if DEBUG:
+        date_now = date(2020, 12, 20)  # ДЛЯ ОТЛАДКИ!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+    # Сортируем массив, чтобы одинаковые аудитории стояли рядом.
+    pg_schedule = sorted(pg_schedule, key=lambda x: x['auditories_verbose'])
+
+    all_schedule = []
+
+    schedule = []  # Расписание аудитории.
+
+    item_index = 0  # Счетчик индекса.
+    for item in pg_schedule:
+
+        # Проверяем, что расписание действует и указано название аудитории.
+        if date_now <= item['dend'] and item['auditories_verbose']:
+
+            week, day = schedule_tools.getting_week_and_day_of_week(item)
+
+            # Определяем вид пары и подгруппу.
+            info = schedule_tools.forming_info_data(nt=item['nt'], ngroup=item["ngroup"])
+
+            lesson = {
+                'time': item['begtime'],
+                'week': week,
+                'name': item['title'],
+                'info': info,
+                'prep': item['preps'].strip().strip('.'),
+                'groups': [item['obozn']],
+            }
+
+            # Смотрим, создал ли уже нужный день в расписании.
+            if not schedule_tools.is_there_dict_with_value_in_list(schedule, day):
+                schedule.append(
+                    {
+                        'day': day,
+                        'lessons': []
+                    }
+                )
+
+            # Добавляем пары в нужный день.
+            for sch in schedule:
+                if sch['day'] == day:
+                    if lesson in sch['lessons']:
+                        break
+
+                    # Проверяем есть ли уже занятие в расписании
+                    for day_lesson in sch['lessons']:
+                        # Если есть, добавляем только группу
+                        if lesson['time'] == day_lesson['time'] \
+                                and lesson['week'] == day_lesson['week'] \
+                                and lesson['name'] == day_lesson['name'] \
+                                and lesson['prep'] == day_lesson['prep'] \
+                                and lesson['info'] == day_lesson['info']:
+                            day_lesson['groups'].append(item['obozn'])
+                            break
+                    else:  # Если нет, добавляем полностью пару.
+                        sch['lessons'].append(lesson)
+                    break
+
+        # Если нашелся другой преподаватель или это последний элемент списка, сохраняем.
+        current_aud = item['auditories_verbose']
+        next_aud = ''
+        if item_index != len(pg_schedule) - 1:
+            next_aud = pg_schedule[item_index + 1]['auditories_verbose']
+
+        if current_aud != next_aud or item_index == len(pg_schedule) - 1:
+            # Проверяем, что расписание не пустое
+            if schedule:
+                schedule_tools.sorting_lessons_in_a_day_by_time_and_ngroup(schedule=schedule)
+
+                all_schedule.append({
+                    'aud': item['auditories_verbose'],
+                    'schedule': schedule_tools.days_in_right_order(schedule)
+                })
+
+                # Обнуляем расписание для слудующей аудитории
+                schedule = []
 
         item_index += 1  # Увеличиваем счетчик индекса.
     return all_schedule
