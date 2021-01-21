@@ -295,6 +295,17 @@ def make_keyboard_main_menu():
     keyboard.add(Text(label="Основное меню"), color=KeyboardButtonColor.PRIMARY)
     return keyboard
 
+def make_keyboard_search():
+    """ Клавиатура для поиска """
+
+    keyboard = Keyboard(one_time=False)
+    keyboard.row()
+    keyboard.add(Text(label="Группы и преподаватели"), color=KeyboardButtonColor.PRIMARY)
+    keyboard.row()
+    keyboard.add(Text(label="Аудитории"), color=KeyboardButtonColor.PRIMARY)
+    keyboard.row()
+    keyboard.add(Text(label="Основное меню"), color=KeyboardButtonColor.PRIMARY)
+    return keyboard
 
 def back_for_prep():
     """ Клавиатура перехода к старту регистрации для преподавателей """

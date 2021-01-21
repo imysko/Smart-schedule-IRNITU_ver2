@@ -7,11 +7,11 @@ from vkbottle_types import BaseStateGroup
 from functions.logger import logger
 from vkbottle import Keyboard, KeyboardButtonColor, Text
 from functions.find_week import find_week
-from keyboards import parametres_for_buttons_start_menu_vk, make_keyboard_choose_course_vk, make_keyboard_institutes,\
-    make_inline_keyboard_set_notifications, make_keyboard_nearlesson, make_keyboard_extra, make_keyboard_commands,\
-    make_keyboard_start_menu, make_inline_keyboard_notifications, sep_space, back_for_prep, make_keyboard_main_menu,\
-    make_keyboard_search_group, make_keyboard_choose_schedule, make_keyboard_choose_group_vk_page_2,\
-    make_keyboard_choose_group_vk
+from keyboards import parametres_for_buttons_start_menu_vk, make_keyboard_choose_course_vk, make_keyboard_institutes, \
+    make_inline_keyboard_set_notifications, make_keyboard_nearlesson, make_keyboard_extra, make_keyboard_commands, \
+    make_keyboard_start_menu, make_inline_keyboard_notifications, sep_space, back_for_prep, make_keyboard_main_menu, \
+    make_keyboard_search_group, make_keyboard_choose_schedule, make_keyboard_choose_group_vk_page_2, \
+    make_keyboard_choose_group_vk, make_keyboard_search
 from vk_api import vk_api, VkUpload
 import requests
 import os
@@ -299,6 +299,7 @@ async def start_prep_reg(ans: Message):
                      'Например: Корняков Михаил Викторович', keyboard=back_for_prep())
     await bot.state_dispenser.set(ans.peer_id, SuperStates.PREP_REG)
 
+
 @bot.on.message(text="Аудитории")  # Вхождение в стейт поиска аудитории
 async def start_aud_search(ans: Message):
     """Вхождение в стейт поиска аудитории"""
@@ -315,61 +316,149 @@ async def start_aud_search(ans: Message):
 async def aud_search(ans: Message):
     """Стейт поиска по аудиториям"""
     global aud_list
+    # Чат ID пользователя
     chat_id = ans.from_id
-    message = ans.text
+    # Данные ввода
+    data = ans.text
+    # Соответствия по группам
+    all_found_aud = []
+    # Соответствия для преподов
+    # Задаём состояние для первой страницы
     page = 1
-    aud_list[chat_id] = storage.get_schedule_aud(ans.text)
-    all_results = []
-    for i in aud_list[chat_id]:
-        all_results.append(i['aud'])
 
-    if len(all_results) == 1:
-        await ans.answer(f'Выберите неделю для аудитории {aud_list[chat_id][0].get("aud")}', keyboard=make_keyboard_choose_schedule())
+    # for item in data:
+    #     request_item = storage.get_schedule_aud(item)
+    #     prep_list = []
 
-
-        
-    elif len(storage.get_schedule_aud(ans.text)) > 1 and aud_list[chat_id] == []:
-
-        for i in aud_list[chat_id]:
+    # Условие для первичного входа пользователя
+    if storage.get_schedule_aud(ans.text) and aud_list[chat_id] == []:
+        # Результат запроса по аудам
+        request_aud = storage.get_schedule_aud(ans.text)
+        # Циклы нужны для общего поиска. Здесь мы удаляем старые ключи в обоих реквестах и создаём один общий ключ, как для групп, так и для преподов
+        for i in request_aud:
             i['search'] = i.pop('aud')
-        await ans.answer(f'Выберите неделю для аудитории {aud_list[chat_id][0].get("aud")}',
-                         keyboard=make_keyboard_search_group(page, aud_list[chat_id]))
+        # Записываем слово, которое ищем
+        request_word = ans.text
+        # Отправляем в функцию данные для создания клавиатуры
+        keyboard = make_keyboard_search_group(page, request_aud)
+        # Эти циклы записывают группы и преподов в нижнем регистре для удобной работы с ними
+        for i in request_aud:
+            all_found_aud.append(i['search'].lower())
+        # Формируем полный багаж для пользователя
+        list_search = [page, request_word, all_found_aud]
+        # Записываем все данные под ключом пользователя
+        aud_list[chat_id] = list_search
+        # Выводим результат поиска с клавиатурой (кливиатур формируется по поисковому запросу)
+        await ans.answer("Результат поиска", keyboard=keyboard)
 
 
 
+    # Здесь уловия для выхода в основное меню
+    elif ans.text == "Основное меню":
+        del aud_list[ans.from_id]
+        await ans.answer("Основное меню", keyboard=make_keyboard_start_menu())
+        await bot.state_dispenser.delete(ans.peer_id)
+
+    # Здесь уловие для слова "Дальше"
     elif ans.text == "Дальше":
-        page = Condition_request[ans.from_id][0]
-        Condition_request[ans.from_id][0] += 1
-        request_word = Condition_request[ans.from_id][1]
-        request_group = storage.get_search_list(request_word)
-        request_prep = storage.get_search_list_prep(request_word)
-        for i in request_group:
-            i['search'] = i.pop('name')
-        for i in request_prep:
-            i['search'] = i.pop('prep_short_name')
-        request = request_group + request_prep
-        request = request[26 * page:]
-        keyboard = make_keyboard_search_group(page + 1, request)
+        page = aud_list[ans.from_id][0]
+        aud_list[ans.from_id][0] += 1
+        request_word = aud_list[ans.from_id][1]
+        request_aud = storage.get_schedule_aud(request_word)
+        for i in request_aud:
+            i['search'] = i.pop('aud')
+        request_aud = request_aud[26 * page:]
+        keyboard = make_keyboard_search_group(page + 1, request_aud)
         await ans.answer(f"Страница {page + 1}", keyboard=keyboard)
-
-
 
     # По аналогии со словом "<==Назад", только обратный процесс
     elif ans.text == "<==Назад":
-        Condition_request[ans.from_id][0] -= 1
-        page = Condition_request[ans.from_id][0]
-        request_word = Condition_request[ans.from_id][1]
-        request_group = storage.get_search_list(request_word)
-        request_prep = storage.get_search_list_prep(request_word)
-        for i in request_group:
-            i['search'] = i.pop('name')
-        for i in request_prep:
-            i['search'] = i.pop('prep_short_name')
-        request = request_group + request_prep
-        request = request[26 * (page - 1):]
-        keyboard = make_keyboard_search_group(page, request)
+        aud_list[ans.from_id][0] -= 1
+        page = aud_list[ans.from_id][0]
+        request_word = aud_list[ans.from_id][1]
+        request_aud = storage.get_schedule_aud(request_word)
+        for i in request_aud:
+            i['search'] = i.pop('aud')
+        request_aud = request_aud[26 * (page - 1):]
+        keyboard = make_keyboard_search_group(page, request_aud)
         await ans.answer(f"Страница {page}", keyboard=keyboard)
 
+    # Условие для вывода расписания для группы и преподавателя по неделям
+    elif ('На текущую неделю' == data or 'На следующую неделю' == data):
+        group = aud_list[ans.from_id][1]
+        request_word = aud_list[ans.from_id][1]
+        request_aud = storage.get_schedule_aud(request_word)
+        # Если есть запрос для группы, то формируем расписание для группы, а если нет, то для препода
+        schedule = request_aud[0]
+
+        if schedule['schedule'] == []:
+            await ans.answer('Расписание временно недоступно\nПопробуйте позже⏱')
+            add_statistics(action=data)
+            return
+
+        schedule = schedule['schedule']
+        week = find_week()
+
+        # меняем неделю
+        if data == 'На следующую неделю':
+            week = 'odd' if week == 'even' else 'even'
+
+        week_name = 'четная' if week == 'odd' else 'нечетная'
+
+        aud = request_word
+
+        schedule_str = full_schedule_in_str(schedule, week=week, aud = aud)
+
+        await ans.answer(f'Расписание {group}\n'
+                         f'Неделя: {week_name}', keyboard=make_keyboard_start_menu())
+
+        for schedule in schedule_str:
+            await ans.answer(f'{schedule}')
+        await bot.state_dispenser.delete(ans.peer_id)
+
+    # Условия для завершения поиска, тобишь окончательный выбор пользователя
+    elif storage.get_schedule_aud(ans.text) and ans.text.lower() in (i for i in aud_list[ans.from_id][2]):
+        choose = ans.text
+        aud_list[ans.from_id][1] = choose
+        request_word = aud_list[ans.from_id][1]
+        request_aud = storage.get_schedule_aud(request_word)
+        for i in request_aud:
+            i['search'] = i.pop('aud')
+
+        await ans.answer(f"Выберите неделю для группы {choose}", keyboard=make_keyboard_choose_schedule())
+
+        return
+    # Общее исключения для разных случаем, которые могу сломать бота. (Практически копия первого IF)
+    else:
+        if aud_list[ans.from_id] and storage.get_schedule_aud(ans.text):
+
+            # Результат запроса по аудам
+            request_aud = storage.get_schedule_aud(ans.text)
+            # Циклы нужны для общего поиска. Здесь мы удаляем старые ключи в обоих реквестах и создаём один общий ключ, как для групп, так и для преподов
+            for i in request_aud:
+                i['search'] = i.pop('aud')
+            # Записываем слово, которое ищем
+            request_word = ans.text
+            # Отправляем в функцию данные для создания клавиатуры
+            keyboard = make_keyboard_search_group(page, request_aud)
+            # Эти циклы записывают группы и преподов в нижнем регистре для удобной работы с ними
+            for i in request_aud:
+                all_found_aud.append(i['search'].lower())
+            # Формируем полный багаж для пользователя
+            list_search = [page, request_word, all_found_aud]
+            # Записываем все данные под ключом пользователя
+            aud_list[chat_id] = list_search
+            # Выводим результат поиска с клавиатурой (кливиатур формируется по поисковому запросу)
+            await ans.answer("Результат поиска", keyboard=keyboard)
+
+        else:
+            if len(aud_list[chat_id]) == 3:
+                aud_list[chat_id][1] = ''
+                await ans.answer('Поиск не дал результатов 😕')
+                return
+            else:
+                await ans.answer('Поиск не дал результатов 😕')
+                return
 
 
 @bot.on.message(state=SuperStates.PREP_REG)  # Стейт регистрации преподавателей
@@ -477,7 +566,7 @@ async def reg_prep(ans: Message):
 
 # ==================== Обработка команд ==================== #
 # Входим в стейт по кодовому слову "Поиск"
-@bot.on.message(text="Поиск 🔎")  # Вхождение в стейт поиска
+@bot.on.message(text="Группы и преподаватели")  # Вхождение в стейт поиска
 async def die_handler(ans: Message):
     """Вхождение в стейт поиска"""
     # глобальная переменная(словарь), которая хранит в себе 3 состояния (номер страницы; слово, которые находим; список соответствия для выхода по условию в стейте)
@@ -973,6 +1062,10 @@ async def wrapper(ans: Message):
 
         add_statistics(action='help')
         return
+
+    elif 'Поиск 🔎' == message and user.get('group'):
+
+        await ans.answer('Выберите, что будем искать', keyboard=make_keyboard_search())
 
 
 
