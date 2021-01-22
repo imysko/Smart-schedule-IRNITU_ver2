@@ -213,7 +213,7 @@ def get_next_day_schedule_in_str_prep(schedule: list, week: str) -> str:
             return f'\n🍎{day}🍎\n{lessons_str}'
 
 
-def full_schedule_in_str_prep(schedule: list, week: str) -> list:
+def full_schedule_in_str_prep(schedule: list, week: str, aud = None) -> list:
     schedule_str = []
     day_now = datetime.now(TZ_IRKUTSK).strftime('%A').lower()
     for one_day in schedule:
@@ -235,17 +235,22 @@ def full_schedule_in_str_prep(schedule: list, week: str) -> list:
 
             else:
 
-                aud = lesson['aud']
-                if aud:
-                    aud = f'Аудитория: {aud}\n'
                 time = lesson['time']
                 info = lesson['info'].replace(",", "")
                 groups = ', '.join(lesson['groups'])
 
-                lessons_str += f'{time}\n' \
-                               f'{aud}' \
-                               f'👉{name}\n' \
-                               f'{info} {groups}'
+                if aud == None:
+                    lessons_str += f'{time}\n' \
+                                   f"Аудитория: {lesson['aud']}\n" \
+                                   f'👉{name}\n' \
+                                   f'{info} {groups}'
+                if aud:
+
+                    lessons_str += f'{time}\n' \
+                                   f'Аудитория: {aud}\n' \
+                                   f'👉{name}\n' \
+                                   f'{info} {groups}\n' \
+                                   f'{lesson["prep"]}'
 
             lessons_str += '\n-------------------------------------------\n'
 
