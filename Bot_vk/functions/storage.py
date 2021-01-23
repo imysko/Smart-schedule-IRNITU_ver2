@@ -114,6 +114,10 @@ class MongodbService(object):
         """возвращает расписание преподавателя"""
         return self._db.prepods_schedule.find_one(filter={'prep': group})
 
+    def get_schedule_aud(self, aud: str) -> list:
+        """возвращает расписание преподавателя"""
+        return list(self._db.auditories_schedule.find(filter={'aud': {'$regex': f'.*{aud}.*', "$options": '/i'}}))
+
     def save_statistics(self, action: str, date: str, time: str):
         statistics = {
             'action': action,
