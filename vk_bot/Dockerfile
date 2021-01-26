@@ -15,4 +15,4 @@ RUN apt update && \
 ENV LANG ru_RU.UTF-8
 ENV LC_ALL ru_RU.UTF-8
 
-CMD ["python3", "VK_BOT_main.py"]
+CMD ["python3", "vk_bot.py"]
