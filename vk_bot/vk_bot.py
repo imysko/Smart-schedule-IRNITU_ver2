@@ -5,16 +5,18 @@ from functions.near_lesson import get_near_lesson, get_now_lesson
 from functions.storage import MongodbService
 from vkbottle_types import BaseStateGroup
 from functions.logger import logger
-from vkbottle import Keyboard, KeyboardButtonColor, Text
 from functions.find_week import find_week
 from keyboards import *
-from collections import defaultdict
 from vk_api import vk_api, VkUpload
 import requests
 import os
 import pytz
 from datetime import datetime
 from vkbottle.bot import Bot, Message
+
+
+from tools import schedule_processing
+
 
 TOKEN = os.environ.get('VK')
 
@@ -222,9 +224,9 @@ async def search(ans: Message):
 
         await ans.answer(f'Расписание {group}\n'
                          f'Неделя: {week_name}', keyboard=make_keyboard_start_menu())
+        # Отправка расписания
+        await schedule_processing.sending_schedule(ans=ans, schedule_str=schedule_str)
 
-        for schedule in schedule_str:
-            await ans.answer(f'{schedule}')
         await bot.state_dispenser.delete(ans.peer_id)
 
     # Условия для завершения поиска, тобишь окончательный выбор пользователя
@@ -412,7 +414,7 @@ async def aud_search(ans: Message):
         schedule = request_aud[0]
 
         if schedule['schedule'] == []:
-            await ans.answer('Расписание временно недоступно\nПопробуйте позже⏱')
+            await schedule_processing.sending_schedule_is_not_available(ans=ans)
             add_statistics(action=data)
             return
 
@@ -432,8 +434,9 @@ async def aud_search(ans: Message):
         await ans.answer(f'Расписание {group}\n'
                          f'Неделя: {week_name}', keyboard=make_keyboard_start_menu())
 
-        for schedule in schedule_str:
-            await ans.answer(f'{schedule}')
+        # Отправка расписания
+        await schedule_processing.sending_schedule(ans=ans, schedule_str=schedule_str)
+
         await bot.state_dispenser.delete(ans.peer_id)
 
     # Условия для завершения поиска, тобишь окончательный выбор пользователя
@@ -713,8 +716,8 @@ async def scheduler(ans: Message):
         await ans.answer(f'Расписание {group}\n'
                          f'Неделя: {week_name}', keyboard=make_keyboard_start_menu())
 
-        for schedule in schedule_str:
-            await ans.answer(f'{schedule}')
+        # Отправка расписания
+        await schedule_processing.sending_schedule(ans=ans, schedule_str=schedule_str)
 
         add_statistics(action=data)
 
