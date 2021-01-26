@@ -952,13 +952,13 @@ async def wrapper(ans: Message):
                              keyboard=make_keyboard_choose_course_vk(storage.get_courses(message_inst)))
 
     # Если нажал кнопку Назад к институтам
-    if message == "Назад к институтам" and not 'course' in user.keys():
+    elif message == "Назад к институтам" and not 'course' in user.keys():
         await ans.answer('Выберите институт.', keyboard=make_keyboard_institutes(storage.get_institutes()))
         storage.delete_vk_user_or_userdata(chat_id=chat_id)
         return
 
     # Если нажал кнопку Назад к курсам
-    if message == "Назад к курсам" and not 'group' in user.keys():
+    elif message == "Назад к курсам" and not 'group' in user.keys():
 
         await ans.answer('Выберите курс.', keyboard=make_keyboard_choose_course_vk(
             storage.get_courses(storage.get_vk_user(chat_id=chat_id)['institute'])))
