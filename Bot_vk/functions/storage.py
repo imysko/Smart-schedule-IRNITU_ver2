@@ -46,38 +46,6 @@ class MongodbService(object):
         """возвращает список институтов"""
         return list(self._db.institutes.find())
 
-    # ======================================== VK ======================================== #
-
-    def save_data_vk(self, data: list):
-        """сохраняет список id в коллекцию user_id"""
-        return self._db.vk_data.insert_many(data)
-
-    def get_user(self, chat_id: int):
-        return self._db.VK_users.find_one(filter={'chat_id': chat_id})
-
-    def delete_user_or_userdata(self, chat_id: int, delete_only_course: bool = False):
-        """удаление пользователя или курса пользователя из базы данных"""
-        if delete_only_course:
-            return self._db.VK_users.update_one(filter={'chat_id': chat_id}, update={'$unset': {'course': ''}},
-                                                upsert=True)
-        return self._db.VK_users.delete_one(filter={'chat_id': chat_id})
-
-    def save_or_update_user(self, chat_id: int, institute='', course='', group='', notifications=0, reminders=[]):
-        """сохраняет или изменяет данные пользователя (коллекция users)"""
-        update = {'chat_id': chat_id, 'notifications': 0}
-        if institute:
-            update['institute'] = institute
-        if course:
-            update['course'] = course
-        if group:
-            update['group'] = group
-        if notifications:
-            update['notifications'] = notifications
-        if reminders:
-            update['reminders'] = reminders
-
-        return self._db.VK_users.update_one(filter={'chat_id': chat_id}, update={'$set': update}, upsert=True)
-
     def get_groups(self, institute: str, course: str) -> list:
         """возвращает список групп на определённом курсе в определеннои институте"""
         return list(self._db.groups.find(filter={'institute': {'$regex': f'{institute}*'}, 'course': course}))
@@ -91,12 +59,12 @@ class MongodbService(object):
         return list(self._db.prepods_schedule.find(
             filter={'prep_short_name': {'$regex': f'.*{search_words}.*', "$options": '/i'}}))
 
-
     # Поиск по ФИО преподавателя или его части
     def get_register_list_prep(self, search_words: str) -> list:
         """возвращает список преподавателей по слову из поиска"""
         return list(self._db.prepods_schedule.find(
-            filter={'prep': {'$regex': f"(^{search_words}\s.*)|(.*\s{search_words}\s.*)|(.*\s{search_words}$)", "$options": '/i'}}))
+            filter={'prep': {'$regex': f"(^{search_words}\s.*)|(.*\s{search_words}\s.*)|(.*\s{search_words}$)",
+                             "$options": '/i'}}))
 
     def get_courses(self, institute='') -> list:
         """возвращает список курсов у определённого института"""
@@ -118,7 +86,35 @@ class MongodbService(object):
         """возвращает расписание преподавателя"""
         return list(self._db.auditories_schedule.find(filter={'aud': {'$regex': f'.*{aud}.*', "$options": '/i'}}))
 
-    def save_statistics(self, action: str, date: str, time: str):
+    # ======================================== VK ======================================== #
+    def get_vk_user(self, chat_id: int):
+        """Получение пользователя VK"""
+        return self._db.VK_users.find_one(filter={'chat_id': chat_id})
+
+    def delete_vk_user_or_userdata(self, chat_id: int, delete_only_course: bool = False):
+        """Удаление пользователя или курса VK пользователя  из базы данных"""
+        if delete_only_course:
+            return self._db.VK_users.update_one(filter={'chat_id': chat_id}, update={'$unset': {'course': ''}},
+                                                upsert=True)
+        return self._db.VK_users.delete_one(filter={'chat_id': chat_id})
+
+    def save_or_update_vk_user(self, chat_id: int, institute='', course='', group='', notifications=0, reminders=[]):
+        """сохраняет или изменяет данные пользователя (коллекция users)"""
+        update = {'chat_id': chat_id, 'notifications': 0}
+        if institute:
+            update['institute'] = institute
+        if course:
+            update['course'] = course
+        if group:
+            update['group'] = group
+        if notifications:
+            update['notifications'] = notifications
+        if reminders:
+            update['reminders'] = reminders
+
+        return self._db.VK_users.update_one(filter={'chat_id': chat_id}, update={'$set': update}, upsert=True)
+
+    def save_vk_statistics(self, action: str, date: str, time: str):
         statistics = {
             'action': action,
             'date': date,
