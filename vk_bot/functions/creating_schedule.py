@@ -231,17 +231,20 @@ def full_schedule_in_str_prep(schedule: list, week: str, aud=None) -> list:
                 info = lesson['info'].replace(",", "")
                 groups = ', '.join(lesson['groups'])
 
-                if aud == None:
-                    lessons_str += f'{time}\n' \
-                                   f"Аудитория: {lesson['aud']}\n" \
-                                   f'👉{name}\n' \
-                                   f'{info} {groups}'
+                # Если выводим расписание аудитории, то не нужно выводить аудиторию в каждой паре.
                 if aud:
-                    lessons_str += f'{time}\n' \
-                                   f'Аудитория: {aud}\n' \
-                                   f'👉{name}\n' \
-                                   f'{info} {groups}\n' \
-                                   f'{lesson["prep"]}'
+                    aud_info = ''
+                else:
+                    aud_info = f'Аудитория: {lesson["aud"]}\n' if lesson["aud"] else ''
+
+                lessons_str += f'{time}\n' \
+                               f'{aud_info}' \
+                               f'👉{name}\n' \
+                               f'{info} {groups}'
+
+                # Если выводим расписание аудитории, то добавляем информацию о преподавателе.
+                if aud:
+                    lessons_str += f'\n{lesson["prep"]}'
 
             lessons_str += '\n-------------------------------------------\n'
 
