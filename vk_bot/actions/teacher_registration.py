@@ -1,11 +1,11 @@
 from vkbottle import Text, Keyboard, KeyboardButtonColor
 from vkbottle.bot import Bot, Message
-import keyboards
+from tools import keyboards
 
 prep_reg = {}
 
 
-async def start_prep_reg(bot: Bot, ans: Message, SuperStates, storage):
+async def start_prep_reg(bot: Bot, ans: Message, state, storage):
     """Вхождение в стейт регистрации преподавателей"""
 
     chat_id = ans.from_id
@@ -19,7 +19,7 @@ async def start_prep_reg(bot: Bot, ans: Message, SuperStates, storage):
 
     await ans.answer('Введите своё ФИО полностью.\n'
                      'Например: Корняков Михаил Викторович', keyboard=keyboards.back_for_prep())
-    await bot.state_dispenser.set(ans.peer_id, SuperStates.PREP_REG)
+    await bot.state_dispenser.set(ans.peer_id, state.PREP_REG)
 
 
 async def reg_prep(bot: Bot, ans: Message, storage):
