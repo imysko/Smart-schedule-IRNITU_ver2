@@ -478,7 +478,7 @@ async def aud_search(ans: Message):
                 await ans.answer('Поиск не дал результатов 😕', keyboard=make_keyboard_main_menu())
                 return
             else:
-                await ans.answer('Поиск не дал результатов 😕',keyboard=make_keyboard_main_menu())
+                await ans.answer('Поиск не дал результатов 😕', keyboard=make_keyboard_main_menu())
                 return
 
 
@@ -489,7 +489,15 @@ async def reg_prep(ans: Message):
     chat_id = ans.from_id
     message = ans.text
     page = 1
+
+    if message == "Назад к институтам":
+        await ans.answer('Назад к институтам', keyboard=make_keyboard_institutes(storage.get_institutes()))
+        storage.delete_vk_user_or_userdata(chat_id)
+        await bot.state_dispenser.delete(ans.peer_id)
+        return
+
     prep_list = storage.get_prep(message)
+
     if prep_list:
         prep_name = prep_list[0]['prep']
         storage.save_or_update_vk_user(chat_id=chat_id, group=prep_name, course='None')
@@ -535,11 +543,6 @@ async def reg_prep(ans: Message):
                              'Возможно вы неверно ввели своё ФИО.',
                              keyboard=make_keyboard_institutes(storage.get_institutes()))
             await bot.state_dispenser.delete(ans.peer_id)
-    if message == "Назад к институтам":
-        await ans.answer('Назад к институтам', keyboard=make_keyboard_institutes(storage.get_institutes()))
-        storage.delete_vk_user_or_userdata\
-            (chat_id)
-        await bot.state_dispenser.delete(ans.peer_id)
 
     if message == 'Далее':
         prep_reg[chat_id][0] += 1
@@ -564,7 +567,7 @@ async def reg_prep(ans: Message):
             keyboard.add(Text(label='Назад к институтам'), color=KeyboardButtonColor.PRIMARY)
         await ans.answer(f'Страница {page}', keyboard=keyboard)
 
-    if message == 'Назад':
+    elif message == 'Назад':
         prep_reg[chat_id][0] -= 1
         page = prep_reg[chat_id][0]
         prep_list_2 = prep_reg[chat_id][1]
