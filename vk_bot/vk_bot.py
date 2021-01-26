@@ -14,9 +14,8 @@ import pytz
 from datetime import datetime
 from vkbottle.bot import Bot, Message
 
-
 from tools import schedule_processing
-
+from actions import teacher_registration
 
 TOKEN = os.environ.get('VK')
 
@@ -282,21 +281,7 @@ async def search(ans: Message):
 
 @bot.on.message(text="Преподаватель")  # Вхождение в стейт регистрации преподавателей
 async def start_prep_reg(ans: Message):
-    """Вхождение в стейт регистрации преподавателей"""
-    global prep_reg
-
-    chat_id = ans.from_id
-    message_inst = ans.text
-    prep_reg[chat_id] = []
-    storage.save_or_update_vk_user(chat_id=chat_id, institute=message_inst, course='None')
-    await ans.answer(f'Вы выбрали: {message_inst}\n')
-    await ans.answer('📚Кто постигает новое, лелея старое,\n'
-                     'Тот может быть учителем.\n'
-                     'Конфуций')
-
-    await ans.answer('Введите своё ФИО полностью.\n'
-                     'Например: Корняков Михаил Викторович', keyboard=back_for_prep())
-    await bot.state_dispenser.set(ans.peer_id, SuperStates.PREP_REG)
+    await teacher_registration.start_prep_reg(bot=bot, ans=ans, SuperStates=SuperStates, storage=storage)
 
 
 @bot.on.message(text="Аудитории")  # Вхождение в стейт поиска аудитории
@@ -488,108 +473,7 @@ async def aud_search(ans: Message):
 @bot.on.message(state=SuperStates.PREP_REG)  # Стейт регистрации преподавателей
 async def reg_prep(ans: Message):
     """Стейт регистрации преподавателей"""
-    global prep_reg
-    chat_id = ans.from_id
-    message = ans.text
-    page = 1
-
-    if message == "Назад к институтам":
-        await ans.answer('Назад к институтам', keyboard=make_keyboard_institutes(storage.get_institutes()))
-        storage.delete_vk_user_or_userdata(chat_id)
-        await bot.state_dispenser.delete(ans.peer_id)
-        return
-
-    prep_list = storage.get_prep(message)
-
-    if prep_list:
-        prep_name = prep_list[0]['prep']
-        storage.save_or_update_vk_user(chat_id=chat_id, group=prep_name, course='None')
-        await bot.state_dispenser.delete(ans.peer_id)
-        await ans.answer(f'Вы успешно зарегистрировались, как {prep_name}!😊\n\n'
-                         'Для того чтобы пройти регистрацию повторно, напишите сообщение "Регистрация"\n',
-                         keyboard=make_keyboard_start_menu())
-        return
-
-    # Если преподавателя не нашли
-    elif not prep_list and not prep_reg[chat_id]:
-        # Делим введенное фио на части и ищем по каждой в базе
-        prep_list = []
-        prep_list_2 = []
-        for name_unit in message.split():
-            for i in storage.get_register_list_prep(name_unit):
-                prep_list.append(i['prep'])
-            if prep_list and prep_list_2:
-                prep_list_2 = list(set(prep_list) & set(prep_list_2))
-            elif prep_list and not (prep_list_2):
-                prep_list_2 = prep_list
-            prep_list = []
-        print(prep_list_2)
-        if not prep_list_2:
-            prep_list_2 = None
-        prep_list_reg = [page, prep_list_2]
-        prep_reg[chat_id] = prep_list_reg
-        if prep_reg[chat_id][1]:
-            prep_list_2 = prep_reg[chat_id][1]
-            keyboard = Keyboard(one_time=False)
-            for i in prep_list_2[:8]:
-                keyboard.row()
-                keyboard.add(Text(label=i), color=KeyboardButtonColor.PRIMARY)
-            keyboard.row()
-            keyboard.add(Text(label='Назад к институтам'), color=KeyboardButtonColor.PRIMARY)
-            if len(prep_list_2) > 8:
-                keyboard.add(Text(label='Далее'), color=KeyboardButtonColor.PRIMARY)
-            await ans.answer('Возможно Вы имели в виду', keyboard=keyboard)
-            return
-        else:
-            storage.delete_vk_user_or_userdata(chat_id)
-            await ans.answer('Мы не смогли найти вас в базе преподавателей.\n'
-                             'Возможно вы неверно ввели своё ФИО.',
-                             keyboard=make_keyboard_institutes(storage.get_institutes()))
-            await bot.state_dispenser.delete(ans.peer_id)
-
-    if message == 'Далее':
-        prep_reg[chat_id][0] += 1
-        page = prep_reg[chat_id][0]
-        prep_list_2 = prep_reg[chat_id][1]
-        keyboard = Keyboard(one_time=False)
-        if len(prep_list_2) - (page - 1) * 8 >= 8:
-            for i in prep_list_2[(page - 1) * 8:(page - 1) * 8 + 8]:
-                keyboard.row()
-                keyboard.add(Text(label=i['prep']), color=KeyboardButtonColor.PRIMARY)
-            keyboard.row()
-            keyboard.add(Text(label='Назад'), color=KeyboardButtonColor.PRIMARY)
-            keyboard.add(Text(label='Далее'), color=KeyboardButtonColor.PRIMARY)
-            keyboard.row()
-            keyboard.add(Text(label='Назад к институтам'), color=KeyboardButtonColor.PRIMARY)
-        else:
-            for i in prep_list_2[(page - 1) * 8: len(prep_list_2)]:
-                keyboard.row()
-                keyboard.add(Text(label=i), color=KeyboardButtonColor.PRIMARY)
-            keyboard.row()
-            keyboard.add(Text(label='Назад'), color=KeyboardButtonColor.PRIMARY)
-            keyboard.add(Text(label='Назад к институтам'), color=KeyboardButtonColor.PRIMARY)
-        await ans.answer(f'Страница {page}', keyboard=keyboard)
-
-    elif message == 'Назад':
-        prep_reg[chat_id][0] -= 1
-        page = prep_reg[chat_id][0]
-        prep_list_2 = prep_reg[chat_id][1]
-        keyboard = Keyboard(one_time=False)
-        for i in prep_list_2[(page - 1) * 8:page * 8]:
-            keyboard.row()
-            keyboard.add(Text(label=i), color=KeyboardButtonColor.PRIMARY)
-        keyboard.row()
-        if page != 1:
-            keyboard.add(Text(label='Назад'), color=KeyboardButtonColor.PRIMARY)
-            keyboard.add(Text(label='Далее'), color=KeyboardButtonColor.PRIMARY)
-            keyboard.row()
-            keyboard.add(Text(label='Назад к институтам'), color=KeyboardButtonColor.PRIMARY)
-        elif page == 1:
-            keyboard.add(Text(label='Назад к институтам'), color=KeyboardButtonColor.PRIMARY)
-            keyboard.add(Text(label='Далее'), color=KeyboardButtonColor.PRIMARY)
-        await ans.answer(f'Страница {page}', keyboard=keyboard)
-
-    return
+    await teacher_registration.reg_prep(bot=bot, ans=ans, storage=storage)
 
 
 # ==================== Обработка команд ==================== #
