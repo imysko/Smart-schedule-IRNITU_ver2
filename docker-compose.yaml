@@ -17,7 +17,7 @@ services:
 
 
   vk_bot:
-    build: Bot_vk/
+    build: vk_bot/
     restart: always
     container_name: vk_bot
     environment:
