@@ -13,7 +13,7 @@ import pytz
 from datetime import datetime
 from vkbottle.bot import Bot, Message
 
-from tools import schedule_processing
+from tools import schedule_processing, statistics
 from actions.registration import teacher_registration
 from actions.search import prep_and_group_search, aud_search
 
@@ -84,13 +84,6 @@ def name_groups(groups=[]):
     return list_groups
 
 
-def add_statistics(action: str):
-    """Схоранение статистики"""
-    date_now = datetime.now(TZ_IRKUTSK).strftime('%d.%m.%Y')
-    time_now = datetime.now(TZ_IRKUTSK).strftime('%H:%M')
-    storage.save_vk_statistics(action=action, date=date_now, time=time_now)
-
-
 # ==================== ПОИСК ==================== #
 
 class SuperStates(BaseStateGroup):
@@ -147,7 +140,7 @@ async def start_message(ans: Message):
     await ans.answer('Для начала пройдите небольшую регистрацию😉\n')
     await ans.answer('Выберите институт.', keyboard=make_keyboard_institutes(storage.get_institutes()))
 
-    add_statistics(action='start')
+    statistics.add(action='start', storage=storage, tz=TZ_IRKUTSK)
 
 
 # Команда Регистрация
@@ -160,7 +153,7 @@ async def registration(ans: Message):
     await ans.answer('Повторная регистрация😉\n')
     await ans.answer('Выберите институт.', keyboard=make_keyboard_institutes(storage.get_institutes()))
 
-    add_statistics(action='reg')
+    statistics.add(action='reg', storage=storage, tz=TZ_IRKUTSK)
 
 
 # Команда Карта
@@ -174,7 +167,7 @@ async def map(ans: Message):
     authorize.method("messages.send",
                      {"peer_id": chat_id, "attachment": f'photo{c["owner_id"]}_{c["id"]}', 'random_id': 0})
 
-    add_statistics(action='map')
+    statistics.add(action='map', storage=storage, tz=TZ_IRKUTSK)
 
 
 # Команда Авторы
@@ -191,7 +184,7 @@ async def authors(ans: Message):
                      'Будем рады 😉\n', keyboard=make_keyboard_start_menu()
                      )
 
-    add_statistics(action='authors')
+    statistics.add(action='authors', storage=storage, tz=TZ_IRKUTSK)
 
 
 @bot.on.message(text=content_types['text'])
@@ -202,7 +195,7 @@ async def scheduler(ans: Message):
 
     if 'Расписание 🗓' == data and user.get('group'):
         await ans.answer('Выберите период\n', keyboard=make_keyboard_choose_schedule())
-        add_statistics(action='Расписание')
+        statistics.add(action='Расписание', storage=storage, tz=TZ_IRKUTSK)
 
     if ('На текущую неделю' == data or 'На следующую неделю' == data) and user.get('group'):
         # Если курс нуль, тогда это преподаватель
@@ -214,7 +207,7 @@ async def scheduler(ans: Message):
             schedule = storage.get_schedule_prep(group=group)
         if schedule['schedule'] == []:
             await ans.answer('Расписание временно недоступно\nПопробуйте позже⏱')
-            add_statistics(action=data)
+            statistics.add(action=data, storage=storage, tz=TZ_IRKUTSK)
             return
 
         schedule = schedule['schedule']
@@ -237,7 +230,7 @@ async def scheduler(ans: Message):
         # Отправка расписания
         await schedule_processing.sending_schedule(ans=ans, schedule_str=schedule_str)
 
-        add_statistics(action=data)
+        statistics.add(action=data, storage=storage, tz=TZ_IRKUTSK)
 
 
 
@@ -252,7 +245,7 @@ async def scheduler(ans: Message):
         if not schedule:
             await ans.answer('Расписание временно недоступно🚫😣\n'
                              'Попробуйте позже⏱', keyboard=make_keyboard_start_menu())
-            add_statistics(action='Расписание на сегодня')
+            statistics.add(action='Расписание на сегодня', storage=storage, tz=TZ_IRKUTSK)
             return
         schedule = schedule['schedule']
         week = find_week()
@@ -265,7 +258,7 @@ async def scheduler(ans: Message):
             await ans.answer('Сегодня пар нет 😎')
             return
         await ans.answer(f'{schedule_one_day}')
-        add_statistics(action='Расписание на сегодня')
+        statistics.add(action='Расписание на сегодня', storage=storage, tz=TZ_IRKUTSK)
 
     elif 'Расписание на завтра 🍎' == data and user.get('group'):
         # Если курс нуль, тогда это преподаватель
@@ -278,7 +271,7 @@ async def scheduler(ans: Message):
         if not schedule:
             await ans.answer('Расписание временно недоступно🚫😣\n'
                              'Попробуйте позже⏱', keyboard=make_keyboard_start_menu())
-            add_statistics(action='Расписание на завтра')
+            statistics.add(action='Расписание на завтра', storage=storage, tz=TZ_IRKUTSK)
             return
         schedule = schedule['schedule']
         week = find_week()
@@ -299,11 +292,11 @@ async def scheduler(ans: Message):
             await ans.answer('Завтра пар нет 😎')
             return
         await ans.answer(f'{schedule_next_day}')
-        add_statistics(action='Расписание на завтра')
+        statistics.add(action='Расписание на завтра', storage=storage, tz=TZ_IRKUTSK)
 
     elif 'Ближайшая пара ⏱' in data and user.get('group'):
         await ans.answer('Ближайшая пара', keyboard=make_keyboard_nearlesson())
-        add_statistics(action='Ближайшая пара')
+        statistics.add(action='Ближайшая пара', storage=storage, tz=TZ_IRKUTSK)
         return
 
 
@@ -317,7 +310,7 @@ async def scheduler(ans: Message):
         if not schedule:
             await ans.answer('Расписание временно недоступно🚫😣\n'
                              'Попробуйте позже⏱', keyboard=make_keyboard_start_menu())
-            add_statistics(action='Текущая')
+            statistics.add(action='Текущая', storage=storage, tz=TZ_IRKUTSK)
             return
         schedule = schedule['schedule']
         week = find_week()
@@ -327,7 +320,7 @@ async def scheduler(ans: Message):
         # если пар нет
         if not now_lessons:
             await ans.answer('Сейчас пары нет, можете отдохнуть)', keyboard=make_keyboard_start_menu())
-            add_statistics(action='Текущая')
+            statistics.add(action='Текущая', storage=storage, tz=TZ_IRKUTSK)
             return
 
         now_lessons_str = ''
@@ -374,7 +367,7 @@ async def scheduler(ans: Message):
 
         await ans.answer(f'🧠Текущая пара🧠\n'f'{now_lessons_str}', keyboard=make_keyboard_start_menu())
 
-        add_statistics(action='Текущая')
+        statistics.add(action='Текущая', storage=storage, tz=TZ_IRKUTSK)
 
     elif 'Следующая' in data and user.get('group'):
         if storage.get_vk_user(chat_id=chat_id)['course'] != 'None':
@@ -386,7 +379,7 @@ async def scheduler(ans: Message):
         if not schedule:
             await ans.answer('Расписание временно недоступно🚫😣\n'
                              'Попробуйте позже⏱', keyboard=make_keyboard_start_menu())
-            add_statistics(action='Следующая')
+            statistics.add(action='Следующая', storage=storage, tz=TZ_IRKUTSK)
             return
         schedule = schedule['schedule']
         week = find_week()
@@ -396,7 +389,7 @@ async def scheduler(ans: Message):
         # если пар нет
         if not near_lessons:
             await ans.answer('Сегодня больше пар нет 😎', keyboard=make_keyboard_start_menu())
-            add_statistics(action='Следующая')
+            statistics.add(action='Следующая', storage=storage, tz=TZ_IRKUTSK)
             return
 
         near_lessons_str = ''
@@ -445,7 +438,7 @@ async def scheduler(ans: Message):
             near_lessons_str += '-------------------------------------------\n'
             await ans.answer(f'🧠Ближайшая пара🧠\n'f'{near_lessons_str}', keyboard=make_keyboard_start_menu())
 
-        add_statistics(action='Следующая')
+        statistics.add(action='Следующая', storage=storage, tz=TZ_IRKUTSK)
 
 
 @bot.on.message()
@@ -535,14 +528,14 @@ async def wrapper(ans: Message):
             time = 0
         await ans.answer(f'{get_notifications_status(time)}', keyboard=make_inline_keyboard_notifications())
 
-        add_statistics(action='Напоминание')
+        statistics.add(action='Напоминание', storage=storage, tz=TZ_IRKUTSK)
 
     elif 'Настройки' in message and user.get('group'):
         time = user['notifications']
         await ans.answer('Настройка напоминаний ⚙\n\n'
                          'Укажите за сколько минут до начала пары должно приходить сообщение',
                          keyboard=make_inline_keyboard_set_notifications(time))
-        add_statistics(action='Настройки')
+        statistics.add(action='Настройки', storage=storage, tz=TZ_IRKUTSK)
 
     elif '-' == message:
         time = user['notifications']
@@ -585,7 +578,7 @@ async def wrapper(ans: Message):
 
     elif 'Основное меню' in message and user.get('group'):
         await ans.answer('Основное меню', keyboard=make_keyboard_start_menu())
-        add_statistics(action='Основное меню')
+        statistics.add(action='Основное меню', storage=storage, tz=TZ_IRKUTSK)
 
     elif '<==Назад' == message and user.get('group'):
         await ans.answer('Основное меню', keyboard=make_keyboard_start_menu())
@@ -600,13 +593,12 @@ async def wrapper(ans: Message):
                          'Регистрация- повторная регистрация\n'
                          'Карта - карта университета', keyboard=make_keyboard_commands())
 
-        add_statistics(action='help')
+        statistics.add(action='help', storage=storage, tz=TZ_IRKUTSK)
         return
 
     elif 'Другое ⚡' == message and user.get('group'):
         await ans.answer('Другое', keyboard=make_keyboard_extra())
-
-        add_statistics(action='help')
+        statistics.add(action='Другое', storage=storage, tz=TZ_IRKUTSK)
         return
 
     elif 'Поиск 🔎' == message and user.get('group'):
@@ -620,11 +612,11 @@ async def wrapper(ans: Message):
                          'Авторы - список авторов \n'
                          'Регистрация - повторная регистрация\n'
                          'Карта - карта университета')
-        add_statistics(action='bullshit')
+        statistics.add(action='bullshit', storage=storage, tz=TZ_IRKUTSK)
 
 
 def main():
-    '''Запуск бота'''
+    """Запуск бота"""
     bot.run_forever()
 
 
