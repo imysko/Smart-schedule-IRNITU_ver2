@@ -14,7 +14,7 @@ from datetime import datetime
 from vkbottle.bot import Bot, Message
 
 from tools import schedule_processing
-from actions import teacher_registration
+from actions.registration import teacher_registration
 from actions.search import prep_and_group_search, aud_search
 
 TOKEN = os.environ.get('VK')
@@ -39,11 +39,6 @@ TZ_IRKUTSK = pytz.timezone('Asia/Irkutsk')
 authorize = vk_api.VkApi(token=TOKEN)
 upload = VkUpload(authorize)
 map_image = "map.jpg"
-
-# Глобальные переменные
-Condition_request = {}
-prep_reg = {}
-aud_list = {}
 
 
 def get_notifications_status(time):
@@ -91,7 +86,6 @@ def name_groups(groups=[]):
 
 def add_statistics(action: str):
     """Схоранение статистики"""
-
     date_now = datetime.now(TZ_IRKUTSK).strftime('%d.%m.%Y')
     time_now = datetime.now(TZ_IRKUTSK).strftime('%H:%M')
     storage.save_vk_statistics(action=action, date=date_now, time=time_now)
@@ -103,6 +97,18 @@ class SuperStates(BaseStateGroup):
     SEARCH = 0
     PREP_REG = 1
     AUD_SEARCH = 2
+
+
+@bot.on.message(state=SuperStates.PREP_REG)  # Стейт регистрации преподавателей
+async def reg_prep_handler(ans: Message):
+    """Стейт регистрации преподавателей"""
+    await teacher_registration.reg_prep(bot=bot, ans=ans, storage=storage)
+
+
+@bot.on.message(text="Группы и преподаватели")  # Вхождение в стейт поиска
+async def start_search_handler(ans: Message):
+    """Вхождение в стейт поиска"""
+    await prep_and_group_search.start_search(bot=bot, ans=ans, state=SuperStates, storage=storage)
 
 
 @bot.on.message(state=SuperStates.SEARCH)  # Стейт для работы поиска
@@ -126,19 +132,7 @@ async def aud_search_handler(ans: Message):
     await aud_search.search(bot=bot, ans=ans, storage=storage)
 
 
-@bot.on.message(state=SuperStates.PREP_REG)  # Стейт регистрации преподавателей
-async def reg_prep_handler(ans: Message):
-    """Стейт регистрации преподавателей"""
-    await teacher_registration.reg_prep(bot=bot, ans=ans, storage=storage)
-
-
 # ==================== Обработка команд ==================== #
-# Входим в стейт по кодовому слову "Поиск"
-@bot.on.message(text="Группы и преподаватели")  # Вхождение в стейт поиска
-async def start_search_handler(ans: Message):
-    """Вхождение в стейт поиска"""
-
-    await prep_and_group_search.start_search(bot=bot, ans=ans, state=SuperStates, storage=storage)
 
 
 # Команда start
