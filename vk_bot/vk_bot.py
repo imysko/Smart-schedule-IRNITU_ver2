@@ -1,7 +1,7 @@
 from actions import commands
 from functions.creating_schedule import full_schedule_in_str, full_schedule_in_str_prep, get_one_day_schedule_in_str, \
     get_next_day_schedule_in_str, get_one_day_schedule_in_str_prep, get_next_day_schedule_in_str_prep
-from functions.calculating_reminder_times import calculating_reminder_times
+
 from functions.near_lesson import get_near_lesson, get_now_lesson
 from functions.storage import MongodbService
 from vkbottle_types import BaseStateGroup
@@ -13,7 +13,7 @@ from datetime import datetime
 from vkbottle.bot import Bot, Message
 
 from tools import schedule_processing, statistics
-from actions.registration import teacher_registration
+from actions.registration import teacher_registration, student_registration
 from actions.search import prep_and_group_search, aud_search
 
 TOKEN = os.environ.get('VK')
@@ -38,47 +38,10 @@ TZ_IRKUTSK = pytz.timezone('Asia/Irkutsk')
 map_image = "photo-198983266_457239216"
 
 
-def get_notifications_status(time):
-    """Статус напоминаний"""
-    if not time or time == 0:
-        notifications_status = 'Напоминания выключены ❌\n' \
-                               'Воспользуйтесь настройками, чтобы включить'
-    else:
-        notifications_status = f'Напоминания включены ✅\n' \
-                               f'Сообщение придёт за {time} мин до начала пары 😇'
-    return notifications_status
-
-
 # ==================== Создание основных клавиатур и кнопок ==================== #
 
-def name_institutes(institutes=[]):
-    """ Храним список всех институтов """
-
-    list_institutes = []
-    for i in institutes:
-        name = i['name']
-        list_institutes.append(name)
-    return list_institutes
 
 
-def name_courses(courses=[]):
-    """ Храним список всех курсов """
-
-    list_courses = []
-    for i in courses:
-        name = i['name']
-        list_courses.append(name)
-    return list_courses
-
-
-def name_groups(groups=[]):
-    """ Храним список всех групп """
-
-    list_groups = []
-    for i in groups:
-        name = i['name']
-        list_groups.append(name)
-    return list_groups
 
 
 # ==================== ПОИСК ==================== #
@@ -411,176 +374,8 @@ async def scheduler(ans: Message):
 
 @bot.on.message()
 async def wrapper(ans: Message):
-    '''Регистрация пользователя'''
-    chat_id = ans.from_id
-    message_inst = ans.text
-    message = ans.text
-    user = storage.get_vk_user(chat_id)
-    print(user)
-
-    # Сохраняет в месседж полное название универ для корректного сравнения
-    institutes = name_institutes(storage.get_institutes())
-    for institute in institutes:
-        if len(message_inst) > 5:
-            if message_inst[:-5] in institute:
-                message_inst = institute
-
-    # Если пользователя нет в базе данных
-    if not user:
-        institutes = name_institutes(storage.get_institutes())
-        # Смотрим выбрал ли пользователь институт
-        if message_inst in institutes:
-            # Если да, то записываем в бд
-            storage.save_or_update_vk_user(chat_id=chat_id, institute=message_inst)
-            await ans.answer(f'Вы выбрали: {message_inst}\n')
-            await ans.answer('Выберите курс.',
-                             keyboard=make_keyboard_choose_course_vk(storage.get_courses(message_inst)))
-
-    # Если нажал кнопку Назад к институтам
-    elif message == "Назад к институтам" and not 'course' in user.keys():
-        await ans.answer('Выберите институт.', keyboard=make_keyboard_institutes(storage.get_institutes()))
-        storage.delete_vk_user_or_userdata(chat_id=chat_id)
-        return
-
-    # Если нажал кнопку Назад к курсам
-    elif message == "Назад к курсам" and not 'group' in user.keys():
-
-        await ans.answer('Выберите курс.', keyboard=make_keyboard_choose_course_vk(
-            storage.get_courses(storage.get_vk_user(chat_id=chat_id)['institute'])))
-        storage.delete_vk_user_or_userdata(chat_id=chat_id, delete_only_course=True)
-        return
-
-    # Регистрация после выбора института
-    elif not 'course' in user.keys():
-        institute = user['institute']
-        course = storage.get_courses(institute)
-        # Если нажал кнопку курса
-        if message in name_courses(course):
-            # Записываем в базу данных выбранный курс
-            storage.save_or_update_vk_user(chat_id=chat_id, course=message)
-            groups = storage.get_groups(institute=institute, course=message)
-            groups = name_groups(groups)
-            await ans.answer(f'Вы выбрали: {message}\n')
-            await ans.answer('Выберите группу.', keyboard=make_keyboard_choose_group_vk(groups))
-            return
-        else:
-            await ans.answer('Не огорчай нас, мы же не просто так старались над клавиатурой 😼👇🏻')
-        return
-
-    # Регистрация после выбора курса
-    elif not 'group' in user.keys():
-        institute = user['institute']
-        course = user['course']
-        groups = storage.get_groups(institute=institute, course=course)
-        groups = name_groups(groups)
-        # Если нажал кнопку группы
-        if message in groups:
-            # Записываем в базу данных выбранную группу
-            storage.save_or_update_vk_user(chat_id=chat_id, group=message)
-            await ans.answer('Вы успешно зарегистрировались!😊\n\n'
-                             'Для того чтобы пройти регистрацию повторно, напишите сообщение "Регистрация"\n'
-                             , keyboard=make_keyboard_start_menu())
-        else:
-            if message == "Далее":
-                await ans.answer('Выберите группу.', keyboard=make_keyboard_choose_group_vk_page_2(groups))
-            elif message == "Назад":
-                await ans.answer('Выберите группу.', keyboard=make_keyboard_choose_group_vk(groups))
-            else:
-                await ans.answer('Я очень сомневаюсь, что твоей группы нет в списке ниже 😉')
-        return
-
-    elif 'Напоминание 📣' in message and user.get('group'):
-        time = user['notifications']
-        # Проверяем стату напоминания
-        if not time:
-            time = 0
-        await ans.answer(f'{get_notifications_status(time)}', keyboard=make_inline_keyboard_notifications())
-
-        statistics.add(action='Напоминание', storage=storage, tz=TZ_IRKUTSK)
-
-    elif 'Настройки' in message and user.get('group'):
-        time = user['notifications']
-        await ans.answer('Настройка напоминаний ⚙\n\n'
-                         'Укажите за сколько минут до начала пары должно приходить сообщение',
-                         keyboard=make_inline_keyboard_set_notifications(time))
-        statistics.add(action='Настройки', storage=storage, tz=TZ_IRKUTSK)
-
-    elif '-' == message:
-        time = user['notifications']
-        if time == 0:
-            await ans.answer('Хочешь уйти в минус?', keyboard=make_inline_keyboard_set_notifications(time))
-            return
-        time -= 5
-        # Отнимаем и проверяем на положительность
-        if time <= 0:
-            time = 0
-        storage.save_or_update_vk_user(chat_id=chat_id, notifications=time)
-        await ans.answer('Минус 5 минут', keyboard=make_inline_keyboard_set_notifications(time))
-        return
-
-    elif '+' == message:
-        time = user['notifications']
-        time += 5
-        storage.save_or_update_vk_user(chat_id=chat_id, notifications=time)
-        await ans.answer('Плюс 5 минут', keyboard=make_inline_keyboard_set_notifications(time))
-
-    elif 'Сохранить' in message:
-
-        # Сохраняем статус в базу
-        time = user['notifications']
-
-        group = storage.get_vk_user(chat_id=chat_id)['group']
-
-        if storage.get_vk_user(chat_id=chat_id)['course'] == "None":
-            schedule = storage.get_schedule_prep(group=group)['schedule']
-        else:
-            schedule = storage.get_schedule(group=group)['schedule']
-        if time > 0:
-            reminders = calculating_reminder_times(schedule=schedule, time=int(time))
-        else:
-            reminders = []
-        storage.save_or_update_vk_user(chat_id=chat_id, notifications=time, reminders=reminders)
-
-        await ans.answer(f'{get_notifications_status(time)}', keyboard=make_keyboard_start_menu())
-
-
-    elif 'Основное меню' in message and user.get('group'):
-        await ans.answer('Основное меню', keyboard=make_keyboard_start_menu())
-        statistics.add(action='Основное меню', storage=storage, tz=TZ_IRKUTSK)
-
-    elif '<==Назад' == message and user.get('group'):
-        await ans.answer('Основное меню', keyboard=make_keyboard_start_menu())
-
-    elif 'Далее' in message:
-        await ans.answer('Далее', keyboard=make_keyboard_choose_group_vk_page_2())
-
-
-    elif 'Список команд' == message and user.get('group'):
-        await ans.answer('Список команд:\n'
-                         'Авторы - список авторов \n'
-                         'Регистрация- повторная регистрация\n'
-                         'Карта - карта университета', keyboard=make_keyboard_commands())
-
-        statistics.add(action='help', storage=storage, tz=TZ_IRKUTSK)
-        return
-
-    elif 'Другое ⚡' == message and user.get('group'):
-        await ans.answer('Другое', keyboard=make_keyboard_extra())
-        statistics.add(action='Другое', storage=storage, tz=TZ_IRKUTSK)
-        return
-
-    elif 'Поиск 🔎' == message and user.get('group'):
-
-        await ans.answer('Выберите, что будем искать', keyboard=make_keyboard_search())
-
-
-
-    else:
-        await ans.answer('Такому ещё не научили 😇, знаю только эти команды:\n'
-                         'Авторы - список авторов \n'
-                         'Регистрация - повторная регистрация\n'
-                         'Карта - карта университета')
-        statistics.add(action='bullshit', storage=storage, tz=TZ_IRKUTSK)
+    """Регистрация пользователя"""
+    await student_registration.start_student_reg(ans=ans, storage=storage, tz=TZ_IRKUTSK)
 
 
 def main():
