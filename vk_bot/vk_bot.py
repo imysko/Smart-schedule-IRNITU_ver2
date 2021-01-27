@@ -1,5 +1,3 @@
-from actions import commands
-from actions.main_menu import reminders
 from functions.creating_schedule import full_schedule_in_str, full_schedule_in_str_prep, get_one_day_schedule_in_str, \
     get_next_day_schedule_in_str, get_one_day_schedule_in_str_prep, get_next_day_schedule_in_str_prep
 
@@ -16,6 +14,8 @@ from vkbottle.bot import Bot, Message
 from tools import schedule_processing, statistics
 from actions.registration import teacher_registration, student_registration
 from actions.search import prep_and_group_search, aud_search
+from actions import commands
+from actions.main_menu import reminders, main_menu
 
 TOKEN = os.environ.get('VK')
 
@@ -31,6 +31,8 @@ content_types = {
              'Расписание на завтра 🍎', 'Следующая', 'Текущая']}
 
 content_commands = {'text': ['Начать', 'начать', 'Начало', 'start']}
+
+content_main_menu_buttons = {'text': ['Основное меню', '<==Назад', 'Список команд', 'Другое ⚡', 'Поиск 🔎']}
 
 content_reminders = {'text': ['Напоминание 📣', 'Настройки ⚙', '-', '+', 'Сохранить']}
 
@@ -370,6 +372,12 @@ async def scheduler(ans: Message):
             await ans.answer(f'🧠Ближайшая пара🧠\n'f'{near_lessons_str}', keyboard=make_keyboard_start_menu())
 
         statistics.add(action='Следующая', storage=storage, tz=TZ_IRKUTSK)
+
+
+@bot.on.message(text=content_main_menu_buttons['text'])
+async def main_menu_buttons_handler(ans: Message):
+    """Основные кнопки главног меню"""
+    await main_menu.processing_main_buttons(ans=ans, storage=storage, tz=TZ_IRKUTSK)
 
 
 @bot.on.message(text=content_reminders['text'])

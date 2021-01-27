@@ -4,7 +4,6 @@ from actions import commands
 from tools import keyboards, statistics
 
 
-
 def name_institutes(institutes=[]):
     """ Храним список всех институтов """
 
@@ -115,35 +114,8 @@ async def start_student_reg(ans: Message, storage, tz):
         return
 
 
-    elif 'Основное меню' in message and user.get('group'):
-        await ans.answer('Основное меню', keyboard=keyboards.make_keyboard_start_menu())
-        statistics.add(action='Основное меню', storage=storage, tz=tz)
-
-    elif '<==Назад' == message and user.get('group'):
-        await ans.answer('Основное меню', keyboard=keyboards.make_keyboard_start_menu())
-
     elif 'Далее' in message:
         await ans.answer('Далее', keyboard=keyboards.make_keyboard_choose_group_vk_page_2())
-
-
-    elif 'Список команд' == message and user.get('group'):
-        await ans.answer('Список команд:\n'
-                         'Авторы - список авторов \n'
-                         'Регистрация- повторная регистрация\n'
-                         'Карта - карта университета', keyboard=keyboards.make_keyboard_commands())
-
-        statistics.add(action='help', storage=storage, tz=tz)
-        return
-
-    elif 'Другое ⚡' == message and user.get('group'):
-        await ans.answer('Другое', keyboard=keyboards.make_keyboard_extra())
-        statistics.add(action='Другое', storage=storage, tz=tz)
-        return
-
-    elif 'Поиск 🔎' == message and user.get('group'):
-
-        await ans.answer('Выберите, что будем искать', keyboard=keyboards.make_keyboard_search())
-
 
 
     else:
