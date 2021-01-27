@@ -6,7 +6,7 @@ from functions import schedule_tools
 TIME_ZONE = pytz.timezone('Asia/Irkutsk')
 
 # Режим отладки (если включен, то не определяем текущее время - позволяет использовать старое расписание).
-DEBUG = True
+DEBUG = False
 
 DAYS = schedule_tools.DAYS
 
@@ -262,7 +262,7 @@ def convert_auditories_schedule(pg_schedule: list) -> list:
     for item in pg_schedule:
 
         # Проверяем, что расписание действует и указано название аудитории.
-        if date_now <= item['dend'] and item['auditories_verbose']:
+        if item['dbeg'] <= date_now <= item['dend'] and item['auditories_verbose']:
 
             week, day = schedule_tools.getting_week_and_day_of_week(item)
 

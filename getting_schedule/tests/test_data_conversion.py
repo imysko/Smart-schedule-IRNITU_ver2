@@ -619,7 +619,8 @@ class TestScheduleConversionMethods(unittest.TestCase):
         input_value = [
             {'obozn': '', 'begtime': '10:00', 'everyweek': 2,
              'preps': '', 'auditories_verbose': '', 'day': 1,
-             'nt': 1, 'title': '', 'ngroup': None, 'dend': datetime.date(2021, 4, 12)},
+             'nt': 1, 'title': '', 'ngroup': None, 'dbeg': datetime.date(2020, 3, 12),
+             'dend': datetime.date(2021, 4, 12)},
         ]
         example_expected_list = [
             {
@@ -647,7 +648,7 @@ class TestScheduleConversionMethods(unittest.TestCase):
         input_value = [
             {'obozn': 'АРбв-17-1', 'begtime': '10:00', 'everyweek': 1,
              'preps': '', 'auditories_verbose': '', 'day': 2,
-             'nt': 1, 'title': '', 'ngroup': None, 'dend': datetime.date(2021, 4, 12)},
+             'nt': 1, 'title': '', 'ngroup': None, 'dbeg': datetime.date(2020, 3, 12), 'dend': datetime.date(2021, 4, 12)},
         ]
 
         expected = 'АРбв-17-1'
@@ -661,7 +662,7 @@ class TestScheduleConversionMethods(unittest.TestCase):
         input_value = [
             {'obozn': '', 'begtime': '10:00', 'everyweek': 1,
              'preps': '', 'auditories_verbose': '', 'day': 2,
-             'nt': 1, 'title': '', 'ngroup': None, 'dend': datetime.date(2021, 4, 12)},
+             'nt': 1, 'title': '', 'ngroup': None, 'dbeg': datetime.date(2020, 3, 12), 'dend': datetime.date(2021, 4, 12)},
         ]
 
         expected = type([])
@@ -675,7 +676,7 @@ class TestScheduleConversionMethods(unittest.TestCase):
         input_value = [
             {'obozn': '', 'begtime': '10:00', 'everyweek': 2,
              'preps': '', 'auditories_verbose': '', 'day': 1,
-             'nt': 1, 'title': '', 'ngroup': None, 'dend': datetime.date(2021, 4, 12)},
+             'nt': 1, 'title': '', 'ngroup': None, 'dbeg': datetime.date(2020, 3, 12), 'dend': datetime.date(2021, 4, 12)},
         ]
         example_expected_list = [
             {
@@ -708,7 +709,7 @@ class TestScheduleConversionMethods(unittest.TestCase):
         input_value = [
             {'obozn': '', 'begtime': '10:00', 'everyweek': 1,
              'preps': '', 'auditories_verbose': '', 'day': 2,
-             'nt': 1, 'title': '', 'ngroup': None, 'dend': datetime.date(2021, 4, 12)},
+             'nt': 1, 'title': '', 'ngroup': None, 'dbeg': datetime.date(2020, 3, 12), 'dend': datetime.date(2021, 4, 12)},
         ]
 
         expected = 'вторник'
@@ -722,7 +723,7 @@ class TestScheduleConversionMethods(unittest.TestCase):
         input_value = [
             {'obozn': '', 'begtime': '10:00', 'everyweek': 1,
              'preps': '', 'auditories_verbose': '', 'day': 2,
-             'nt': 1, 'title': '', 'ngroup': None, 'dend': datetime.date(2021, 4, 12)},
+             'nt': 1, 'title': '', 'ngroup': None, 'dbeg': datetime.date(2020, 3, 12), 'dend': datetime.date(2021, 4, 12)},
         ]
 
         expected = type([])
@@ -736,7 +737,7 @@ class TestScheduleConversionMethods(unittest.TestCase):
         input_value = [
             {'obozn': '', 'begtime': '10:00', 'everyweek': 2,
              'preps': '', 'auditories_verbose': '', 'day': 1,
-             'nt': 1, 'title': '', 'ngroup': None, 'dend': datetime.date(2021, 4, 12)},
+             'nt': 1, 'title': '', 'ngroup': None, 'dbeg': datetime.date(2020, 3, 12), 'dend': datetime.date(2021, 4, 12)},
         ]
         example_expected_list = [
             {
@@ -797,6 +798,7 @@ class TestScheduleConversionMethods(unittest.TestCase):
              'nt': 1,
              'title': 'История искусств',
              'ngroup': None,
+             'dbeg': datetime.date(2020, 3, 12),
              'dend': datetime.date(2021, 4, 12)
              }
         ]
@@ -813,7 +815,7 @@ class TestScheduleConversionMethods(unittest.TestCase):
                                 'name': 'История искусств',
                                 'aud': 'И-311',
                                 'info': '( Лекция )',
-                                'prep': 'Лобацкая Раиса Моисеевна',
+                                'prep': ['Лобацкая Раиса Моисеевна'],
                             }
                         ]
                     }
@@ -837,6 +839,7 @@ class TestScheduleConversionMethods(unittest.TestCase):
              'nt': 3,
              'title': 'Минералогия ювелирных камней',
              'ngroup': 1,
+             'dbeg': datetime.date(2020, 3, 12),
              'dend': datetime.date(2021, 4, 12)}
         ]
         expected = [
@@ -852,7 +855,7 @@ class TestScheduleConversionMethods(unittest.TestCase):
                                 'name': 'Минералогия ювелирных камней',
                                 'aud': 'Е-215б',
                                 'info': '( Лаб. раб. подгруппа 1 )',
-                                'prep': 'Юрьева Лена Валерьевна',
+                                'prep': ['Юрьева Лена Валерьевна'],
                             }
                         ]
                     }
@@ -869,25 +872,25 @@ class TestScheduleConversionMethods(unittest.TestCase):
         input_value = [
             {'obozn': 'ТХб-18-2', 'begtime': '10:01', 'everyweek': 2,
              'preps': '', 'auditories_verbose': '', 'day': 3,
-             'nt': 1, 'title': 'les_1', 'ngroup': None, 'dend': datetime.date(2021, 4, 12)},
+             'nt': 1, 'title': 'les_1', 'ngroup': None, 'dbeg': datetime.date(2020, 3, 12), 'dend': datetime.date(2021, 4, 12)},
             {'obozn': 'ТХб-18-2', 'begtime': '10:03', 'everyweek': 2,
              'preps': '', 'auditories_verbose': '', 'day': 3,
-             'nt': 2, 'title': 'les_3', 'ngroup': 2, 'dend': datetime.date(2021, 4, 12)},
+             'nt': 2, 'title': 'les_3', 'ngroup': 2, 'dbeg': datetime.date(2020, 3, 12), 'dend': datetime.date(2021, 4, 12)},
             {'obozn': 'ТХб-18-2', 'begtime': '10:02', 'everyweek': 2,
              'preps': '', 'auditories_verbose': '', 'day': 3,
-             'nt': 2, 'title': 'les_2', 'ngroup': 1, 'dend': datetime.date(2021, 4, 12)},
+             'nt': 2, 'title': 'les_2', 'ngroup': 1, 'dbeg': datetime.date(2020, 3, 12), 'dend': datetime.date(2021, 4, 12)},
             {'obozn': 'ТХб-18-2', 'begtime': '10:04', 'everyweek': 2,
              'preps': '', 'auditories_verbose': '', 'day': 3,
-             'nt': 2, 'title': 'les_4', 'ngroup': None, 'dend': datetime.date(2021, 4, 12)},
+             'nt': 2, 'title': 'les_4', 'ngroup': None, 'dbeg': datetime.date(2020, 3, 12), 'dend': datetime.date(2021, 4, 12)},
             {'obozn': 'ТХб-18-2', 'begtime': '10:05', 'everyweek': 2,
              'preps': '', 'auditories_verbose': '', 'day': 3,
-             'nt': 3, 'title': 'les_5', 'ngroup': 1, 'dend': datetime.date(2021, 4, 12)},
+             'nt': 3, 'title': 'les_5', 'ngroup': 1, 'dbeg': datetime.date(2020, 3, 12), 'dend': datetime.date(2021, 4, 12)},
             {'obozn': 'ТХб-18-2', 'begtime': '10:06', 'everyweek': 2,
              'preps': '', 'auditories_verbose': '', 'day': 3,
-             'nt': 3, 'title': 'les_6', 'ngroup': 2, 'dend': datetime.date(2021, 4, 12)},
+             'nt': 3, 'title': 'les_6', 'ngroup': 2, 'dbeg': datetime.date(2020, 3, 12), 'dend': datetime.date(2021, 4, 12)},
             {'obozn': 'ТХб-18-2', 'begtime': '10:07', 'everyweek': 2,
              'preps': '', 'auditories_verbose': '', 'day': 3,
-             'nt': 3, 'title': 'les_7', 'ngroup': None, 'dend': datetime.date(2021, 4, 12)},
+             'nt': 3, 'title': 'les_7', 'ngroup': None, 'dbeg': datetime.date(2020, 3, 12), 'dend': datetime.date(2021, 4, 12)},
         ]
 
         expected = [
@@ -903,7 +906,7 @@ class TestScheduleConversionMethods(unittest.TestCase):
                                 'name': 'les_1',
                                 'aud': '',
                                 'info': '( Лекция )',
-                                'prep': '',
+                                'prep': [''],
                             },
                             {
                                 'time': '10:02',
@@ -911,7 +914,7 @@ class TestScheduleConversionMethods(unittest.TestCase):
                                 'name': 'les_2',
                                 'aud': '',
                                 'info': '( Практ. подгруппа 1 )',
-                                'prep': '',
+                                'prep': [''],
                             },
                             {
                                 'time': '10:03',
@@ -919,7 +922,7 @@ class TestScheduleConversionMethods(unittest.TestCase):
                                 'name': 'les_3',
                                 'aud': '',
                                 'info': '( Практ. подгруппа 2 )',
-                                'prep': '',
+                                'prep': [''],
                             },
                             {
                                 'time': '10:04',
@@ -927,7 +930,7 @@ class TestScheduleConversionMethods(unittest.TestCase):
                                 'name': 'les_4',
                                 'aud': '',
                                 'info': '( Практ. )',
-                                'prep': '',
+                                'prep': [''],
                             },
                             {
                                 'time': '10:05',
@@ -935,7 +938,7 @@ class TestScheduleConversionMethods(unittest.TestCase):
                                 'name': 'les_5',
                                 'aud': '',
                                 'info': '( Лаб. раб. подгруппа 1 )',
-                                'prep': '',
+                                'prep': [''],
                             },
                             {
                                 'time': '10:06',
@@ -943,7 +946,7 @@ class TestScheduleConversionMethods(unittest.TestCase):
                                 'name': 'les_6',
                                 'aud': '',
                                 'info': '( Лаб. раб. подгруппа 2 )',
-                                'prep': '',
+                                'prep': [''],
                             },
                             {
                                 'time': '10:07',
@@ -951,7 +954,7 @@ class TestScheduleConversionMethods(unittest.TestCase):
                                 'name': 'les_7',
                                 'aud': '',
                                 'info': '( Лаб. раб. )',
-                                'prep': '',
+                                'prep': [''],
                             }
                         ]
                     }
@@ -969,7 +972,7 @@ class TestScheduleConversionMethods(unittest.TestCase):
         input_value = [
             {'obozn': 'ТХб-18-2', 'begtime': '10:00', 'everyweek': 2,
              'preps': 'Пупкин Вася', 'auditories_verbose': 'Ж-313', 'day': 6,
-             'nt': 1, 'title': 'les_1', 'ngroup': None, 'dend': datetime.date(2021, 4, 12)}
+             'nt': 1, 'title': 'les_1', 'ngroup': None, 'dbeg': datetime.date(2020, 3, 12), 'dend': datetime.date(2021, 4, 12)}
         ]
 
         expected = [
@@ -985,7 +988,7 @@ class TestScheduleConversionMethods(unittest.TestCase):
                                 'name': 'les_1',
                                 'aud': 'Ж-313',
                                 'info': '( Лекция )',
-                                'prep': 'Пупкин Вася',
+                                'prep': ['Пупкин Вася'],
                             },
                         ]
                     }
@@ -1003,13 +1006,13 @@ class TestScheduleConversionMethods(unittest.TestCase):
         input_value = [
             {'obozn': 'ИБб-18-1', 'begtime': '10:00', 'everyweek': 2,
              'preps': '', 'auditories_verbose': '', 'day': 3,
-             'nt': 2, 'title': 'les_1', 'ngroup': 1, 'dend': datetime.date(2020, 2, 19)},
+             'nt': 2, 'title': 'les_1', 'ngroup': 1, 'dbeg': datetime.date(2020, 3, 12), 'dend': datetime.date(2020, 2, 19)},
             {'obozn': 'ИБб-18-1', 'begtime': '11:45', 'everyweek': 2,
              'preps': '', 'auditories_verbose': '', 'day': 3,
-             'nt': 1, 'title': 'les_2', 'ngroup': None, 'dend': datetime.date(2021, 1, 16)},
+             'nt': 1, 'title': 'les_2', 'ngroup': None, 'dbeg': datetime.date(2020, 3, 12), 'dend': datetime.date(2021, 1, 16)},
             {'obozn': 'ИБб-18-1', 'begtime': '10:00', 'everyweek': 2,
              'preps': '', 'auditories_verbose': '', 'day': 3,
-             'nt': 2, 'title': 'les_1', 'ngroup': 1, 'dend': datetime.date(2021, 1, 16)},
+             'nt': 2, 'title': 'les_1', 'ngroup': 1, 'dbeg': datetime.date(2020, 3, 12), 'dend': datetime.date(2021, 1, 16)},
         ]
 
         expected = [
@@ -1025,7 +1028,7 @@ class TestScheduleConversionMethods(unittest.TestCase):
                                 'name': 'les_1',
                                 'aud': '',
                                 'info': '( Практ. подгруппа 1 )',
-                                'prep': '',
+                                'prep': [''],
                             },
                             {
                                 'time': '11:45',
@@ -1033,7 +1036,7 @@ class TestScheduleConversionMethods(unittest.TestCase):
                                 'name': 'les_2',
                                 'aud': '',
                                 'info': '( Лекция )',
-                                'prep': '',
+                                'prep': [''],
                             }
                         ]
                     }
@@ -1052,7 +1055,7 @@ class TestScheduleConversionMethods(unittest.TestCase):
         input_value = [
             {'obozn': 'ИБб-18-1', 'begtime': '10:00', 'everyweek': 2,
              'preps': '', 'auditories_verbose': '', 'day': 3,
-             'nt': 2, 'title': 'les_1', 'ngroup': 1, 'dend': datetime.date(2021, 1, 16)},
+             'nt': 2, 'title': 'les_1', 'ngroup': 1, 'dbeg': datetime.date(2020, 3, 12), 'dend': datetime.date(2021, 1, 16)},
         ]
 
         expected = [
@@ -1068,7 +1071,7 @@ class TestScheduleConversionMethods(unittest.TestCase):
                                 'name': 'les_1',
                                 'aud': '',
                                 'info': '( Практ. подгруппа 1 )',
-                                'prep': '',
+                                'prep': [''],
                             },
                         ]
                     }
@@ -1087,7 +1090,7 @@ class TestScheduleConversionMethods(unittest.TestCase):
         input_value = [
             {'obozn': 'ИБб-18-1', 'begtime': '10:00', 'everyweek': 2,
              'preps': '', 'auditories_verbose': '', 'day': 3,
-             'nt': 2, 'title': 'les_1', 'ngroup': 1, 'dend': datetime.date(2021, 1, 16)},
+             'nt': 2, 'title': 'les_1', 'ngroup': 1, 'dbeg': datetime.date(2020, 3, 12), 'dend': datetime.date(2021, 1, 16)},
         ]
 
         expected = []
@@ -1108,15 +1111,15 @@ class TestTeachersScheduleConversionMethods(unittest.TestCase):
             {'obozn': 'ИБб-18-1', 'begtime': '10:00', 'everyweek': 2,
              'preps': 'Преп 1   ', 'prep_short_name': 'Преп В.В.    ',
              'prep_id': 123, 'auditories_verbose': '', 'day': 3,
-             'nt': 1, 'title': 'les_1', 'ngroup': None, 'dend': datetime.date(2021, 1, 16)},
+             'nt': 1, 'title': 'les_1', 'ngroup': None, 'dbeg': datetime.date(2020, 3, 12), 'dend': datetime.date(2021, 1, 16)},
             {'obozn': 'ИБб-18-2', 'begtime': '10:00', 'everyweek': 2,
              'preps': 'Преп 1   ', 'prep_short_name': 'Преп В.В.    ',
              'prep_id': 123, 'auditories_verbose': '', 'day': 3,
-             'nt': 1, 'title': 'les_1', 'ngroup': None, 'dend': datetime.date(2021, 1, 16)},
+             'nt': 1, 'title': 'les_1', 'ngroup': None, 'dbeg': datetime.date(2020, 3, 12), 'dend': datetime.date(2021, 1, 16)},
             {'obozn': 'ИБб-18-1', 'begtime': '11:45', 'everyweek': 2,
              'preps': 'Преп 1   ', 'prep_short_name': 'Преп В.В.    ',
              'prep_id': 123, 'auditories_verbose': '', 'day': 3,
-             'nt': 2, 'title': 'les_2', 'ngroup': 1, 'dend': datetime.date(2021, 1, 16)}
+             'nt': 2, 'title': 'les_2', 'ngroup': 1, 'dbeg': datetime.date(2020, 3, 12), 'dend': datetime.date(2021, 1, 16)}
         ]
 
         expected = [
@@ -1162,15 +1165,15 @@ class TestTeachersScheduleConversionMethods(unittest.TestCase):
             {'obozn': 'ИБб-18-1', 'begtime': '10:00', 'everyweek': 2,
              'preps': 'Преп 1   ', 'prep_short_name': 'Преп В.В.    ',
              'prep_id': 123, 'auditories_verbose': '', 'day': 3,
-             'nt': 1, 'title': 'les_1', 'ngroup': None, 'dend': datetime.date(2021, 1, 16)},
+             'nt': 1, 'title': 'les_1', 'ngroup': None, 'dbeg': datetime.date(2020, 3, 12), 'dend': datetime.date(2021, 1, 16)},
             {'obozn': 'ИБб-18-2', 'begtime': '10:00', 'everyweek': 2,
              'preps': 'Преп 2   ', 'prep_short_name': 'Преп 2 A.A.    ',
              'prep_id': 456, 'auditories_verbose': '', 'day': 3,
-             'nt': 1, 'title': 'les_2', 'ngroup': None, 'dend': datetime.date(2021, 1, 16)},
+             'nt': 1, 'title': 'les_2', 'ngroup': None, 'dbeg': datetime.date(2020, 3, 12), 'dend': datetime.date(2021, 1, 16)},
             {'obozn': 'ИБб-18-1', 'begtime': '11:45', 'everyweek': 2,
              'preps': 'Преп 1   ', 'prep_short_name': 'Преп В.В.    ',
              'prep_id': 123, 'auditories_verbose': '', 'day': 3,
-             'nt': 2, 'title': 'les_3', 'ngroup': 1, 'dend': datetime.date(2021, 1, 16)}
+             'nt': 2, 'title': 'les_3', 'ngroup': 1, 'dbeg': datetime.date(2020, 3, 12), 'dend': datetime.date(2021, 1, 16)}
         ]
 
         expected = [
@@ -1229,7 +1232,7 @@ class TestTeachersScheduleConversionMethods(unittest.TestCase):
         self.assertEqual(result, expected)
 
     @mock.patch('data_conversion.datetime')
-    def test_convert_schedule_PgScheduleWithNotValidDate_returnEmptyList(self, mock_dt):
+    def test_convert_teachers_schedule_PgScheduleWithNotValidDate_returnEmptyList(self, mock_dt):
         # Устанавливаем текущее время.
         mock_dt.now(TIME_ZONE).date = mock.Mock(return_value=datetime.date(2021, 1, 17))
 
@@ -1237,7 +1240,7 @@ class TestTeachersScheduleConversionMethods(unittest.TestCase):
             {'obozn': 'ИБб-18-1', 'begtime': '10:00', 'everyweek': 2,
              'preps': '', 'prep_short_name': '',
              'prep_id': 123, 'auditories_verbose': '', 'day': 3,
-             'nt': 2, 'title': 'les_1', 'ngroup': 1, 'dend': datetime.date(2021, 1, 16)},
+             'nt': 2, 'title': 'les_1', 'ngroup': 1, 'dbeg': datetime.date(2020, 3, 12), 'dend': datetime.date(2021, 1, 16)},
         ]
 
         expected = []
@@ -1246,7 +1249,7 @@ class TestTeachersScheduleConversionMethods(unittest.TestCase):
         self.assertEqual(result, expected)
 
 
-class TestTeachersScheduleConversionMethods(unittest.TestCase):
+class TesеAuditoriesScheduleConversionMethods(unittest.TestCase):
     """Расписание аудиторий."""
 
     @mock.patch('data_conversion.datetime')
@@ -1258,7 +1261,7 @@ class TestTeachersScheduleConversionMethods(unittest.TestCase):
             {'obozn': 'ИБб-18-1', 'begtime': '10:00', 'everyweek': 2,
              'preps': '', 'prep_short_name': '',
              'prep_id': 123, 'auditories_verbose': 'qwe', 'day': 3,
-             'nt': 2, 'title': 'les_1', 'ngroup': 1, 'dend': datetime.date(2021, 1, 16)},
+             'nt': 2, 'title': 'les_1', 'ngroup': 1, 'dbeg': datetime.date(2021, 3, 12), 'dend': datetime.date(2021, 1, 16)},
         ]
 
         expected = []
@@ -1275,7 +1278,7 @@ class TestTeachersScheduleConversionMethods(unittest.TestCase):
             {'obozn': 'ИБб-18-1', 'begtime': '10:00', 'everyweek': 2,
              'preps': '', 'prep_short_name': '',
              'prep_id': 123, 'auditories_verbose': '', 'day': 3,
-             'nt': 2, 'title': 'les_1', 'ngroup': 1, 'dend': datetime.date(2021, 1, 16)},
+             'nt': 2, 'title': 'les_1', 'ngroup': 1, 'dbeg': datetime.date(2021, 3, 12), 'dend': datetime.date(2021, 1, 16)},
         ]
 
         expected = []
@@ -1292,15 +1295,15 @@ class TestTeachersScheduleConversionMethods(unittest.TestCase):
             {'obozn': 'ИБб-18-1', 'begtime': '10:00', 'everyweek': 2,
              'preps': 'Преп 1   ', 'prep_short_name': 'Преп 1',
              'prep_id': '', 'auditories_verbose': 'Ж-313', 'day': 3,
-             'nt': 1, 'title': 'les_1', 'ngroup': None, 'dend': datetime.date(2021, 1, 16)},
+             'nt': 1, 'title': 'les_1', 'ngroup': None, 'dbeg': datetime.date(2020, 3, 12), 'dend': datetime.date(2021, 1, 16)},
             {'obozn': 'ИБб-18-2', 'begtime': '10:00', 'everyweek': 2,
              'preps': 'Преп 1   ', 'prep_short_name': 'Преп 1',
              'prep_id': '', 'auditories_verbose': 'Ж-313', 'day': 3,
-             'nt': 1, 'title': 'les_1', 'ngroup': None, 'dend': datetime.date(2021, 1, 16)},
+             'nt': 1, 'title': 'les_1', 'ngroup': None, 'dbeg': datetime.date(2020, 3, 12), 'dend': datetime.date(2021, 1, 16)},
             {'obozn': 'ИБб-18-1', 'begtime': '11:45', 'everyweek': 2,
              'preps': 'Преп 2   ', 'prep_short_name': 'Преп 2',
              'prep_id': '', 'auditories_verbose': 'Ж-313', 'day': 3,
-             'nt': 2, 'title': 'les_2', 'ngroup': 1, 'dend': datetime.date(2021, 1, 16)}
+             'nt': 2, 'title': 'les_2', 'ngroup': 1, 'dbeg': datetime.date(2020, 3, 12), 'dend': datetime.date(2021, 1, 16)}
         ]
 
         expected = [
@@ -1338,15 +1341,15 @@ class TestTeachersScheduleConversionMethods(unittest.TestCase):
             {'obozn': 'ИБб-18-1', 'begtime': '10:00', 'everyweek': 2,
              'preps': 'Преп 1   ', 'prep_short_name': 'Преп В.В.    ',
              'prep_id': 123, 'auditories_verbose': 'Ж-313', 'day': 3,
-             'nt': 1, 'title': 'les_1', 'ngroup': None, 'dend': datetime.date(2021, 1, 16)},
+             'nt': 1, 'title': 'les_1', 'ngroup': None, 'dbeg': datetime.date(2020, 3, 12), 'dend': datetime.date(2021, 1, 16)},
             {'obozn': 'ИБб-18-2', 'begtime': '11:45', 'everyweek': 2,
              'preps': 'Преп 2   ', 'prep_short_name': 'Преп 2 A.A.    ',
              'prep_id': 456, 'auditories_verbose': 'Ж-313', 'day': 3,
-             'nt': 1, 'title': 'les_2', 'ngroup': None, 'dend': datetime.date(2021, 1, 16)},
+             'nt': 1, 'title': 'les_2', 'ngroup': None, 'dbeg': datetime.date(2020, 3, 12), 'dend': datetime.date(2021, 1, 16)},
             {'obozn': 'ИБб-19-1', 'begtime': '10:00', 'everyweek': 2,
              'preps': 'Преп 1   ', 'prep_short_name': 'Преп В.В.    ',
              'prep_id': 123, 'auditories_verbose': 'A-110', 'day': 3,
-             'nt': 2, 'title': 'les_3', 'ngroup': 1, 'dend': datetime.date(2021, 1, 16)}
+             'nt': 2, 'title': 'les_3', 'ngroup': 1, 'dbeg': datetime.date(2020, 3, 12), 'dend': datetime.date(2021, 1, 16)}
         ]
 
         expected = [
