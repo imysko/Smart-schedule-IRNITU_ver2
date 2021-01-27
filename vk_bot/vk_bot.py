@@ -150,18 +150,8 @@ async def show_map_handler(ans: Message):
 
 # Команда Авторы
 @bot.on.message(text='Авторы')
-async def authors(ans: Message):
-    chat_id = ans.from_id
-    await ans.answer('Авторы проекта:\n'
-                     '-[id132677094|Алексей]\n'
-                     '-[id128784852|Султан]\n'
-                     '-[id169584462|Александр] \n'
-                     '-[id135615548|Владислав]\n'
-                     '-[id502898628|Кирилл]\n\n'
-                     'По всем вопросом и предложениям пишите нам в личные сообщения. '
-                     'Будем рады 😉\n', keyboard=make_keyboard_start_menu()
-                     )
-
+async def authors_handler(ans: Message):
+    await commands.authors(ans=ans)
     statistics.add(action='authors', storage=storage, tz=TZ_IRKUTSK)
 
 
