@@ -1,4 +1,5 @@
 from actions import commands
+from actions.main_menu import reminders
 from functions.creating_schedule import full_schedule_in_str, full_schedule_in_str_prep, get_one_day_schedule_in_str, \
     get_next_day_schedule_in_str, get_one_day_schedule_in_str_prep, get_next_day_schedule_in_str_prep
 
@@ -29,7 +30,9 @@ content_types = {
              'На следующую неделю',
              'Расписание на завтра 🍎', 'Следующая', 'Текущая']}
 
-сontent_commands = {'text': ['Начать', 'начать', 'Начало', 'start']}
+content_commands = {'text': ['Начать', 'начать', 'Начало', 'start']}
+
+content_reminders = {'text': ['Напоминание 📣', 'Настройки ⚙', '-', '+', 'Сохранить']}
 
 content_map = {'text': ['map', 'Карта', 'карта', 'Map', 'Схема', 'схема']}
 
@@ -39,9 +42,6 @@ map_image = "photo-198983266_457239216"
 
 
 # ==================== Создание основных клавиатур и кнопок ==================== #
-
-
-
 
 
 # ==================== ПОИСК ==================== #
@@ -89,7 +89,7 @@ async def aud_search_handler(ans: Message):
 
 
 # Команда start
-@bot.on.message(text=сontent_commands['text'])
+@bot.on.message(text=content_commands['text'])
 async def start_message_handler(ans: Message):
     chat_id = ans.from_id
     await commands.start(ans=ans, chat_id=chat_id, storage=storage)
@@ -370,6 +370,12 @@ async def scheduler(ans: Message):
             await ans.answer(f'🧠Ближайшая пара🧠\n'f'{near_lessons_str}', keyboard=make_keyboard_start_menu())
 
         statistics.add(action='Следующая', storage=storage, tz=TZ_IRKUTSK)
+
+
+@bot.on.message(text=content_reminders['text'])
+async def reminders_handler(ans: Message):
+    """Настройка напоминаний"""
+    await reminders.reminder_settings(ans=ans, storage=storage, tz=TZ_IRKUTSK)
 
 
 @bot.on.message()
