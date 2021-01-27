@@ -34,7 +34,7 @@ def full_schedule_in_str(schedule: list, week: str) -> list:
             else:
                 time = lesson['time']
                 info = lesson['info'].replace(",", "")
-                prep = lesson['prep']
+                prep = ', '.join(lesson['prep'])
                 aud = f'Аудитория: {lesson["aud"]}\n' if lesson["aud"] else ''
 
                 lessons_str += f'{time}\n' \
@@ -85,7 +85,7 @@ def get_one_day_schedule_in_str(schedule: list, week: str) -> str:
                         aud = f'Аудитория: {aud}\n'
                     time = lesson['time']
                     info = lesson['info'].replace(",", "")
-                    prep = lesson['prep']
+                    prep = ', '.join(lesson['prep'])
 
                     lessons_str += f'{time}\n' \
                                    f'{aud}' \
@@ -128,7 +128,7 @@ def get_next_day_schedule_in_str(schedule: list, week: str) -> str:
                         aud = f'Аудитория: {aud}\n'
                     time = lesson['time']
                     info = lesson['info'].replace(",", "")
-                    prep = lesson['prep']
+                    prep = ', '.join(lesson['prep'])
 
                     lessons_str += f'{time}\n' \
                                    f'{aud}' \
