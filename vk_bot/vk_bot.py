@@ -36,6 +36,32 @@ TZ_IRKUTSK = pytz.timezone('Asia/Irkutsk')
 map_image = "photo-198983266_457239216"
 
 
+# ==================== ПОИСК ==================== #
+
+@bot.on.message(text="Группы и преподаватели")
+async def start_search_handler(ans: Message):
+    """Вхождение в стейт поиска групп и преподавателей"""
+    await prep_and_group_search.start_search(bot=bot, ans=ans, state=SuperStates, storage=storage)
+
+
+@bot.on.message(state=SuperStates.SEARCH)
+async def search_handler(ans: Message):
+    """Стейт поиска групп и преподавателей"""
+    await prep_and_group_search.search(bot=bot, ans=ans, storage=storage)
+
+
+@bot.on.message(text="Аудитории")
+async def start_aud_search_handler(ans: Message):
+    """Вхождение в стейт поиска аудитории"""
+    await aud_search.start_search(bot=bot, ans=ans, state=SuperStates)
+
+
+@bot.on.message(state=SuperStates.AUD_SEARCH)
+async def aud_search_handler(ans: Message):
+    """Стейт поиска аудитории"""
+    await aud_search.search(bot=bot, ans=ans, storage=storage)
+
+
 # ==================== КОМАНДЫ ==================== #
 
 @bot.on.message(text=content_commands['text'])
@@ -90,32 +116,6 @@ async def main_menu_buttons_handler(ans: Message):
 async def reminders_handler(ans: Message):
     """Настройка напоминаний"""
     await reminders.reminder_settings(ans=ans, storage=storage, tz=TZ_IRKUTSK)
-
-
-# ==================== ПОИСК ==================== #
-
-@bot.on.message(text="Группы и преподаватели")
-async def start_search_handler(ans: Message):
-    """Вхождение в стейт поиска групп и преподавателей"""
-    await prep_and_group_search.start_search(bot=bot, ans=ans, state=SuperStates, storage=storage)
-
-
-@bot.on.message(state=SuperStates.SEARCH)
-async def search_handler(ans: Message):
-    """Стейт поиска групп и преподавателей"""
-    await prep_and_group_search.search(bot=bot, ans=ans, storage=storage)
-
-
-@bot.on.message(text="Аудитории")
-async def start_aud_search_handler(ans: Message):
-    """Вхождение в стейт поиска аудитории"""
-    await aud_search.start_search(bot=bot, ans=ans, state=SuperStates)
-
-
-@bot.on.message(state=SuperStates.AUD_SEARCH)
-async def aud_search_handler(ans: Message):
-    """Стейт поиска аудитории"""
-    await aud_search.search(bot=bot, ans=ans, storage=storage)
 
 
 # ==================== РЕГИСТРАЦИЯ ==================== #
