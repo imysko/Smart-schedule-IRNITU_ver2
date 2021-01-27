@@ -1,3 +1,4 @@
+from actions import commands
 from functions.creating_schedule import full_schedule_in_str, full_schedule_in_str_prep, get_one_day_schedule_in_str, \
     get_next_day_schedule_in_str, get_one_day_schedule_in_str_prep, get_next_day_schedule_in_str_prep
 from functions.calculating_reminder_times import calculating_reminder_times
@@ -130,16 +131,9 @@ async def aud_search_handler(ans: Message):
 
 # Команда start
 @bot.on.message(text=сontent_commands['text'])
-async def start_message(ans: Message):
+async def start_message_handler(ans: Message):
     chat_id = ans.from_id
-
-    # Проверяем есть пользователь в базе данных
-    if storage.get_vk_user(chat_id):
-        storage.delete_vk_user_or_userdata(chat_id)  # Удаляем пользвателя из базы данных
-    await ans.answer('Привет\n')
-    await ans.answer('Для начала пройдите небольшую регистрацию😉\n')
-    await ans.answer('Выберите институт.', keyboard=make_keyboard_institutes(storage.get_institutes()))
-
+    await commands.start(ans=ans, chat_id=chat_id, storage=storage)
     statistics.add(action='start', storage=storage, tz=TZ_IRKUTSK)
 
 
