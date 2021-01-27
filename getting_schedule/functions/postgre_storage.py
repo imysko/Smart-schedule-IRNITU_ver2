@@ -63,6 +63,7 @@ def get_schedule() -> list:
         with conn.cursor(cursor_factory=DictCursor) as cursor:
             cursor.execute("SELECT "
                            "groups.obozn, "
+                           "dbeg, "
                            "dend,"
                            "vacpara.begtime, "
                            "everyweek, "
@@ -77,9 +78,7 @@ def get_schedule() -> list:
                            "from schedule "
                            "join groups on schedule.group_id = groups.id_7 "
                            "join vacpara on schedule.para = vacpara.id_66 "
-
-                           "join prepods on schedule.teachers[1] = prepods.id_61 "
-
+                           "join prepods on prepods.id_61 = any(schedule.teachers) "
                            "join disciplines on schedule.discipline = disciplines.id ")
             rows = cursor.fetchall()
             groups = [dict(group) for group in rows]

@@ -75,11 +75,10 @@ def convert_schedule(pg_schedule: list) -> list:
     date_now = datetime.now(TIME_ZONE).date()
 
     if DEBUG:
-        date_now = date(2020, 12, 20)  # ДЛЯ ОТЛАДКИ!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        date_now = date(2020, 12, 25)  # ДЛЯ ОТЛАДКИ!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     # Сортируем массив, чтобы одинаковые группы стояли рядом.
     pg_schedule = sorted(pg_schedule, key=lambda x: x['obozn'])
-
     all_schedule = []
 
     schedule = []  # Расписание группы.
@@ -88,7 +87,7 @@ def convert_schedule(pg_schedule: list) -> list:
     for item in pg_schedule:
 
         # Проверяем, что расписание действует
-        if date_now <= item['dend']:
+        if item['dbeg'] <= date_now <= item['dend']:
 
             week, day = schedule_tools.getting_week_and_day_of_week(item)
 
@@ -101,7 +100,7 @@ def convert_schedule(pg_schedule: list) -> list:
                 'name': item['title'],
                 'aud': item['auditories_verbose'],
                 'info': info,
-                'prep': item['preps'].strip().strip('.'),
+                'prep': [item['preps'].strip().strip('.')],
             }
 
             # Смотрим, создал ли уже нужный день в расписании.
@@ -118,7 +117,19 @@ def convert_schedule(pg_schedule: list) -> list:
                 if sch['day'] == day:
                     if lesson in sch['lessons']:
                         break
-                    sch['lessons'].append(lesson)
+
+                    # Проверяем есть ли уже занятие в расписании
+                    for day_lesson in sch['lessons']:
+                        # Если есть, добавляем только преподавателя
+                        if lesson['time'] == day_lesson['time'] \
+                                and lesson['week'] == day_lesson['week'] \
+                                and lesson['name'] == day_lesson['name'] \
+                                and lesson['aud'] == day_lesson['aud'] \
+                                and lesson['info'] == day_lesson['info']:
+                            day_lesson['prep'].append(item['preps'].strip().strip('.'))
+                            break
+                    else:  # Если нет, добавляем полностью пару.
+                        sch['lessons'].append(lesson)
                     break
 
         # Если нашлась другая группа или это последний элемент списка, сохраняем предыдущую.
@@ -150,7 +161,7 @@ def convert_teachers_schedule(pg_schedule: list) -> list:
 
     date_now = datetime.now(TIME_ZONE).date()
     if DEBUG:
-        date_now = date(2020, 12, 20)  # ДЛЯ ОТЛАДКИ!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        date_now = date(2020, 12, 25)  # ДЛЯ ОТЛАДКИ!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     # Сортируем массив, чтобы одинаковые преподаватели стояли рядом.
     pg_schedule = sorted(pg_schedule, key=lambda x: x['prep_id'])
@@ -163,7 +174,7 @@ def convert_teachers_schedule(pg_schedule: list) -> list:
     for item in pg_schedule:
 
         # Проверяем, что расписание действует
-        if date_now <= item['dend']:
+        if item['dbeg'] <= date_now <= item['dend']:
 
             week, day = schedule_tools.getting_week_and_day_of_week(item)
 
