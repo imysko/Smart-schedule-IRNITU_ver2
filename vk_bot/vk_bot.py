@@ -7,8 +7,6 @@ from functions.storage import MongodbService
 from vkbottle_types import BaseStateGroup
 from functions.find_week import find_week
 from tools.keyboards import *
-from vk_api import vk_api, VkUpload
-import requests
 import os
 import pytz
 from datetime import datetime
@@ -37,9 +35,7 @@ content_map = {'text': ['map', 'Карта', 'карта', 'Map', 'Схема', 
 
 TZ_IRKUTSK = pytz.timezone('Asia/Irkutsk')
 
-authorize = vk_api.VkApi(token=TOKEN)
-upload = VkUpload(authorize)
-map_image = "map.jpg"
+map_image = "photo-198983266_457239216"
 
 
 def get_notifications_status(time):
@@ -147,15 +143,8 @@ async def registration_handler(ans: Message):
 
 # Команда Карта
 @bot.on.message(text=content_map['text'])
-async def map(ans: Message):
-    chat_id = ans.from_id
-    await ans.answer('Подождите, карта загружается...', keyboard=make_keyboard_start_menu())
-    server = authorize.method("photos.getMessagesUploadServer")
-    b = requests.post(server['upload_url'], files={'photo': open('map.jpg', 'rb')}).json()
-    c = authorize.method('photos.saveMessagesPhoto', {'photo': b['photo'], 'server': b['server'], 'hash': b['hash']})[0]
-    authorize.method("messages.send",
-                     {"peer_id": chat_id, "attachment": f'photo{c["owner_id"]}_{c["id"]}', 'random_id': 0})
-
+async def show_map_handler(ans: Message):
+    await commands.show_map(ans=ans, photo_vk_name=map_image)
     statistics.add(action='map', storage=storage, tz=TZ_IRKUTSK)
 
 

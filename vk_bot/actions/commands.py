@@ -19,3 +19,9 @@ async def registration(ans: Message, chat_id: int, storage):
         storage.delete_vk_user_or_userdata(chat_id)  # Удаляем пользвателя из базы данных
     await ans.answer('Повторная регистрация😉\n')
     await ans.answer('Выберите институт.', keyboard=keyboards.make_keyboard_institutes(storage.get_institutes()))
+
+
+async def show_map(ans: Message, photo_vk_name: str):
+    """Команда бота Карта"""
+    await ans.answer('Карта университета', attachment=f'{photo_vk_name}',
+                     keyboard=keyboards.make_keyboard_start_menu())
