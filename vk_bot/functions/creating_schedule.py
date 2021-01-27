@@ -15,7 +15,9 @@ def full_schedule_in_str(schedule: list, week: str) -> list:
     for one_day in schedule:
         day = one_day['day'].upper()
         lessons = one_day['lessons']
+        lesson_counter = 0  # Количество пар в дне.
         lessons_str = '-------------------------------------------\n'
+
         for lesson in lessons:
             name = lesson['name']
             time = lesson['time']
@@ -30,7 +32,6 @@ def full_schedule_in_str(schedule: list, week: str) -> list:
                                f'{name}'
 
             else:
-
                 time = lesson['time']
                 info = lesson['info'].replace(",", "")
                 prep = lesson['prep']
@@ -43,12 +44,16 @@ def full_schedule_in_str(schedule: list, week: str) -> list:
 
             lessons_str += '\n-------------------------------------------\n'
 
-        if day_now == day.lower():
-            schedule_str.append(f'\n🍏{day}🍏\n'
-                                f'{lessons_str}')
-        else:
-            schedule_str.append(f'\n🍎{day}🍎\n'
-                                f'{lessons_str}')
+            lesson_counter += 1
+
+        # Проверка, что день не пустой
+        if lesson_counter:
+            if day_now == day.lower():
+                schedule_str.append(f'\n🍏{day}🍏\n'
+                                    f'{lessons_str}')
+            else:
+                schedule_str.append(f'\n🍎{day}🍎\n'
+                                    f'{lessons_str}')
     return schedule_str
 
 
@@ -59,6 +64,7 @@ def get_one_day_schedule_in_str(schedule: list, week: str) -> str:
         if day.lower() == day_now.lower():
             lessons = one_day['lessons']
 
+            lesson_counter = 0  # Количество пар в дне.
             lessons_str = '-------------------------------------------\n'
             for lesson in lessons:
                 name = lesson['name']
@@ -86,8 +92,12 @@ def get_one_day_schedule_in_str(schedule: list, week: str) -> str:
                                    f'👉{name}\n' \
                                    f'{info} {prep}'
                 lessons_str += '\n-------------------------------------------\n'
+                lesson_counter += 1
 
-            return f'\n🍏{day}🍏\n{lessons_str}'
+            if lesson_counter:
+                return f'\n🍏{day}🍏\n{lessons_str}'
+            else:
+                return ''
 
 
 def get_next_day_schedule_in_str(schedule: list, week: str) -> str:
@@ -97,6 +107,7 @@ def get_next_day_schedule_in_str(schedule: list, week: str) -> str:
         if day.lower() == day_tomorrow.lower():
             lessons = one_day['lessons']
 
+            lesson_counter = 0  # Количество пар в дне.
             lessons_str = '-------------------------------------------\n'
             for lesson in lessons:
                 name = lesson['name']
@@ -124,8 +135,12 @@ def get_next_day_schedule_in_str(schedule: list, week: str) -> str:
                                    f'👉{name}\n' \
                                    f'{info} {prep}'
                 lessons_str += '\n-------------------------------------------\n'
+                lesson_counter += 1
 
-            return f'\n🍎{day}🍎\n{lessons_str}'
+            if lesson_counter:
+                return f'\n🍎{day}🍎\n{lessons_str}'
+            else:
+                return ''
 
 
 # Расписание для преподавателей
@@ -136,6 +151,7 @@ def get_one_day_schedule_in_str_prep(schedule: list, week: str) -> str:
         if day.lower() == day_now.lower():
             lessons = one_day['lessons']
 
+            lesson_counter = 0  # Количество пар в дне.
             lessons_str = '-------------------------------------------\n'
             for lesson in lessons:
                 name = lesson['name']
@@ -163,8 +179,12 @@ def get_one_day_schedule_in_str_prep(schedule: list, week: str) -> str:
                                    f'👉{name}\n' \
                                    f'{info} {groups}'
                 lessons_str += '\n-------------------------------------------\n'
+                lesson_counter += 1
 
-            return f'\n🍏{day}🍏\n{lessons_str}'
+            if lesson_counter:
+                return f'\n🍏{day}🍏\n{lessons_str}'
+            else:
+                return ''
 
 
 def get_next_day_schedule_in_str_prep(schedule: list, week: str) -> str:
@@ -174,6 +194,7 @@ def get_next_day_schedule_in_str_prep(schedule: list, week: str) -> str:
         if day.lower() == day_tomorrow.lower():
             lessons = one_day['lessons']
 
+            lesson_counter = 0  # Количество пар в дне.
             lessons_str = '-------------------------------------------\n'
             for lesson in lessons:
                 name = lesson['name']
@@ -201,8 +222,12 @@ def get_next_day_schedule_in_str_prep(schedule: list, week: str) -> str:
                                    f'👉{name}\n' \
                                    f'{info} {groups}'
                 lessons_str += '\n-------------------------------------------\n'
+                lesson_counter += 1
 
-            return f'\n🍎{day}🍎\n{lessons_str}'
+            if lesson_counter:
+                return f'\n🍎{day}🍎\n{lessons_str}'
+            else:
+                return ''
 
 
 def full_schedule_in_str_prep(schedule: list, week: str, aud=None) -> list:
@@ -211,6 +236,7 @@ def full_schedule_in_str_prep(schedule: list, week: str, aud=None) -> list:
     for one_day in schedule:
         day = one_day['day'].upper()
         lessons = one_day['lessons']
+        lesson_counter = 0  # Количество пар в дне.
         lessons_str = '-------------------------------------------\n'
         for lesson in lessons:
             name = lesson['name']
@@ -247,12 +273,14 @@ def full_schedule_in_str_prep(schedule: list, week: str, aud=None) -> list:
                     lessons_str += f'\n{lesson["prep"]}'
 
             lessons_str += '\n-------------------------------------------\n'
+            lesson_counter += 1
 
-        if day_now == day.lower():
-            schedule_str.append(f'\n🍏{day}🍏\n'
-                                f'{lessons_str}')
-        else:
-            schedule_str.append(f'\n🍎{day}🍎\n'
-                                f'{lessons_str}')
+        if lesson_counter:
+            if day_now == day.lower():
+                schedule_str.append(f'\n🍏{day}🍏\n'
+                                    f'{lessons_str}')
+            else:
+                schedule_str.append(f'\n🍎{day}🍎\n'
+                                    f'{lessons_str}')
 
     return schedule_str
