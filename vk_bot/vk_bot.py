@@ -139,14 +139,9 @@ async def start_message_handler(ans: Message):
 
 # Команда Регистрация
 @bot.on.message(text='Регистрация')
-async def registration(ans: Message):
+async def registration_handler(ans: Message):
     chat_id = ans.from_id
-    # Проверяем есть пользователь в базе данных
-    if storage.get_vk_user(chat_id):
-        storage.delete_vk_user_or_userdata(chat_id)  # Удаляем пользвателя из базы данных
-    await ans.answer('Повторная регистрация😉\n')
-    await ans.answer('Выберите институт.', keyboard=make_keyboard_institutes(storage.get_institutes()))
-
+    await commands.registration(ans=ans, chat_id=chat_id, storage=storage)
     statistics.add(action='reg', storage=storage, tz=TZ_IRKUTSK)
 
 
