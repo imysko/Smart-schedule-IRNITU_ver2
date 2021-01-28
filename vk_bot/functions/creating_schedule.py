@@ -266,7 +266,7 @@ def full_schedule_in_str_prep(schedule: list, week: str, aud=None) -> list:
 
                 # Если выводим расписание аудитории, то добавляем информацию о преподавателе.
                 if aud:
-                    lessons_str += f'\n{lesson["prep"]}'
+                    lessons_str += f"\n{', '.join(lesson['prep'])}"
 
             lessons_str += '\n-------------------------------------------\n'
             lesson_counter += 1
