@@ -78,10 +78,10 @@ def get_schedule() -> list:
                            "from schedule "
                            "join groups on schedule.group_id = groups.id_7 "
                            "join vacpara on schedule.para = vacpara.id_66 "
-                           "join prepods on prepods.id_61 = any(schedule.teachers) "
+                           "left join prepods on prepods.id_61 = any(schedule.teachers) "
                            "join disciplines on schedule.discipline = disciplines.id "
-                           
-                           "join auditories on auditories.id_60 = any(schedule.auditories)")
+                            
+                           "left join auditories on auditories.id_60 = any(schedule.auditories)")
             rows = cursor.fetchall()
             groups = [dict(group) for group in rows]
             return groups

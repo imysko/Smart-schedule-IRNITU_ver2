@@ -100,7 +100,7 @@ def convert_schedule(pg_schedule: list) -> list:
                 'name': item['title'],
                 'aud': [item['auditories_verbose']],
                 'info': info,
-                'prep': [item['preps'].strip().strip('.')],
+                'prep': [item['preps'].strip().strip('.') if item['preps'] else ''],
             }
 
             # Смотрим, создал ли уже нужный день в расписании.
@@ -126,7 +126,8 @@ def convert_schedule(pg_schedule: list) -> list:
                                 and lesson['name'] == day_lesson['name'] \
                                 and lesson['info'] == day_lesson['info']:
                             if lesson['aud'] == day_lesson['aud']:
-                                day_lesson['prep'].append(item['preps'].strip().strip('.'))
+                                if item['preps']:
+                                    day_lesson['prep'].append(item['preps'].strip().strip('.'))
                             elif lesson['prep'] == day_lesson['prep']:
                                 day_lesson['aud'].append(item['auditories_verbose'])
                             break
@@ -164,6 +165,9 @@ def convert_teachers_schedule(pg_schedule: list) -> list:
     date_now = datetime.now(TIME_ZONE).date()
     if DEBUG:
         date_now = date(2020, 12, 25)  # ДЛЯ ОТЛАДКИ!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+    # Убираем из расписания преподавателей, которые None
+    pg_schedule = [item for item in pg_schedule if item['prep_id']]
 
     # Сортируем массив, чтобы одинаковые преподаватели стояли рядом.
     pg_schedule = sorted(pg_schedule, key=lambda x: x['prep_id'])
@@ -255,6 +259,9 @@ def convert_auditories_schedule(pg_schedule: list) -> list:
     if DEBUG:
         date_now = date(2020, 12, 20)  # ДЛЯ ОТЛАДКИ!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+    # Убираем из расписания аудитории, которые None
+    pg_schedule = [item for item in pg_schedule if item['auditories_verbose']]
+
     # Сортируем массив, чтобы одинаковые аудитории стояли рядом.
     pg_schedule = sorted(pg_schedule, key=lambda x: x['auditories_verbose'])
 
@@ -278,7 +285,7 @@ def convert_auditories_schedule(pg_schedule: list) -> list:
                 'week': week,
                 'name': item['title'],
                 'info': info,
-                'prep': [item['preps'].strip().strip('.')],
+                'prep': [item['preps'].strip().strip('.') if item['preps'] else ''],
                 'groups': [item['obozn']],
             }
 
@@ -308,7 +315,8 @@ def convert_auditories_schedule(pg_schedule: list) -> list:
                             if lesson['prep'] == day_lesson['prep']:
                                 day_lesson['groups'].append(item['obozn'])
                             elif lesson['groups'] == day_lesson['groups']:
-                                day_lesson['prep'].append(item['preps'].strip().strip('.'))
+                                if item['preps']:
+                                    day_lesson['prep'].append(item['preps'].strip().strip('.'))
                             break
                     else:  # Если нет, добавляем полностью пару.
                         sch['lessons'].append(lesson)

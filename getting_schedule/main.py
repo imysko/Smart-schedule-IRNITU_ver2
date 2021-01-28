@@ -197,3 +197,7 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+    print(postgre_storage.get_schedule()[:1000])
+
+

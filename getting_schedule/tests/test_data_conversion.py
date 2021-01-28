@@ -1162,11 +1162,11 @@ class TestScheduleConversionMethods(unittest.TestCase):
 
         input_value = [
             {'obozn': 'ИБб-18-1', 'begtime': '10:00', 'everyweek': 2,
-             'preps': '', 'auditories_verbose': 'Ж-123', 'day': 3,
+             'preps': None, 'auditories_verbose': 'Ж-123', 'day': 3,
              'nt': 2, 'title': 'les_1', 'ngroup': 1, 'dbeg': datetime.date(2020, 3, 12),
              'dend': datetime.date(2021, 2, 19)},
             {'obozn': 'ИБб-18-1', 'begtime': '10:00', 'everyweek': 2,
-             'preps': '', 'auditories_verbose': 'Ж-321', 'day': 3,
+             'preps': None, 'auditories_verbose': 'Ж-321', 'day': 3,
              'nt': 2, 'title': 'les_1', 'ngroup': 1, 'dbeg': datetime.date(2020, 3, 12),
              'dend': datetime.date(2021, 2, 19)}
         ]
@@ -1397,6 +1397,24 @@ class TestTeachersScheduleConversionMethods(unittest.TestCase):
         result = convert_teachers_schedule(input_value)
         self.assertEqual(result, expected)
 
+    @mock.patch('data_conversion.datetime')
+    def test_convert_teachers_schedule_emptyPrep_returnEmptyList(self, mock_dt):
+        # Устанавливаем текущее время.
+        mock_dt.now(TIME_ZONE).date = mock.Mock(return_value=datetime.date(2021, 1, 17))
+
+        input_value = [
+            {'obozn': 'ИБб-18-1', 'begtime': '10:00', 'everyweek': 2,
+             'preps': None, 'prep_short_name': None,
+             'prep_id': None, 'auditories_verbose': '', 'day': 3,
+             'nt': 2, 'title': 'les_1', 'ngroup': 1, 'dbeg': datetime.date(2020, 3, 12),
+             'dend': datetime.date(2021, 2, 16)},
+        ]
+
+        expected = []
+
+        result = convert_teachers_schedule(input_value)
+        self.assertEqual(result, expected)
+
 
 class TestAuditoriesScheduleConversionMethods(unittest.TestCase):
     """Расписание аудиторий."""
@@ -1578,6 +1596,40 @@ class TestAuditoriesScheduleConversionMethods(unittest.TestCase):
                        'info': '( Лекция )',
                        'name': 'les_1',
                        'prep': ['Преп 1', 'Преп 2'],
+                       'time': '10:00',
+                       'week': 'all'},
+                  ]
+                  }
+             ]
+             }
+        ]
+
+        result = convert_auditories_schedule(input_value)
+        self.assertEqual(result, expected)
+
+    @mock.patch('data_conversion.datetime')
+    def test_convert_auditories_schedule_emptyPrep(self, mock_dt):
+        # Устанавливаем текущее время.
+        mock_dt.now(TIME_ZONE).date = mock.Mock(return_value=datetime.date(2021, 1, 15))
+
+        input_value = [
+            {'obozn': 'ИБб-18-1', 'begtime': '10:00', 'everyweek': 2,
+             'preps': None, 'prep_short_name': None,
+             'prep_id': None, 'auditories_verbose': 'Ж-313', 'day': 3,
+             'nt': 1, 'title': 'les_1', 'ngroup': None, 'dbeg': datetime.date(2020, 3, 12),
+             'dend': datetime.date(2021, 1, 16)}
+        ]
+
+        expected = [
+
+            {'aud': 'Ж-313',
+             'schedule': [
+                 {'day': 'среда',
+                  'lessons': [
+                      {'groups': ['ИБб-18-1'],
+                       'info': '( Лекция )',
+                       'name': 'les_1',
+                       'prep': [''],
                        'time': '10:00',
                        'week': 'all'},
                   ]
