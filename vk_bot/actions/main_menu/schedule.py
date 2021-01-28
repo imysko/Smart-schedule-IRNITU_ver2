@@ -27,7 +27,7 @@ async def get_schedule(ans: Message, storage, tz):
         elif storage.get_vk_user(chat_id=chat_id)['course'] == 'None':
             group = storage.get_vk_user(chat_id=chat_id)['group']
             schedule = storage.get_schedule_prep(group=group)
-        if schedule['schedule'] == []:
+        if not schedule or schedule['schedule'] == []:
             await ans.answer('Расписание временно недоступно\nПопробуйте позже⏱')
             statistics.add(action=data, storage=storage, tz=tz)
             return
