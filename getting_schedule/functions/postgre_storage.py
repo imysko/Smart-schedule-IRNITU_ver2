@@ -70,7 +70,7 @@ def get_schedule() -> list:
                            "prepods.preps, "
                            "prepods.prep as prep_short_name, "
                            "prepods.id_61 as prep_id, "
-                           "auditories_verbose, "
+                           "auditories.obozn as auditories_verbose, "
                            "day, "
                            "nt, "
                            "disciplines.title, "
@@ -79,7 +79,9 @@ def get_schedule() -> list:
                            "join groups on schedule.group_id = groups.id_7 "
                            "join vacpara on schedule.para = vacpara.id_66 "
                            "join prepods on prepods.id_61 = any(schedule.teachers) "
-                           "join disciplines on schedule.discipline = disciplines.id ")
+                           "join disciplines on schedule.discipline = disciplines.id "
+                           
+                           "join auditories on auditories.id_60 = any(schedule.auditories)")
             rows = cursor.fetchall()
             groups = [dict(group) for group in rows]
             return groups

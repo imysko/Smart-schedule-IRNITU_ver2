@@ -756,9 +756,9 @@ class TestScheduleConversionMethods(unittest.TestCase):
                                 'time': '',
                                 'week': '',
                                 'name': '',
-                                'aud': '',
+                                'aud': [''],
                                 'info': '',
-                                'prep': '',
+                                'prep': [''],
                             }
                         ]
                     }
@@ -819,7 +819,7 @@ class TestScheduleConversionMethods(unittest.TestCase):
                                 'time': '10:00',
                                 'week': 'all',
                                 'name': 'История искусств',
-                                'aud': 'И-311',
+                                'aud': ['И-311'],
                                 'info': '( Лекция )',
                                 'prep': ['Лобацкая Раиса Моисеевна'],
                             }
@@ -859,7 +859,7 @@ class TestScheduleConversionMethods(unittest.TestCase):
                                 'time': '11:45',
                                 'week': 'even',
                                 'name': 'Минералогия ювелирных камней',
-                                'aud': 'Е-215б',
+                                'aud': ['Е-215б'],
                                 'info': '( Лаб. раб. подгруппа 1 )',
                                 'prep': ['Юрьева Лена Валерьевна'],
                             }
@@ -917,7 +917,7 @@ class TestScheduleConversionMethods(unittest.TestCase):
                                 'time': '10:01',
                                 'week': 'all',
                                 'name': 'les_1',
-                                'aud': '',
+                                'aud': [''],
                                 'info': '( Лекция )',
                                 'prep': [''],
                             },
@@ -925,7 +925,7 @@ class TestScheduleConversionMethods(unittest.TestCase):
                                 'time': '10:02',
                                 'week': 'all',
                                 'name': 'les_2',
-                                'aud': '',
+                                'aud': [''],
                                 'info': '( Практ. подгруппа 1 )',
                                 'prep': [''],
                             },
@@ -933,7 +933,7 @@ class TestScheduleConversionMethods(unittest.TestCase):
                                 'time': '10:03',
                                 'week': 'all',
                                 'name': 'les_3',
-                                'aud': '',
+                                'aud': [''],
                                 'info': '( Практ. подгруппа 2 )',
                                 'prep': [''],
                             },
@@ -941,7 +941,7 @@ class TestScheduleConversionMethods(unittest.TestCase):
                                 'time': '10:04',
                                 'week': 'all',
                                 'name': 'les_4',
-                                'aud': '',
+                                'aud': [''],
                                 'info': '( Практ. )',
                                 'prep': [''],
                             },
@@ -949,7 +949,7 @@ class TestScheduleConversionMethods(unittest.TestCase):
                                 'time': '10:05',
                                 'week': 'all',
                                 'name': 'les_5',
-                                'aud': '',
+                                'aud': [''],
                                 'info': '( Лаб. раб. подгруппа 1 )',
                                 'prep': [''],
                             },
@@ -957,7 +957,7 @@ class TestScheduleConversionMethods(unittest.TestCase):
                                 'time': '10:06',
                                 'week': 'all',
                                 'name': 'les_6',
-                                'aud': '',
+                                'aud': [''],
                                 'info': '( Лаб. раб. подгруппа 2 )',
                                 'prep': [''],
                             },
@@ -965,7 +965,7 @@ class TestScheduleConversionMethods(unittest.TestCase):
                                 'time': '10:07',
                                 'week': 'all',
                                 'name': 'les_7',
-                                'aud': '',
+                                'aud': [''],
                                 'info': '( Лаб. раб. )',
                                 'prep': [''],
                             }
@@ -1000,7 +1000,7 @@ class TestScheduleConversionMethods(unittest.TestCase):
                                 'time': '10:00',
                                 'week': 'all',
                                 'name': 'les_1',
-                                'aud': 'Ж-313',
+                                'aud': ['Ж-313'],
                                 'info': '( Лекция )',
                                 'prep': ['Пупкин Вася'],
                             },
@@ -1043,7 +1043,7 @@ class TestScheduleConversionMethods(unittest.TestCase):
                                 'time': '10:00',
                                 'week': 'all',
                                 'name': 'les_1',
-                                'aud': '',
+                                'aud': [''],
                                 'info': '( Практ. подгруппа 1 )',
                                 'prep': [''],
                             },
@@ -1051,7 +1051,7 @@ class TestScheduleConversionMethods(unittest.TestCase):
                                 'time': '11:45',
                                 'week': 'all',
                                 'name': 'les_2',
-                                'aud': '',
+                                'aud': [''],
                                 'info': '( Лекция )',
                                 'prep': [''],
                             }
@@ -1087,7 +1087,7 @@ class TestScheduleConversionMethods(unittest.TestCase):
                                 'time': '10:00',
                                 'week': 'all',
                                 'name': 'les_1',
-                                'aud': '',
+                                'aud': [''],
                                 'info': '( Практ. подгруппа 1 )',
                                 'prep': [''],
                             },
@@ -1143,9 +1143,48 @@ class TestScheduleConversionMethods(unittest.TestCase):
                                 'time': '10:00',
                                 'week': 'all',
                                 'name': 'les_1',
-                                'aud': '',
+                                'aud': [''],
                                 'info': '( Практ. подгруппа 1 )',
                                 'prep': ['Преп 1', 'Преп 2'],
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+
+        result = convert_schedule(input_value)
+        self.assertEqual(result, expected)
+
+    @mock.patch('data_conversion.datetime')
+    def test_convert_schedule_TwoAud(self, mock_dt):
+        mock_dt.now(TIME_ZONE).date = mock.Mock(return_value=datetime.date(2021, 1, 5))
+
+        input_value = [
+            {'obozn': 'ИБб-18-1', 'begtime': '10:00', 'everyweek': 2,
+             'preps': '', 'auditories_verbose': 'Ж-123', 'day': 3,
+             'nt': 2, 'title': 'les_1', 'ngroup': 1, 'dbeg': datetime.date(2020, 3, 12),
+             'dend': datetime.date(2021, 2, 19)},
+            {'obozn': 'ИБб-18-1', 'begtime': '10:00', 'everyweek': 2,
+             'preps': '', 'auditories_verbose': 'Ж-321', 'day': 3,
+             'nt': 2, 'title': 'les_1', 'ngroup': 1, 'dbeg': datetime.date(2020, 3, 12),
+             'dend': datetime.date(2021, 2, 19)}
+        ]
+
+        expected = [
+            {
+                'group': 'ИБб-18-1',
+                'schedule': [
+                    {
+                        'day': 'среда',
+                        'lessons': [
+                            {
+                                'time': '10:00',
+                                'week': 'all',
+                                'name': 'les_1',
+                                'aud': ['Ж-123', 'Ж-321'],
+                                'info': '( Практ. подгруппа 1 )',
+                                'prep': [''],
                             }
                         ]
                     }
