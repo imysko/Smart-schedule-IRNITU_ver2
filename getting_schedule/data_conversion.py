@@ -185,7 +185,7 @@ def convert_teachers_schedule(pg_schedule: list) -> list:
                 'time': item['begtime'],
                 'week': week,
                 'name': item['title'],
-                'aud': item['auditories_verbose'],
+                'aud': [item['auditories_verbose']],
                 'info': info,
                 'groups': [item['obozn']],
             }
@@ -211,13 +211,18 @@ def convert_teachers_schedule(pg_schedule: list) -> list:
                         if lesson['time'] == day_lesson['time'] \
                                 and lesson['week'] == day_lesson['week'] \
                                 and lesson['name'] == day_lesson['name'] \
-                                and lesson['aud'] == day_lesson['aud'] \
                                 and lesson['info'] == day_lesson['info']:
-                            day_lesson['groups'].append(item['obozn'])
+                            if lesson['aud'] == day_lesson['aud']:
+                                day_lesson['groups'].append(item['obozn'])
+                            elif lesson['groups'] == day_lesson['groups']:
+                                day_lesson['aud'].append(item['auditories_verbose'])
                             break
                     else:  # Если нет, добавляем полностью пару.
                         sch['lessons'].append(lesson)
                     break
+
+
+
 
         # Если нашелся другой преподаватель или это последний элемент списка, сохраняем.
         current_prep_id = item['prep_id']

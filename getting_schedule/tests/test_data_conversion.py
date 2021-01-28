@@ -1196,7 +1196,7 @@ class TestTeachersScheduleConversionMethods(unittest.TestCase):
                                 'time': '10:00',
                                 'week': 'all',
                                 'name': 'les_1',
-                                'aud': '',
+                                'aud': [''],
                                 'info': '( Лекция )',
                                 'groups': ['ИБб-18-1', 'ИБб-18-2']
                             },
@@ -1204,7 +1204,7 @@ class TestTeachersScheduleConversionMethods(unittest.TestCase):
                                 'time': '11:45',
                                 'week': 'all',
                                 'name': 'les_2',
-                                'aud': '',
+                                'aud': [''],
                                 'info': '( Практ. подгруппа 1 )',
                                 'groups': ['ИБб-18-1']
                             },
@@ -1253,7 +1253,7 @@ class TestTeachersScheduleConversionMethods(unittest.TestCase):
                                 'time': '10:00',
                                 'week': 'all',
                                 'name': 'les_1',
-                                'aud': '',
+                                'aud': [''],
                                 'info': '( Лекция )',
                                 'groups': ['ИБб-18-1']
                             },
@@ -1261,7 +1261,7 @@ class TestTeachersScheduleConversionMethods(unittest.TestCase):
                                 'time': '11:45',
                                 'week': 'all',
                                 'name': 'les_3',
-                                'aud': '',
+                                'aud': [''],
                                 'info': '( Практ. подгруппа 1 )',
                                 'groups': ['ИБб-18-1']
                             },
@@ -1282,7 +1282,7 @@ class TestTeachersScheduleConversionMethods(unittest.TestCase):
                                 'time': '10:00',
                                 'week': 'all',
                                 'name': 'les_2',
-                                'aud': '',
+                                'aud': [''],
                                 'info': '( Лекция )',
                                 'groups': ['ИБб-18-2']
                             },
@@ -1309,6 +1309,51 @@ class TestTeachersScheduleConversionMethods(unittest.TestCase):
         ]
 
         expected = []
+
+        result = convert_teachers_schedule(input_value)
+        self.assertEqual(result, expected)
+
+    @mock.patch('data_conversion.datetime')
+    def test_convert_teachers_schedule_TowAud(self, mock_dt):
+        # Устанавливаем текущее время.
+        mock_dt.now(TIME_ZONE).date = mock.Mock(return_value=datetime.date(2021, 1, 15))
+
+        input_value = [
+            {'obozn': 'ИБб-18-1', 'begtime': '10:00', 'everyweek': 2,
+             'preps': 'Преп 1   ', 'prep_short_name': 'Преп В.В.    ',
+             'prep_id': 123, 'auditories_verbose': 'Ж-300', 'day': 3,
+             'nt': 1, 'title': 'les_1', 'ngroup': None, 'dbeg': datetime.date(2020, 3, 12),
+             'dend': datetime.date(2021, 1, 16)},
+            {'obozn': 'ИБб-18-1', 'begtime': '10:00', 'everyweek': 2,
+             'preps': 'Преп 1   ', 'prep_short_name': 'Преп В.В.    ',
+             'prep_id': 123, 'auditories_verbose': 'Ж-317', 'day': 3,
+             'nt': 1, 'title': 'les_1', 'ngroup': None, 'dbeg': datetime.date(2020, 3, 12),
+             'dend': datetime.date(2021, 1, 16)},
+
+        ]
+
+        expected = [
+            {
+                'prep': 'Преп 1',
+                'prep_short_name': 'Преп В.В.',
+                'pg_id': 123,
+                'schedule': [
+                    {
+                        'day': 'среда',
+                        'lessons': [
+                            {
+                                'time': '10:00',
+                                'week': 'all',
+                                'name': 'les_1',
+                                'aud': ['Ж-300', 'Ж-317'],
+                                'info': '( Лекция )',
+                                'groups': ['ИБб-18-1']
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
 
         result = convert_teachers_schedule(input_value)
         self.assertEqual(result, expected)
