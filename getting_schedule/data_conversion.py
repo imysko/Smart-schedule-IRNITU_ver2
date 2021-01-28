@@ -274,7 +274,7 @@ def convert_auditories_schedule(pg_schedule: list) -> list:
                 'week': week,
                 'name': item['title'],
                 'info': info,
-                'prep': item['preps'].strip().strip('.'),
+                'prep': [item['preps'].strip().strip('.')],
                 'groups': [item['obozn']],
             }
 
@@ -295,17 +295,21 @@ def convert_auditories_schedule(pg_schedule: list) -> list:
 
                     # Проверяем есть ли уже занятие в расписании
                     for day_lesson in sch['lessons']:
-                        # Если есть, добавляем только группу
+                        # Если есть, добавляем только группу или только преподавателя.
                         if lesson['time'] == day_lesson['time'] \
                                 and lesson['week'] == day_lesson['week'] \
                                 and lesson['name'] == day_lesson['name'] \
-                                and lesson['prep'] == day_lesson['prep'] \
                                 and lesson['info'] == day_lesson['info']:
-                            day_lesson['groups'].append(item['obozn'])
+
+                            if lesson['prep'] == day_lesson['prep']:
+                                day_lesson['groups'].append(item['obozn'])
+                            elif lesson['groups'] == day_lesson['groups']:
+                                day_lesson['prep'].append(item['preps'].strip().strip('.'))
                             break
                     else:  # Если нет, добавляем полностью пару.
                         sch['lessons'].append(lesson)
                     break
+
 
         # Если нашелся другой преподаватель или это последний элемент списка, сохраняем.
         current_aud = item['auditories_verbose']
