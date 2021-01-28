@@ -35,7 +35,7 @@ def full_schedule_in_str(schedule: list, week: str) -> list:
                 time = lesson['time']
                 info = lesson['info'].replace(",", "")
                 prep = ', '.join(lesson['prep'])
-                aud = f'Аудитория: {lesson["aud"]}\n' if lesson["aud"] else ''
+                aud = f'Аудитория: {", ".join(lesson["aud"])}\n' if lesson["aud"] and lesson["aud"][0] else ''
 
                 lessons_str += f'{time}\n' \
                                f'{aud}' \

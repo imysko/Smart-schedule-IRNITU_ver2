@@ -98,7 +98,7 @@ def convert_schedule(pg_schedule: list) -> list:
                 'time': item['begtime'],
                 'week': week,
                 'name': item['title'],
-                'aud': [item['auditories_verbose']],
+                'aud': [item['auditories_verbose'] if item['auditories_verbose'] else ''],
                 'info': info,
                 'prep': [item['preps'].strip().strip('.') if item['preps'] else ''],
             }
@@ -191,7 +191,7 @@ def convert_teachers_schedule(pg_schedule: list) -> list:
                 'time': item['begtime'],
                 'week': week,
                 'name': item['title'],
-                'aud': [item['auditories_verbose']],
+                'aud': [item['auditories_verbose'] if item['auditories_verbose'] else ''],
                 'info': info,
                 'groups': [item['obozn']],
             }
