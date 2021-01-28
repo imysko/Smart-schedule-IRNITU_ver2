@@ -5,9 +5,6 @@ from functions import schedule_tools
 
 TIME_ZONE = pytz.timezone('Asia/Irkutsk')
 
-# Режим отладки (если включен, то не определяем текущее время - позволяет использовать старое расписание).
-DEBUG = True
-
 DAYS = schedule_tools.DAYS
 
 
@@ -73,9 +70,6 @@ def convert_schedule(pg_schedule: list) -> list:
     """Преобразование формата расписания"""
 
     date_now = datetime.now(TIME_ZONE).date()
-
-    if DEBUG:
-        date_now = date(2020, 12, 25)  # ДЛЯ ОТЛАДКИ!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     # Сортируем массив, чтобы одинаковые группы стояли рядом.
     pg_schedule = sorted(pg_schedule, key=lambda x: x['obozn'])
@@ -163,8 +157,6 @@ def convert_teachers_schedule(pg_schedule: list) -> list:
     """Преобразование формата расписания преподавателей"""
 
     date_now = datetime.now(TIME_ZONE).date()
-    if DEBUG:
-        date_now = date(2020, 12, 25)  # ДЛЯ ОТЛАДКИ!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     # Убираем из расписания преподавателей, которые None
     pg_schedule = [item for item in pg_schedule if item['prep_id']]
@@ -256,8 +248,6 @@ def convert_auditories_schedule(pg_schedule: list) -> list:
     """Преобразование формата расписания аудиторий"""
 
     date_now = datetime.now(TIME_ZONE).date()
-    if DEBUG:
-        date_now = date(2020, 12, 20)  # ДЛЯ ОТЛАДКИ!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     # Убираем из расписания аудитории, которые None и Онлайн
     pg_schedule = [item for item in pg_schedule if
