@@ -88,7 +88,10 @@ async def start_student_reg(ans: Message, storage, tz):
             await ans.answer('Выберите группу.', keyboard=keyboards.make_keyboard_choose_group_vk(groups))
             return
         else:
-            await ans.answer('Не огорчай нас, мы же не просто так старались над клавиатурой 😼👇🏻')
+            await ans.answer('Не огорчай нас, мы же не просто так старались над клавиатурой 😼👇🏻',
+                             keyboard=keyboards.make_keyboard_choose_course_vk(
+                                 storage.get_courses(storage.get_vk_user(chat_id=chat_id)['institute']))
+                             )
         return
 
     # Регистрация после выбора курса
@@ -110,7 +113,7 @@ async def start_student_reg(ans: Message, storage, tz):
             elif message == "Назад":
                 await ans.answer('Выберите группу.', keyboard=keyboards.make_keyboard_choose_group_vk(groups))
             else:
-                await ans.answer('Я очень сомневаюсь, что твоей группы нет в списке ниже 😉')
+                await ans.answer('Я очень сомневаюсь, что твоей группы нет в списке ниже 😉', keyboard=keyboards.make_keyboard_choose_group_vk(groups))
         return
 
 
