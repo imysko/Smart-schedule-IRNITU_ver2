@@ -167,6 +167,7 @@ def processing_schedule():
     except Exception as e:
         print('convert_auditories_schedule error:\n', e)
 
+
 def main():
     while True:
         # Время начала работы цикла.
