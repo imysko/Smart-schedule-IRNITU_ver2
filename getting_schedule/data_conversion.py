@@ -259,8 +259,9 @@ def convert_auditories_schedule(pg_schedule: list) -> list:
     if DEBUG:
         date_now = date(2020, 12, 20)  # ДЛЯ ОТЛАДКИ!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-    # Убираем из расписания аудитории, которые None
-    pg_schedule = [item for item in pg_schedule if item['auditories_verbose']]
+    # Убираем из расписания аудитории, которые None и Онлайн
+    pg_schedule = [item for item in pg_schedule if
+                   item['auditories_verbose'] and item['auditories_verbose'] != 'онлайн']
 
     # Сортируем массив, чтобы одинаковые аудитории стояли рядом.
     pg_schedule = sorted(pg_schedule, key=lambda x: x['auditories_verbose'])
