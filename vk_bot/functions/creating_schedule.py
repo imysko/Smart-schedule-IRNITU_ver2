@@ -80,9 +80,8 @@ def get_one_day_schedule_in_str(schedule: list, week: str) -> str:
                                    f'{name}'
 
                 else:
-                    aud = lesson['aud']
-                    if aud:
-                        aud = f'Аудитория: {aud}\n'
+                    aud = f'Аудитория: {", ".join(lesson["aud"])}\n' if lesson["aud"] and lesson["aud"][0] else ''
+
                     time = lesson['time']
                     info = lesson['info'].replace(",", "")
                     prep = ', '.join(lesson['prep'])
@@ -123,9 +122,8 @@ def get_next_day_schedule_in_str(schedule: list, week: str) -> str:
                                    f'{name}'
 
                 else:
-                    aud = lesson['aud']
-                    if aud:
-                        aud = f'Аудитория: {aud}\n'
+                    aud = f'Аудитория: {", ".join(lesson["aud"])}\n' if lesson["aud"] and lesson["aud"][0] else ''
+
                     time = lesson['time']
                     info = lesson['info'].replace(",", "")
                     prep = ', '.join(lesson['prep'])
@@ -167,9 +165,8 @@ def get_one_day_schedule_in_str_prep(schedule: list, week: str) -> str:
                                    f'{name}'
 
                 else:
-                    aud = lesson['aud']
-                    if aud:
-                        aud = f'Аудитория: {aud}\n'
+                    aud = f'Аудитория: {", ".join(lesson["aud"])}\n' if lesson["aud"] and lesson["aud"][0] else ''
+
                     time = lesson['time']
                     info = lesson['info'].replace(",", "")
                     groups = ', '.join(lesson['groups'])
@@ -210,9 +207,8 @@ def get_next_day_schedule_in_str_prep(schedule: list, week: str) -> str:
                                    f'{name}'
 
                 else:
-                    aud = lesson['aud']
-                    if aud:
-                        aud = f'Аудитория: {aud}\n'
+                    aud = f'Аудитория: {", ".join(lesson["aud"])}\n' if lesson["aud"] and lesson["aud"][0] else ''
+
                     time = lesson['time']
                     info = lesson['info'].replace(",", "")
                     groups = ', '.join(lesson['groups'])
@@ -261,7 +257,7 @@ def full_schedule_in_str_prep(schedule: list, week: str, aud=None) -> list:
                 if aud:
                     aud_info = ''
                 else:
-                    aud_info = f'Аудитория: {lesson["aud"]}\n' if lesson["aud"] else ''
+                    aud_info = f'Аудитория: {", ".join(lesson["aud"])}\n' if lesson["aud"] and lesson["aud"][0] else ''
 
                 lessons_str += f'{time}\n' \
                                f'{aud_info}' \
