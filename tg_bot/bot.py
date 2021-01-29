@@ -5,7 +5,7 @@ import pytz
 import os
 from time import sleep
 
-from actions.main_menu import schedule, reminders
+from actions.main_menu import schedule, reminders, main_menu
 from actions.registration import student_registration
 from functions.storage import MongodbService
 from functions.logger import logger
@@ -29,6 +29,8 @@ app = Flask(__name__)
 content_schedule = ['Расписание 🗓', 'Ближайшая пара ⏱', 'Расписание на сегодня 🍏', 'На текущую неделю',
                     'На следующую неделю',
                     'Расписание на завтра 🍎', 'Следующая', 'Текущая']
+
+content_main_menu_buttons = ['Основное меню', '<==Назад', 'Список команд', 'Другое ⚡']
 
 content_students_registration = ['institute', 'course', 'group']
 content_reminder_settings = ['notification_btn', 'del_notifications', 'add_notifications', 'save_notifications']
@@ -96,10 +98,6 @@ def help(message):
 def map(message):
     chat_id = message.chat.id
     bot.send_photo(chat_id, (open('map.jpg', "rb")))
-    # ФАЙЛОМ (РАБОТАЕТ)
-    # map = open("map.jpg", "rb")
-    # bot.send_document(chat_id, map)
-
     statistics.add(action='map', storage=storage, tz=TZ_IRKUTSK)
 
 
@@ -138,22 +136,6 @@ def authors(message):
     statistics.add(action='authors', storage=storage, tz=TZ_IRKUTSK)
 
 
-# Handles all messages which text matches regexp.
-@bot.message_handler(regexp='дароу', content_types=['text'])
-def command_help(message):
-    bot.send_message(message.chat.id, 'Did someone call for help?')
-
-
-# words2 = ['save_notifications', 'del_notifications']
-#
-#
-# @bot.callback_query_handler(func=lambda message: any(word in message.data for word in words2))
-# def qwe(message):
-#     print('asd')
-#     chat_id = message.message.chat.id
-#     bot.send_message(chat_id=chat_id,
-#                      text='Работает!')
-
 # ==================== Обработка Inline кнопок ==================== #
 @bot.callback_query_handler(func=lambda message: any(word in message.data for word in content_students_registration))
 def student_registration_handler(message):
@@ -182,6 +164,12 @@ def reminders_info_handler(message):
     reminders.reminder_info(bot=bot, message=message, storage=storage, tz=TZ_IRKUTSK)
 
 
+@bot.message_handler(func=lambda message: message.text in content_main_menu_buttons, content_types=['text'])
+def main_menu_buttons_handler(message):
+    """Основные кнопки главног меню"""
+    main_menu.processing_main_buttons(bot=bot, message=message, storage=storage, tz=TZ_IRKUTSK)
+
+
 # ==================== Обработка текста ==================== #
 @bot.message_handler(content_types=['text'])
 def text(message):
@@ -190,12 +178,7 @@ def text(message):
     user = storage.get_user(chat_id=chat_id)
     logger.info(f'Message data: {data}')
 
-    if 'Основное меню' in data and user:
-        bot.send_message(chat_id, text='Основное меню', reply_markup=make_keyboard_start_menu())
-
-        statistics.add(action='Основное меню', storage=storage, tz=TZ_IRKUTSK)
-
-    elif 'Авторы' == data and user:
+    if 'Авторы' == data and user:
         bot.send_message(chat_id, parse_mode='HTML', text='<b>Авторы проекта:\n</b>'
                                                           '- Алексей @bolanebyla\n'
                                                           '- Султан @ace_sultan\n'
@@ -207,18 +190,9 @@ def text(message):
 
         statistics.add(action='Авторы', storage=storage, tz=TZ_IRKUTSK)
 
-    elif 'Список команд' in data and user:
-        bot.send_message(chat_id, text='Список команд:\n'
-                                       'Авторы - список авторов \n'
-                                       'Регистрация- повторная регистрация\n'
-                                       'Карта - карта университета', reply_markup=make_keyboard_commands())
 
-        statistics.add(action='Другое', storage=storage, tz=TZ_IRKUTSK)
 
-    elif 'Другое ⚡' in data and user:
-        bot.send_message(chat_id, text='Другое', reply_markup=make_keyboard_extra())
 
-        statistics.add(action='Другое', storage=storage, tz=TZ_IRKUTSK)
 
     elif 'Регистрация' in data and user:
         bot.send_message(chat_id=chat_id, text='Пройдите повторную регистрацию😉\n'
