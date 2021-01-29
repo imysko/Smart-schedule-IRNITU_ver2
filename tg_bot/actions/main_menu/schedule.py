@@ -3,7 +3,7 @@ from functions.find_week import find_week
 from functions.near_lesson import get_now_lesson
 from tools import keyboards, statistics
 
-from functions import logger
+from functions.logger import logger
 from tools.check_schedule import check_schedule
 
 

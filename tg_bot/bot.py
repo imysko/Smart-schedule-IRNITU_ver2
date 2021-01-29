@@ -5,13 +5,11 @@ import pytz
 import os
 from time import sleep
 
-from actions.main_menu import schedule
+from actions.main_menu import schedule, reminders
 from actions.registration import student_registration
-from functions.notifications import get_notifications_status
 from functions.storage import MongodbService
 from functions.logger import logger
 from tools.keyboards import *
-from functions.calculating_reminder_times import calculating_reminder_times
 
 from flask import Flask, request
 
@@ -33,6 +31,7 @@ content_schedule = ['Расписание 🗓', 'Ближайшая пара �
                     'Расписание на завтра 🍎', 'Следующая', 'Текущая']
 
 content_students_registration = ['institute', 'course', 'group']
+content_reminder_settings = ['notification_btn', 'del_notifications', 'add_notifications', 'save_notifications']
 
 
 # Обработка запросов от telegram
@@ -155,101 +154,32 @@ def command_help(message):
 #     bot.send_message(chat_id=chat_id,
 #                      text='Работает!')
 
-
+# ==================== Обработка Inline кнопок ==================== #
 @bot.callback_query_handler(func=lambda message: any(word in message.data for word in content_students_registration))
 def student_registration_handler(message):
     """Регистрация студентов"""
-    student_registration.start_student_reg(bot=bot, message=message, storage=storage)
-
-
-# ==================== Обработка Inline кнопок ==================== #
-@bot.callback_query_handler(func=lambda call: True)
-def handle_query(message):
-    chat_id = message.message.chat.id
-    message_id = message.message.message_id
     data = message.data
-
+    student_registration.start_student_reg(bot=bot, message=message, storage=storage)
     logger.info(f'Inline button data: {data}')
 
-    if 'notification_btn' in data:
-        data = json.loads(data)
-        if data['notification_btn'] == 'close':
-            try:
-                bot.delete_message(message_id=message_id, chat_id=chat_id)
-                return
-            except Exception as e:
-                logger.exception(e)
-                return
-        time = data['notification_btn']
 
-        try:
-            bot.edit_message_text(message_id=message_id, chat_id=chat_id,
-                                  text='Настройка напоминаний ⚙\n\n'
-                                       'Укажите за сколько минут до начала пары должно приходить сообщение',
-                                  reply_markup=make_inline_keyboard_set_notifications(time))
-        except Exception as e:
-            logger.exception(e)
-            return
-
-    elif 'del_notifications' in data:
-        data = json.loads(data)
-        time = data['del_notifications']
-        if time == 0:
-            return
-        time -= 5
-
-        if time < 0:
-            time = 0
-
-        try:
-            bot.edit_message_reply_markup(message_id=message_id, chat_id=chat_id,
-                                          reply_markup=make_inline_keyboard_set_notifications(time))
-        except Exception as e:
-            logger.exception(e)
-            return
-
-    elif 'add_notifications' in data:
-        data = json.loads(data)
-        time = data['add_notifications']
-        time += 5
-
-        try:
-            bot.edit_message_reply_markup(message_id=message_id, chat_id=chat_id,
-                                          reply_markup=make_inline_keyboard_set_notifications(time))
-        except Exception as e:
-            logger.exception(e)
-            return
-
-    elif 'save_notifications' in data:
-        data = json.loads(data)
-        time = data['save_notifications']
-
-        group = storage.get_user(chat_id=chat_id)['group']
-
-        schedule = storage.get_schedule(group=group)['schedule']
-        if time > 0:
-            reminders = calculating_reminder_times(schedule=schedule, time=int(time))
-        else:
-            reminders = []
-        storage.save_or_update_user(chat_id=chat_id, notifications=time, reminders=reminders)
-
-        try:
-            bot.edit_message_text(message_id=message_id, chat_id=chat_id, text=get_notifications_status(time),
-                                  reply_markup=make_inline_keyboard_notifications(time))
-        except Exception as e:
-            logger.exception(e)
-            return
-
-        statistics.add(action='save_notifications', storage=storage, tz=TZ_IRKUTSK)
-
-
-# =============================================================
+@bot.callback_query_handler(func=lambda message: any(word in message.data for word in content_reminder_settings))
+def reminder_settings_handler(message):
+    data = message.data
+    reminders.reminder_settings(bot=bot, message=message, storage=storage, tz=TZ_IRKUTSK)
+    logger.info(f'Inline button data: {data}')
 
 
 @bot.message_handler(func=lambda message: message.text in content_schedule, content_types=['text'])
 def schedule_handler(message):
     """Расписание"""
     schedule.get_schedule(bot=bot, message=message, storage=storage, tz=TZ_IRKUTSK)
+
+
+@bot.message_handler(func=lambda message: message.text == 'Напоминание 📣', content_types=['text'])
+def reminders_info_handler(message):
+    """Напоминания"""
+    reminders.reminder_info(bot=bot, message=message, storage=storage, tz=TZ_IRKUTSK)
 
 
 # ==================== Обработка текста ==================== #
@@ -260,16 +190,7 @@ def text(message):
     user = storage.get_user(chat_id=chat_id)
     logger.info(f'Message data: {data}')
 
-    if 'Напоминание 📣' in data and user:
-        time = user['notifications']
-        if not time:
-            time = 0
-        bot.send_message(chat_id=chat_id, text=get_notifications_status(time),
-                         reply_markup=make_inline_keyboard_notifications(time))
-
-        statistics.add(action='Напоминания', storage=storage, tz=TZ_IRKUTSK)
-
-    elif 'Основное меню' in data and user:
+    if 'Основное меню' in data and user:
         bot.send_message(chat_id, text='Основное меню', reply_markup=make_keyboard_start_menu())
 
         statistics.add(action='Основное меню', storage=storage, tz=TZ_IRKUTSK)

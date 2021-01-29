@@ -1,5 +1,5 @@
 import json
-from functions import logger
+from functions.logger import logger
 from tools import keyboards
 
 
