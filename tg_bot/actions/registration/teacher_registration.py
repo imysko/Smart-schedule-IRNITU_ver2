@@ -1,10 +1,8 @@
-from vkbottle import Text, Keyboard, KeyboardButtonColor
-from vkbottle.bot import Bot, Message
 import json
 from tools import keyboards
-from functions.logger import logger
 
 prep_reg = {}
+
 
 def start_prep_reg(bot, message, storage):
     """Вхождение в стейт регистрации преподавателей"""
@@ -73,11 +71,11 @@ def reg_prep_step_2(message, bot, storage, last_msg=None):
             elif prep_list and not prep_list_2:
                 prep_list_2 = prep_list
             prep_list = []
-        print(prep_list_2)
         msg = bot.send_message(chat_id=chat_id, text=f'Возможно вы имелли в виду:',
                                reply_markup=keyboards.make_inline_keyboard_reg_prep(prep_list_2))
         bot.register_next_step_handler(msg, reg_prep_step_2, bot, storage, last_msg=msg)
     return
+
 
 def reg_prep_choose_from_list(bot, message, storage):
     """Обрабатываем колбэк преподавателя"""
@@ -85,6 +83,10 @@ def reg_prep_choose_from_list(bot, message, storage):
     chat_id = message.message.chat.id
     message_id = message.message.message_id
     data = json.loads(message.data)
+
+    # Выходим из цикла поиска преподавателя по ФИО
+    bot.clear_step_handler_by_chat_id(chat_id=chat_id)
+
     # Назад к институтам
     if data['prep_id'] == 'back':
         bot.send_message(chat_id=chat_id, text='Выберите институт',
