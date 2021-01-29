@@ -5,6 +5,7 @@ import pytz
 import os
 from time import sleep
 
+from actions import commands
 from actions.main_menu import schedule, reminders, main_menu
 from actions.registration import student_registration
 from functions.storage import MongodbService
@@ -52,88 +53,40 @@ def status():
 # ==================== Обработка команд ==================== #
 
 # Команда /start
-@bot.message_handler(commands=['start'])
-def start_message(message):
-    chat_id = message.chat.id
-
-    # Проверяем есть пользователь в базе данных
-    if storage.get_user(chat_id):
-        storage.delete_user_or_userdata(chat_id)  # Удаляем пользвателя из базы данных
-
-    bot.send_message(chat_id=chat_id, text='Привет!\n')
-    bot.send_message(chat_id=chat_id, text='Для начала пройдите небольшую регистрацию😉\n'
-                                           'Выберите институт',
-                     reply_markup=make_inline_keyboard_choose_institute(storage.get_institutes()))
-
-    statistics.add(action='start', storage=storage, tz=TZ_IRKUTSK)
+@bot.message_handler(func=lambda message: message.text in ['Начать', '/start'], content_types=['text'])
+def start_handler(message):
+    commands.start(bot=bot, message=message, storage=storage, tz=TZ_IRKUTSK)
 
 
 # Команда /reg
-@bot.message_handler(commands=['reg'])
-def registration(message):
-    chat_id = message.chat.id
-    storage.delete_user_or_userdata(chat_id=chat_id)
-    bot.send_message(chat_id=chat_id, text='Пройдите повторную регистрацию😉\n'
-                                           'Выберите институт',
-                     reply_markup=make_inline_keyboard_choose_institute(storage.get_institutes()))
-
-    statistics.add(action='reg', storage=storage, tz=TZ_IRKUTSK)
+@bot.message_handler(func=lambda message: message.text in ['Регистрация', '/reg'], content_types=['text'])
+def registration_handler(message):
+    commands.registration(bot=bot, message=message, storage=storage, tz=TZ_IRKUTSK)
 
 
 # Команда /help
-@bot.message_handler(commands=['help'])
-def help(message):
-    chat_id = message.chat.id
-    bot.send_message(chat_id=chat_id, text='Список команд:\n'
-                                           '/about - описание чат бота\n'
-                                           '/authors - Список авторов \n'
-                                           '/reg - повторная регистрация \n'
-                                           '/map - карта университета \n')
-
-    statistics.add(action='help', storage=storage, tz=TZ_IRKUTSK)
+@bot.message_handler(func=lambda message: message.text in ['Помощь', '/help'], content_types=['text'])
+def help_handler(message):
+    commands.help_info(bot=bot, message=message, storage=storage, tz=TZ_IRKUTSK)
 
 
-# Команда /map
-@bot.message_handler(commands=['map'])
-def map(message):
-    chat_id = message.chat.id
-    bot.send_photo(chat_id, (open('map.jpg', "rb")))
-    statistics.add(action='map', storage=storage, tz=TZ_IRKUTSK)
+# Команда /map Карта
+
+@bot.message_handler(func=lambda message: message.text in ['Карта', '/map'], content_types=['text'])
+def map_handler(message):
+    commands.show_map(bot=bot, message=message, storage=storage, tz=TZ_IRKUTSK)
 
 
 # Команда /about
-@bot.message_handler(commands=['about'])
-def about(message):
-    chat_id = message.chat.id
-    bot.send_message(chat_id=chat_id, parse_mode='HTML',
-                     text='<b>О боте:\n</b>'
-                          'Smart schedule IRNITU bot - это чат бот для просмотра расписания занятий в '
-                          'Иркутском национальном исследовательском техническом университете\n\n'
-                          '<b>Благодаря боту можно:\n</b>'
-                          '- Узнать актуальное расписание\n'
-                          '- Нажатием одной кнопки увидеть информацию о ближайшей паре\n'
-                          '- Настроить гибкие уведомления с информацией из расписания, '
-                          'которые будут приходить за определённое время до начала занятия')
-
-    statistics.add(action='about', storage=storage, tz=TZ_IRKUTSK)
+@bot.message_handler(func=lambda message: message.text in ['О проекте', '/about'], content_types=['text'])
+def about_handler(message):
+    commands.about(bot=bot, message=message, storage=storage, tz=TZ_IRKUTSK)
 
 
 # Команда /authors
-@bot.message_handler(commands=['authors'])
-def authors(message):
-    chat_id = message.chat.id
-    bot.send_message(chat_id=chat_id, parse_mode='HTML',
-                     text='<b>Авторы проекта:\n</b>'
-                          '- Алексей @bolanebyla\n'
-                          '- Султан @ace_sultan\n'
-                          '- Александр @alexandrshen\n'
-                          '- Владислав @TixoNNNAN\n'
-                          '- Кирилл @ADAMYORT\n\n'
-                          'По всем вопросом и предложениям пишите нам в личные сообщения. '
-                          'Будем рады 😉\n'
-                     )
-
-    statistics.add(action='authors', storage=storage, tz=TZ_IRKUTSK)
+@bot.message_handler(func=lambda message: message.text in ['Авторы', '/authors'], content_types=['text'])
+def authors_handler(message):
+    commands.authors(bot=bot, message=message, storage=storage, tz=TZ_IRKUTSK)
 
 
 # ==================== Обработка Inline кнопок ==================== #
@@ -178,39 +131,12 @@ def text(message):
     user = storage.get_user(chat_id=chat_id)
     logger.info(f'Message data: {data}')
 
-    if 'Авторы' == data and user:
-        bot.send_message(chat_id, parse_mode='HTML', text='<b>Авторы проекта:\n</b>'
-                                                          '- Алексей @bolanebyla\n'
-                                                          '- Султан @ace_sultan\n'
-                                                          '- Александр @alexandrshen\n'
-                                                          '- Владислав @TixoNNNAN\n'
-                                                          '- Кирилл @ADAMYORT\n\n'
-                                                          'По всем вопросом и предложениям пишите нам в личные сообщения. '
-                                                          'Будем рады 😉\n')
-
-        statistics.add(action='Авторы', storage=storage, tz=TZ_IRKUTSK)
-
-
-
-
-
-    elif 'Регистрация' in data and user:
-        bot.send_message(chat_id=chat_id, text='Пройдите повторную регистрацию😉\n'
-                                               'Выберите институт',
-                         reply_markup=make_inline_keyboard_choose_institute(storage.get_institutes()))
-
-    elif 'Карта' in data and user:
-        bot.send_message(chat_id=chat_id, text='Подождите, карта загружается...')
-        bot.send_photo(chat_id, (open('map.jpg', "rb")))
-        statistics.add(action='Карта', storage=storage, tz=TZ_IRKUTSK)
-
+    if user:
+        bot.send_message(chat_id, text='Я вас не понимаю 😞', reply_markup=make_keyboard_start_menu())
     else:
-        if user:
-            bot.send_message(chat_id, text='Я вас не понимаю 😞', reply_markup=make_keyboard_start_menu())
-        else:
-            bot.send_message(chat_id, text='Я вас не понимаю 😞')
+        bot.send_message(chat_id, text='Я вас не понимаю 😞')
 
-        statistics.add(action='bullshit', storage=storage, tz=TZ_IRKUTSK)
+    statistics.add(action='bullshit', storage=storage, tz=TZ_IRKUTSK)
 
 
 if __name__ == '__main__':
