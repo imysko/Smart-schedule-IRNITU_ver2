@@ -65,6 +65,9 @@ class MongodbService(object):
         """возвращает список ФИО всех преподавателей"""
         return list(self._db.prepods.find(filter={'prep': {'$regex': f'^{surname}$', "$options": '/i'}}))
 
+    def get_prep_for_id(self, prep_id: int):
+        return self._db.prepods_schedule.find_one(filter={'pg_id': prep_id})
+
     def get_courses(self, institute='') -> list:
         """возвращает список курсов у определённого института"""
         return list(self._db.courses.find(filter={'institute': {'$regex': f'{institute}*'}}))

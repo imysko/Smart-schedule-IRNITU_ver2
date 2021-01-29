@@ -101,9 +101,10 @@ def student_registration_handler(message):
     logger.info(f'Inline button data: {data}')
 
 
-# @bot.callback_query_handler(func=lambda message: 'prep_id' in message.data)
-# def reminder_settings_handler(message):
-#
+@bot.callback_query_handler(func=lambda message: 'prep_id' in message.data)
+def prep_registration_handler(message):
+    teacher_registration.reg_prep_choose_from_list(bot, message, storage)
+
 
 
 

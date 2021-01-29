@@ -66,8 +66,10 @@ def make_inline_keyboard_choose_groups(groups=[]):
     return markup
 
 def make_inline_keyboard_reg_prep(preps=[]):
-    """Кнопки выбора группы"""
+    """Кнопки выбора преподавателей"""
     markup = types.InlineKeyboardMarkup()
+    if len(preps) > 20:
+        preps = preps[:20]
     for prep in preps:
         name = prep['prep']
         prep_id = prep['pg_id']

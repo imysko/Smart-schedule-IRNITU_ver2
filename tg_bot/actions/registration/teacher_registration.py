@@ -6,7 +6,6 @@ from functions.logger import logger
 
 prep_reg = {}
 
-
 def start_prep_reg(bot, message, storage):
     """Вхождение в стейт регистрации преподавателей"""
 
@@ -17,7 +16,6 @@ def start_prep_reg(bot, message, storage):
     # После того как пользователь выбрал институт
     if 'institute' in data:
         data = json.loads(data)
-        print(data)
 
         storage.save_or_update_user(chat_id=chat_id,
                                     institute=data['institute'],
@@ -41,6 +39,10 @@ def reg_prep_step_2(message, bot, storage, last_msg=None):
 
     chat_id = message.chat.id
     message = message.text
+    user = storage.get_user(chat_id)
+
+    if not user:
+        return
 
     if last_msg:
         message_id = last_msg.message_id
@@ -76,3 +78,23 @@ def reg_prep_step_2(message, bot, storage, last_msg=None):
                                reply_markup=keyboards.make_inline_keyboard_reg_prep(prep_list_2))
         bot.register_next_step_handler(msg, reg_prep_step_2, bot, storage, last_msg=msg)
     return
+
+def reg_prep_choose_from_list(bot, message, storage):
+    """Обрабатываем колбэк преподавателя"""
+
+    chat_id = message.message.chat.id
+    message_id = message.message.message_id
+    data = json.loads(message.data)
+    # Назад к институтам
+    if data['prep_id'] == 'back':
+        bot.send_message(chat_id=chat_id, text='Выберите институт',
+                         reply_markup=keyboards.make_inline_keyboard_choose_institute(storage.get_institutes()))
+        storage.delete_user_or_userdata(chat_id)
+    # Регистрируем преподавателя по выбранной кнопке
+    else:
+        prep_name = storage.get_prep_for_id(data['prep_id'])['prep']
+        storage.save_or_update_user(chat_id=chat_id, group=prep_name)
+        bot.delete_message(message_id=message_id, chat_id=chat_id)
+        bot.send_message(chat_id, text=f'Вы успешно зарегистрировались, как {prep_name}!😊\n\n'
+                                       'Для того чтобы пройти регистрацию повторно, напишите сообщение "Регистрация"\n',
+                         reply_markup=keyboards.make_keyboard_start_menu())
