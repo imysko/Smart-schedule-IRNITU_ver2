@@ -23,10 +23,11 @@ def make_keyboard_start_menu():
 def make_inline_keyboard_choose_institute(institutes=[]):
     """Кнопки выбора института"""
     markup = types.InlineKeyboardMarkup()
+    data = '{"institute": "' + "Преподаватель" + '"}'
+    markup.add(types.InlineKeyboardButton(text='Преподаватель', callback_data=data))
     for institute in institutes:
         name = institute['name']
         short_name = name
-
         # Проверяем длину callback_data
         callback_body = '{"institute": ""}'
         if len(name + callback_body) > MAX_CALLBACK_RANGE:
@@ -62,6 +63,19 @@ def make_inline_keyboard_choose_groups(groups=[]):
     # Кнопка назад
     data = json.dumps({"group": "back"})
     markup.add(types.InlineKeyboardButton(text='<', callback_data=data))
+    return markup
+
+def make_inline_keyboard_reg_prep(preps=[]):
+    """Кнопки выбора группы"""
+    markup = types.InlineKeyboardMarkup()
+    for prep in preps:
+        name = prep['prep']
+        prep_id = prep['pg_id']
+        data = json.dumps({"prep_id": prep_id})
+        markup.add(types.InlineKeyboardButton(text=name, callback_data=data))
+    # Кнопка назад
+    data = json.dumps({"prep_id": "back"})
+    markup.add(types.InlineKeyboardButton(text='Назад к институтам', callback_data=data))
     return markup
 
 

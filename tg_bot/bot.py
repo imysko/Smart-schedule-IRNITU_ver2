@@ -7,7 +7,7 @@ from time import sleep
 
 from actions import commands
 from actions.main_menu import schedule, reminders, main_menu
-from actions.registration import student_registration
+from actions.registration import student_registration, teacher_registration
 from functions.storage import MongodbService
 from functions.logger import logger
 from tools.keyboards import *
@@ -94,8 +94,17 @@ def authors_handler(message):
 def student_registration_handler(message):
     """Регистрация студентов"""
     data = message.data
-    student_registration.start_student_reg(bot=bot, message=message, storage=storage)
+    if data == '{"institute": "Преподаватель"}':
+        teacher_registration.start_prep_reg(bot=bot, message=message, storage=storage)
+    else:
+        student_registration.start_student_reg(bot=bot, message=message, storage=storage)
     logger.info(f'Inline button data: {data}')
+
+
+# @bot.callback_query_handler(func=lambda message: 'prep_id' in message.data)
+# def reminder_settings_handler(message):
+#
+
 
 
 @bot.callback_query_handler(func=lambda message: any(word in message.data for word in content_reminder_settings))
@@ -119,7 +128,7 @@ def reminders_info_handler(message):
 
 @bot.message_handler(func=lambda message: message.text in content_main_menu_buttons, content_types=['text'])
 def main_menu_buttons_handler(message):
-    """Основные кнопки главног меню"""
+    """Основные кнопки главного меню"""
     main_menu.processing_main_buttons(bot=bot, message=message, storage=storage, tz=TZ_IRKUTSK)
 
 
