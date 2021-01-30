@@ -76,6 +76,26 @@ class MongodbService(object):
         """возвращает список групп на определённом курсе в определеннои институте"""
         return list(self._db.groups.find(filter={'institute': {'$regex': f'{institute}*'}, 'course': course}))
 
+    def get_search_list_prep(self, search_words: str) -> list:
+        """возвращает список преподавателей по слову из поиска"""
+        return list(self._db.prepods_schedule.find(
+            filter={'prep_short_name': {'$regex': f'.*{search_words}.*', "$options": '/i'}}))
+
+    # Поиск по ФИО преподавателя или его части
+    def get_register_list_prep(self, search_words: str) -> list:
+        """возвращает список преподавателей по слову из поиска"""
+        return list(self._db.prepods_schedule.find(
+            filter={'prep': {'$regex': f"(^{search_words}\s.*)|(.*\s{search_words}\s.*)|(.*\s{search_words}$)",
+                             "$options": '/i'}}))
+
+    def get_prep(self, surname: str) -> list:
+        """возвращает список ФИО всех преподавателей"""
+        return list(self._db.prepods.find(filter={'prep': {'$regex': f'^{surname}$', "$options": '/i'}}))
+
+    def get_schedule_prep(self, group):
+        """возвращает расписание преподавателя"""
+        return self._db.prepods_schedule.find_one(filter={'prep': group})
+
     def save_or_update_user(self, chat_id: int, institute='', course='', group='', notifications=0, reminders=[]):
         """сохраняет или изменяет данные пользователя (коллекция users)"""
         update = {'chat_id': chat_id, 'notifications': 0, 'reminders': {}}
