@@ -12,6 +12,8 @@ from functions.storage import MongodbService
 from functions.logger import logger
 from tools.keyboards import *
 
+from actions.search.prep_and_group_search import start_search
+
 from flask import Flask, request
 
 from tools import statistics
@@ -64,6 +66,7 @@ def registration_handler(message):
     commands.registration(bot=bot, message=message, storage=storage, tz=TZ_IRKUTSK)
 
 
+
 # Команда /help
 @bot.message_handler(func=lambda message: message.text in ['Помощь', '/help'], content_types=['text'])
 def help_handler(message):
@@ -100,12 +103,15 @@ def student_registration_handler(message):
         student_registration.start_student_reg(bot=bot, message=message, storage=storage)
     logger.info(f'Inline button data: {data}')
 
+@bot.message_handler(func=lambda message: message.text == 'Поиск 🔎', content_types=['text'])
+def reminders_info_handler(message):
+    """Поиск"""
+    start_search(bot=bot, message=message, storage=storage, tz=TZ_IRKUTSK)
+
 
 @bot.callback_query_handler(func=lambda message: 'prep_id' in message.data)
 def prep_registration_handler(message):
     teacher_registration.reg_prep_choose_from_list(bot, message, storage)
-
-
 
 
 @bot.callback_query_handler(func=lambda message: any(word in message.data for word in content_reminder_settings))
@@ -119,6 +125,7 @@ def reminder_settings_handler(message):
 def schedule_handler(message):
     """Расписание"""
     schedule.get_schedule(bot=bot, message=message, storage=storage, tz=TZ_IRKUTSK)
+
 
 
 @bot.message_handler(func=lambda message: message.text == 'Напоминание 📣', content_types=['text'])

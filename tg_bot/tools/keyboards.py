@@ -19,6 +19,12 @@ def make_keyboard_start_menu():
     markup.add(btn5, btn6)
     return markup
 
+def make_keyboard_main_menu():
+    """ Клавиатура выхода в основное меню """
+    markup = types.ReplyKeyboardMarkup(one_time_keyboard=False, resize_keyboard=True)
+    btn1 = types.KeyboardButton('Основное меню')
+    markup.add(btn1)
+    return markup
 
 def make_inline_keyboard_choose_institute(institutes=[]):
     """Кнопки выбора института"""
@@ -51,6 +57,7 @@ def make_inline_keyboard_choose_courses(courses=[]):
     data = json.dumps({"course": "back"})
     markup.add(types.InlineKeyboardButton(text='<', callback_data=data))
     return markup
+
 
 
 def make_inline_keyboard_choose_groups(groups=[]):
