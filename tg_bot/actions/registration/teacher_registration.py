@@ -1,8 +1,6 @@
 import json
 from tools import keyboards
 
-prep_reg = {}
-
 
 def start_prep_reg(bot, message, storage):
     """Вхождение в стейт регистрации преподавателей"""
@@ -59,11 +57,15 @@ def reg_prep_step_2(message, bot, storage, last_msg=None):
         # Делим введенное фио на части и ищем по каждой в базе
         prep_list = []
         prep_list_2 = []
+        prep_and_id_list = []
+        content_commands = ['Начать', 'начать', 'Начало', 'start', '/start', 'Регистрация', '/reg']
+
         # Делим полученное ФИО на отдельные слова, на выходе имеем второй список с уникальными значениями по запросу
         for name_unit in message.split():
             # Ищем в базе преподов по каждому слову
             for i in storage.get_register_list_prep(name_unit):
-                prep_list.append(i)
+                prep_and_id_list.append(i)
+                prep_list.append(i['prep'])
             # Если 2 списка не пустых, ищем элементы, которые повторяются максимальное количество раз
             if prep_list and prep_list_2:
                 prep_list_2 = list(set(prep_list) & set(prep_list_2))
@@ -71,9 +73,33 @@ def reg_prep_step_2(message, bot, storage, last_msg=None):
             elif prep_list and not prep_list_2:
                 prep_list_2 = prep_list
             prep_list = []
-        msg = bot.send_message(chat_id=chat_id, text=f'Возможно вы имелли в виду:',
-                               reply_markup=keyboards.make_inline_keyboard_reg_prep(prep_list_2))
-        bot.register_next_step_handler(msg, reg_prep_step_2, bot, storage, last_msg=msg)
+
+        # Ограничивает размер клавы до 20 преподов
+        if len(prep_list_2) > 20:
+            prep_list_2 = prep_list_2[:20]
+        # Создается сортированный список со словарями из коллекции prepods_schedule
+        sort_prep = []
+        # Если ФИО преподаывателя содержится в prep_list_2, то записываем его словарь (из коллекции prepods_schedule)
+        # в новый список sort_prep
+        for i in range(len(prep_and_id_list)):
+            if prep_and_id_list[i]['prep'] in prep_list_2:
+                sort_prep.append(prep_and_id_list[i])
+        # Если sort_prep не пустой, выдаем клавиатуру с возможными вариантами
+        if sort_prep:
+            # Сообщение на которое пользователь отвечает (сохраняет сообщение, введенное пользователем,
+            # после фразы 'Возможно вы имелли в виду:')
+            msg = bot.send_message(chat_id=chat_id, text=f'Возможно вы имелли в виду:',
+                                   reply_markup=keyboards.make_inline_keyboard_reg_prep(sort_prep))
+            bot.register_next_step_handler(msg, reg_prep_step_2, bot, storage, last_msg=msg)
+        # Если sort_prep пустой и сообщение содержит в себе попытку перерегистрации
+        elif message in content_commands:
+            bot.send_message(chat_id=chat_id, text='Выберите институт',
+                             reply_markup=keyboards.make_inline_keyboard_choose_institute(storage.get_institutes()))
+            return
+        # Если sort_prep пустой, то выводим ошибку
+        else:
+            msg = bot.send_message(chat_id=chat_id, text='Проверьте правильность ввода 😞')
+            bot.register_next_step_handler(msg, reg_prep_step_2, bot, storage)
     return
 
 
