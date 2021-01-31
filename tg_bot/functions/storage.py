@@ -92,6 +92,10 @@ class MongodbService(object):
         """возвращает список ФИО всех преподавателей"""
         return list(self._db.prepods.find(filter={'prep': {'$regex': f'^{surname}$', "$options": '/i'}}))
 
+    def get_search_list(self, search_words: str) -> list:
+        """возвращает список групп по слову из поиска"""
+        return list(self._db.groups.find(filter={'name': {'$regex': f'.*{search_words}.*', "$options": '/i'}}))
+
     def get_schedule_prep(self, group):
         """возвращает расписание преподавателя"""
         return self._db.prepods_schedule.find_one(filter={'prep': group})
