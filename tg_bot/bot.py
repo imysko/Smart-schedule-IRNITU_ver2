@@ -115,15 +115,17 @@ def prep_registration_handler(message):
     teacher_registration.reg_prep_choose_from_list(bot=bot, message=message, storage=storage)
 
 
-@bot.callback_query_handler(func=lambda message: 'main_menu' or 'search' in message.data)
-def prep_registration_handler(message):
-    handler_buttons(bot=bot, message=message, storage=storage, tz=TZ_IRKUTSK)
-
-
 @bot.callback_query_handler(func=lambda message: any(word in message.data for word in content_reminder_settings))
 def reminder_settings_handler(message):
     data = message.data
     reminders.reminder_settings(bot=bot, message=message, storage=storage, tz=TZ_IRKUTSK)
+    logger.info(f'Inline button data: {data}')
+
+
+@bot.callback_query_handler(func=lambda message: 'main_menu' or 'search' in message.data)
+def prep_registration_handler(message):
+    data = message.data
+    handler_buttons(bot=bot, message=message, storage=storage, tz=TZ_IRKUTSK)
     logger.info(f'Inline button data: {data}')
 
 

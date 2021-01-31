@@ -41,9 +41,10 @@ def start_search(bot, message, storage, tz):
 def search(message, bot, storage, tz, last_msg=None):
     """Регистрация преподавателя"""
     global Condition_request
+    print(message)
     chat_id = message.chat.id
+    message_id = message.message_id
     message = message.text
-    user = storage.get_user(chat_id=chat_id)
     all_found_groups = []
     all_found_prep = []
     page = 1
@@ -57,7 +58,8 @@ def search(message, bot, storage, tz, last_msg=None):
         request_group = storage.get_search_list(message)
         # Результат запроса по преподам
         request_prep = storage.get_search_list_prep(message)
-        # Циклы нужны для общего поиска. Здесь мы удаляем старые ключи в обоих реквестах и создаём один общий ключ, как для групп, так и для преподов
+        # Циклы нужны для общего поиска. Здесь мы удаляем старые ключи в обоих реквестах и создаём один общий ключ,
+        # как для групп, так и для преподов
         for i in request_group:
             i['search'] = i.pop('name')
         for i in request_prep:
@@ -67,7 +69,6 @@ def search(message, bot, storage, tz, last_msg=None):
         # Склеиваем результаты двух запросов для общего поиска
         request = request_group + request_prep
         # Отправляем в функцию данные для создания клавиатуры
-        keyboard = keyboards.make_keyboard_search_group(page, request)
         # Эти циклы записывают группы и преподов в нижнем регистре для удобной работы с ними
         for i in request_group:
             all_found_groups.append(i['search'].lower())
@@ -80,7 +81,17 @@ def search(message, bot, storage, tz, last_msg=None):
         # Записываем все данные под ключом пользователя
         Condition_request[chat_id] = list_search
         # Выводим результат поиска с клавиатурой (кливиатур формируется по поисковому запросу)
-        bot.send_message(chat_id=chat_id, text='Результат поиска', reply_markup=keyboard)
+        print(message_id)
+        if len(request) > 10:
+            requests = request[:10 * page]
+            more_than_10 = True
+            bot.send_message(chat_id=chat_id, text='Результат поиска',
+                             reply_markup=keyboards.make_keyboard_search_group(page=page, more_than_10=more_than_10,
+                                                                               requests=requests))
+        else:
+            bot.send_message(chat_id=chat_id, text='Результат поиска',
+                             reply_markup=keyboards.make_keyboard_search_group(page=page, more_than_10=False,
+                                                                               requests=request))
         bot.clear_step_handler_by_chat_id(chat_id=chat_id)
 
     else:
@@ -93,9 +104,12 @@ def search(message, bot, storage, tz, last_msg=None):
 def handler_buttons(bot, message, storage, tz):
     """Обрабатываем колбэк преподавателя"""
     global Condition_request
+    print(message)
     chat_id = message.message.chat.id
     message_id = message.message.message_id
     data = json.loads(message.data)
+    if not Condition_request[chat_id]:
+        Condition_request[chat_id][0] = 1
     page = Condition_request[chat_id][0]
     request_word = Condition_request[chat_id][1]
 
@@ -105,7 +119,8 @@ def handler_buttons(bot, message, storage, tz):
     request_group = storage.get_search_list(request_word)
     # Результат запроса по преподам
     request_prep = storage.get_search_list_prep(request_word)
-    # Циклы нужны для общего поиска. Здесь мы удаляем старые ключи в обоих реквестах и создаём один общий ключ, как для групп, так и для преподов
+    # Циклы нужны для общего поиска. Здесь мы удаляем старые ключи в обоих реквестах и создаём один общий ключ,
+    # как для групп, так и для преподов
     for i in request_group:
         i['search'] = i.pop('name')
     for i in request_prep:
@@ -114,19 +129,47 @@ def handler_buttons(bot, message, storage, tz):
     request = request_group + request_prep
 
     # Назад к институтам
+    print(message_id)
 
     if data['main_menu'].lower() in Condition_request[chat_id][2]:
         bot.send_message(chat_id=chat_id, text='Выберите неделю',
                          reply_markup=keyboards.make_keyboard_choose_schedule())
 
+
+
+
+
+
     elif data['main_menu'] == 'back':
-        bot.edit_message_text(message_id=message_id, chat_id=chat_id, text=f'Вы на странице {page - 1}',
-                         reply_markup=keyboards.make_keyboard_search_group(page - 1, request))
+        more_than_10 = False
+        if len(request) > 10:
+            requests = request[:10 * page - 1]
+            more_than_10 = True
+        bot.edit_message_reply_markup(message_id=message_id, chat_id=chat_id,
+                                      reply_markup=keyboards.make_keyboard_search_group(page=page - 1,
+                                                                                        requests=requests,
+                                                                                        more_than_10=more_than_10))
         Condition_request[chat_id][0] -= 1
+
+
+
     elif data['main_menu'] == 'next':
-        bot.edit_message_text(message_id=message_id, chat_id=chat_id, text=f'Вы на странице {page + 1}',
-                         reply_markup=keyboards.make_keyboard_search_group(page + 1, request))
+        more_than_10 = False
+        if len(request) > 10:
+            requests = request[:10 * page + 1]
+            more_than_10 = True
+        bot.edit_message_reply_markup(message_id=message_id, chat_id=chat_id,
+                                      reply_markup=keyboards.make_keyboard_search_group(page=page + 1,
+                                                                                        requests=requests,
+                                                                                        more_than_10=more_than_10))
         Condition_request[chat_id][0] += 1
+
+
+
+
+
+
+
     # Регистрируем преподавателя по выбранной кнопке
     elif data['main_menu'] == 'main':
         bot.send_message(chat_id=chat_id, text='Основное меню',
