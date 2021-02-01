@@ -41,16 +41,16 @@ def start_search(bot, message, storage, tz):
 def search(message, bot, storage, tz, last_msg=None):
     """Регистрация преподавателя"""
     global Condition_request
-    print(message)
     chat_id = message.chat.id
     message_id = message.message_id
     message = message.text
     all_found_groups = []
     all_found_prep = []
-    page = 1
+    page = 0
 
     if last_msg:
         message_id = last_msg.message_id
+
         bot.delete_message(message_id=message_id, chat_id=chat_id)
 
     if storage.get_search_list(message) or storage.get_search_list_prep(message):
@@ -81,9 +81,8 @@ def search(message, bot, storage, tz, last_msg=None):
         # Записываем все данные под ключом пользователя
         Condition_request[chat_id] = list_search
         # Выводим результат поиска с клавиатурой (кливиатур формируется по поисковому запросу)
-        print(message_id)
         if len(request) > 10:
-            requests = request[:10 * page]
+            requests = request[:10 * (page + 1)]
             more_than_10 = True
             bot.send_message(chat_id=chat_id, text='Результат поиска',
                              reply_markup=keyboards.make_keyboard_search_group(page=page, more_than_10=more_than_10,
@@ -104,12 +103,11 @@ def search(message, bot, storage, tz, last_msg=None):
 def handler_buttons(bot, message, storage, tz):
     """Обрабатываем колбэк преподавателя"""
     global Condition_request
-    print(message)
     chat_id = message.message.chat.id
     message_id = message.message.message_id
     data = json.loads(message.data)
     if not Condition_request[chat_id]:
-        Condition_request[chat_id][0] = 1
+        Condition_request[chat_id][1] = ''
     page = Condition_request[chat_id][0]
     request_word = Condition_request[chat_id][1]
 
@@ -129,46 +127,41 @@ def handler_buttons(bot, message, storage, tz):
     request = request_group + request_prep
 
     # Назад к институтам
-    print(message_id)
-
     if data['main_menu'].lower() in Condition_request[chat_id][2]:
         bot.send_message(chat_id=chat_id, text='Выберите неделю',
                          reply_markup=keyboards.make_keyboard_choose_schedule())
 
-
-
-
-
-
     elif data['main_menu'] == 'back':
         more_than_10 = False
         if len(request) > 10:
-            requests = request[:10 * page - 1]
+            requests = request[10 * (page - 1):10 * page]
             more_than_10 = True
-        bot.edit_message_reply_markup(message_id=message_id, chat_id=chat_id,
-                                      reply_markup=keyboards.make_keyboard_search_group(page=page - 1,
-                                                                                        requests=requests,
-                                                                                        more_than_10=more_than_10))
+
+        if Condition_request[chat_id][0] - 1 == 0:
+            bot.delete_message(message_id=message_id, chat_id=chat_id)
+            bot.send_message(chat_id=chat_id, text=f'Первая страница поиска:',
+                             reply_markup=keyboards.make_keyboard_search_group(page=page - 1,
+                                                                               requests=requests,
+                                                                               more_than_10=more_than_10))
+
+        else:
+            bot.edit_message_reply_markup(message_id=message_id, chat_id=chat_id,
+                                          reply_markup=keyboards.make_keyboard_search_group(page=page - 1,
+                                                                                            requests=requests,
+                                                                                            more_than_10=more_than_10))
         Condition_request[chat_id][0] -= 1
 
-
-
     elif data['main_menu'] == 'next':
+        bot.delete_message(message_id=message_id, chat_id=chat_id)
         more_than_10 = False
         if len(request) > 10:
-            requests = request[:10 * page + 1]
+            requests = request[10 * (page + 1):10 * (page + 2)]
             more_than_10 = True
-        bot.edit_message_reply_markup(message_id=message_id, chat_id=chat_id,
-                                      reply_markup=keyboards.make_keyboard_search_group(page=page + 1,
-                                                                                        requests=requests,
-                                                                                        more_than_10=more_than_10))
+        bot.send_message(chat_id=chat_id, text=f'Следующая страница',
+                         reply_markup=keyboards.make_keyboard_search_group(page=page + 1,
+                                                                           requests=requests,
+                                                                           more_than_10=more_than_10))
         Condition_request[chat_id][0] += 1
-
-
-
-
-
-
 
     # Регистрируем преподавателя по выбранной кнопке
     elif data['main_menu'] == 'main':

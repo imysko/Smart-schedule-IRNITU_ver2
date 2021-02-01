@@ -99,23 +99,19 @@ def make_keyboard_main_menu():
 
 
 def make_keyboard_search_group(page, more_than_10=False, requests=[]):
-    print(requests)
-    requests_start = requests
     markup = types.InlineKeyboardMarkup()
     for request in requests:
         name = request['search']
         data = json.dumps({"main_menu": name}, ensure_ascii=False)
         markup.add(types.InlineKeyboardButton(text=name, callback_data=data))
     # Кнопка назад
-    if page == 1:
+    if page == 0:
         if more_than_10:
             data = json.dumps({"main_menu": "next"}, ensure_ascii=False)
             markup.add(types.InlineKeyboardButton(text='>', callback_data=data))
         data = json.dumps({"main_menu": "main"}, ensure_ascii=False)
         markup.add(types.InlineKeyboardButton(text='Основное меню', callback_data=data))
-    elif requests_start[len(requests_start) - 1] in requests:
-        data = json.dumps({"main_menu": "back"}, ensure_ascii=False)
-        markup.add(types.InlineKeyboardButton(text='<', callback_data=data))
+
     else:
         data_next = json.dumps({"main_menu": "next"}, ensure_ascii=False)
         data_back = json.dumps({"main_menu": "back"}, ensure_ascii=False)
