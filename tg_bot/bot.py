@@ -12,7 +12,7 @@ from tg_bot.functions.storage import MongodbService
 from tg_bot.functions.logger import logger
 from tg_bot.tools.keyboards import *
 from tg_bot.actions.search.prep_and_group_search import start_search, handler_buttons, search
-from tg_bot.actions.search.aud_search import start_search_aud, search, handler_buttons_aud
+from tg_bot.actions.search.aud_search import start_search_aud, handler_buttons_aud
 
 from flask import Flask, request
 
@@ -113,17 +113,16 @@ def reminders_info_handler(message):
                      reply_markup=make_keyboard_search_goal())
 
 
-@bot.message_handler(func=lambda message: 'Группы и преподаватели' or 'Аудитории' in message.text,
+@bot.message_handler(func=lambda message: message.text == 'Группы и преподаватели' or message.text == 'Аудитории',
                      content_types=['text'])
 def reminders_info_handler(message):
     """Выбор поиска"""
     data = message.chat.id
     if message.text == "Группы и преподаватели":
         start_search(bot=bot, message=message, storage=storage, tz=TZ_IRKUTSK)
-        logger.info(f'Inline button data: {data}')
     else:
         start_search_aud(bot=bot, message=message, storage=storage, tz=TZ_IRKUTSK)
-        logger.info(f'Inline button data: {data}')
+    logger.info(f'Inline button data: {data}')
 
 
 @bot.callback_query_handler(func=lambda message: 'prep_id' in message.data)
@@ -169,6 +168,10 @@ def main_menu_buttons_handler(message):
     """Основные кнопки главного меню"""
     main_menu.processing_main_buttons(bot=bot, message=message, storage=storage, tz=TZ_IRKUTSK)
 
+
+@bot.callback_query_handler(func=lambda call: True)
+def callback_inline(call):
+    print(call)
 
 # ==================== Обработка текста ==================== #
 @bot.message_handler(content_types=['text'])

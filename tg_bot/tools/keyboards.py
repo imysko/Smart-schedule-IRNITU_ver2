@@ -103,7 +103,7 @@ def make_inline_keyboard_notifications(time=0):
 def make_keyboard_main_menu():
     """ Клавиатура выхода в основное меню """
     markup = types.InlineKeyboardMarkup()
-    data = json.dumps({'main_menu': 'main'})
+    data = json.dumps({'prep_list': 'main'})
     markup.add(types.InlineKeyboardButton(text='Основное меню', callback_data=data))
     return markup
 

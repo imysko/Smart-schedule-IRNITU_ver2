@@ -10,8 +10,6 @@ aud_list = {}
 
 
 def start_search_aud(bot, message, storage, tz):
-    data = message.chat.id
-    message_id = message.message_id
     # ID пользователя
     chat_id = message.chat.id
     # Создаём ключ по значению ID пользователя
@@ -27,7 +25,7 @@ def start_search_aud(bot, message, storage, tz):
                                                      'Например: Ж-317, или Ж317',
                                reply_markup=keyboards.make_keyboard_main_menu())
 
-        bot.register_next_step_handler(msg, search, bot=bot, tz=tz, storage=storage)
+        bot.register_next_step_handler(msg, search_aud, bot=bot, tz=tz, storage=storage)
 
     else:
 
@@ -37,7 +35,7 @@ def start_search_aud(bot, message, storage, tz):
                          reply_markup=keyboards.make_inline_keyboard_choose_institute(storage.get_institutes()))
 
 
-def search(message, bot, storage, tz, last_msg=None):
+def search_aud(message, bot, storage, tz, last_msg=None):
     """Регистрация преподавателя"""
     global aud_list
     chat_id = message.chat.id
@@ -76,7 +74,7 @@ def search(message, bot, storage, tz, last_msg=None):
             if item.replace('-', '').lower() in message.replace(' ', '').lower():
                 message = item
 
-    if storage.get_schedule_aud(message) and aud_list[chat_id] == []:
+    if storage.get_schedule_aud(message):
         # Результат запроса по аудам
         request_aud = storage.get_schedule_aud(message)
         # Циклы нужны для общего поиска. Здесь мы удаляем старые ключи в обоих реквестах и создаём один общий ключ, как для групп, так и для преподов
@@ -84,6 +82,7 @@ def search(message, bot, storage, tz, last_msg=None):
             i['search_aud'] = i.pop('aud')
         # Записываем слово, которое ищем
         request_word = message
+
         last_request = request_aud[-1]
         # Эти циклы записывают группы и преподов в нижнем регистре для удобной работы с ними
         for i in request_aud:
@@ -101,7 +100,7 @@ def search(message, bot, storage, tz, last_msg=None):
                                                                                          page=page,
                                                                                          more_than_10=more_than_10,
                                                                                          requests=requests))
-            bot.register_next_step_handler(msg, search, bot=bot, storage=storage, tz=tz, last_msg=msg)
+            bot.register_next_step_handler(msg, search_aud, bot=bot, storage=storage, tz=tz, last_msg=msg)
 
         else:
             msg = bot.send_message(chat_id=chat_id, text='Результат поиска',
@@ -109,14 +108,13 @@ def search(message, bot, storage, tz, last_msg=None):
                                                                                          page=page,
                                                                                          more_than_10=False,
                                                                                          requests=request_aud))
-            bot.register_next_step_handler(msg, search, bot=bot, storage=storage, tz=tz, last_msg=msg)
-
+            bot.register_next_step_handler(msg, search_aud, bot=bot, storage=storage, tz=tz, last_msg=msg)
 
 
 
     elif ('На текущую неделю' == message or 'На следующую неделю' == message):
-        group = aud_list[chat_id][1]
         request_word = aud_list[chat_id][1]
+
         request_aud = storage.get_schedule_aud(request_word)
 
         # Если есть запрос для группы, то формируем расписание для группы, а если нет, то для препода
@@ -137,7 +135,7 @@ def search(message, bot, storage, tz, last_msg=None):
         aud = request_word
         schedule_str = full_schedule_in_str_prep(schedule, week=week, aud=aud)
 
-        bot.send_message(chat_id=chat_id, text=f'Расписание {group}\n'
+        bot.send_message(chat_id=chat_id, text=f'Расписание {request_word}\n'
                                                f'Неделя: {week_name}',
                          reply_markup=keyboards.make_keyboard_start_menu())
 
@@ -147,10 +145,12 @@ def search(message, bot, storage, tz, last_msg=None):
 
         bot.clear_step_handler_by_chat_id(chat_id=chat_id)
 
+
     else:
         msg = bot.send_message(chat_id=chat_id, text='Проверьте правильность ввода 😞',
                                reply_markup=keyboards.make_keyboard_main_menu())
-        bot.register_next_step_handler(msg, search, bot=bot, storage=storage, tz=tz, last_msg=msg)
+        bot.register_next_step_handler(msg, search_aud, bot=bot, storage=storage, tz=tz, last_msg=msg)
+
 
     return
 
@@ -158,24 +158,18 @@ def search(message, bot, storage, tz, last_msg=None):
 def handler_buttons_aud(bot, message, storage, tz):
     """Обрабатываем колбэк преподавателя"""
     global aud_list
+
     chat_id = message.message.chat.id
     message_id = message.message.message_id
     data = json.loads(message.data)
     all_found_aud = []
-    if data['menu_aud'] == 'main':
-        msg = bot.send_message(chat_id=chat_id, text='Основное меню',
-                               reply_markup=keyboards.make_keyboard_start_menu())
-        bot.register_next_step_handler(msg, search, bot=bot, storage=storage, tz=tz, last_msg=msg)
-
-        bot.delete_message(message_id=message_id, chat_id=chat_id)
-
-        bot.clear_step_handler_by_chat_id(chat_id=chat_id)
-        return
 
     if not aud_list[chat_id] and len(aud_list[chat_id]) != 0:
         aud_list[chat_id][1] = ''
 
     page = aud_list[chat_id][0]
+
+
     request_aud = storage.get_schedule_aud(aud_list[chat_id][1])
     # Циклы нужны для общего поиска. Здесь мы удаляем старые ключи в обоих реквестах и создаём один общий ключ, как для групп, так и для преподов
     for i in request_aud:
@@ -191,12 +185,11 @@ def handler_buttons_aud(bot, message, storage, tz):
     # Записываем все данные под ключом пользователя
     aud_list[chat_id] = list_search
 
-    # Назад к институтам
     if data['menu_aud'].lower() in aud_list[chat_id][2]:
         aud_list[chat_id][1] = data['menu_aud'].lower()
         msg = bot.send_message(chat_id=chat_id, text='Выберите неделю',
                                reply_markup=keyboards.make_keyboard_choose_schedule())
-        bot.register_next_step_handler(msg, search, bot=bot, storage=storage, tz=tz, last_msg=msg)
+        bot.register_next_step_handler(msg, search_aud, bot=bot, storage=storage, tz=tz, last_msg=msg)
 
 
     elif data['menu_aud'] == 'back':
@@ -212,7 +205,7 @@ def handler_buttons_aud(bot, message, storage, tz):
                                                                                          page=page - 1,
                                                                                          requests=requests,
                                                                                          more_than_10=more_than_10))
-            bot.register_next_step_handler(msg, search, bot=bot, storage=storage, tz=tz, last_msg=msg)
+            bot.register_next_step_handler(msg, search_aud, bot=bot, storage=storage, tz=tz, last_msg=msg)
 
         else:
             bot.edit_message_reply_markup(message_id=message_id, chat_id=chat_id,
@@ -234,7 +227,7 @@ def handler_buttons_aud(bot, message, storage, tz):
                                                                                      page=page + 1,
                                                                                      requests=requests,
                                                                                      more_than_10=more_than_10))
-        bot.register_next_step_handler(msg, search, bot=bot, storage=storage, tz=tz, last_msg=msg)
+        bot.register_next_step_handler(msg, search_aud, bot=bot, storage=storage, tz=tz, last_msg=msg)
         aud_list[chat_id][0] += 1
 
     # Регистрируем преподавателя по выбранной кнопке
@@ -242,4 +235,6 @@ def handler_buttons_aud(bot, message, storage, tz):
     else:
         msg = bot.send_message(chat_id=chat_id, text='Проверьте правильность ввода 😞',
                                reply_markup=keyboards.make_keyboard_main_menu())
-        bot.register_next_step_handler(msg, search, bot=bot, storage=storage, tz=tz, last_msg=msg)
+        bot.register_next_step_handler(msg, search_aud, bot=bot, storage=storage, tz=tz, last_msg=msg)
+
+

@@ -133,7 +133,8 @@ def search(message, bot, storage, tz, last_msg=None):
                                                f'Неделя: {week_name}',
                          reply_markup=keyboards.make_keyboard_start_menu())
         # Отправка расписания
-        schedule_processing.sending_schedule_search(bot=bot, message=message, chat_id=chat_id, schedule_str=schedule_str)
+        schedule_processing.sending_schedule_search(bot=bot, message=message, chat_id=chat_id,
+                                                    schedule_str=schedule_str)
 
         bot.clear_step_handler_by_chat_id(chat_id=chat_id)
     else:
@@ -151,15 +152,14 @@ def handler_buttons(bot, message, storage, tz):
     message_id = message.message.message_id
     data = json.loads(message.data)
 
-
     if data['prep_list'] == 'main':
-        msg = bot.send_message(chat_id=chat_id, text='Основное меню',
-                               reply_markup=keyboards.make_keyboard_start_menu())
-        bot.register_next_step_handler(msg, search, bot=bot, storage=storage, tz=tz, last_msg=msg)
 
+        bot.send_message(chat_id=chat_id, text='Основное меню',
+                         reply_markup=keyboards.make_keyboard_start_menu())
         bot.delete_message(message_id=message_id, chat_id=chat_id)
 
         bot.clear_step_handler_by_chat_id(chat_id=chat_id)
+
         return
 
     if not Condition_request[chat_id] and len(Condition_request[chat_id]) != 0:
