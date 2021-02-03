@@ -53,6 +53,7 @@ def make_inline_keyboard_choose_courses(courses=[]):
     return markup
 
 
+
 def make_inline_keyboard_choose_groups(groups=[]):
     """Кнопки выбора группы"""
     markup = types.InlineKeyboardMarkup()
@@ -98,7 +99,7 @@ def make_keyboard_main_menu():
     return markup
 
 
-def make_keyboard_search_group(page, more_than_10=False, requests=[]):
+def make_keyboard_search_group(last_request, page, more_than_10=False, requests=[]):
     markup = types.InlineKeyboardMarkup()
     for request in requests:
         name = request['search']
@@ -111,7 +112,9 @@ def make_keyboard_search_group(page, more_than_10=False, requests=[]):
             markup.add(types.InlineKeyboardButton(text='>', callback_data=data))
         data = json.dumps({"main_menu": "main"}, ensure_ascii=False)
         markup.add(types.InlineKeyboardButton(text='Основное меню', callback_data=data))
-
+    elif last_request == requests[-1]:
+        data = json.dumps({"main_menu": "back"}, ensure_ascii=False)
+        markup.add(types.InlineKeyboardButton(text='<', callback_data=data))
     else:
         data_next = json.dumps({"main_menu": "next"}, ensure_ascii=False)
         data_back = json.dumps({"main_menu": "back"}, ensure_ascii=False)

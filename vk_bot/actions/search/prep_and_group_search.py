@@ -124,6 +124,7 @@ async def search(bot: Bot, ans: Message, storage):
             schedule = storage.get_schedule(group=group)
         elif request_prep:
             schedule = request_prep[0]
+
         if schedule['schedule'] == []:
             await ans.answer('Расписание временно недоступно\nПопробуйте позже⏱')
             return

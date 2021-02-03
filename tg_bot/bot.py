@@ -5,17 +5,17 @@ import pytz
 import os
 from time import sleep
 
-from actions import commands
-from actions.main_menu import schedule, reminders, main_menu
-from actions.registration import student_registration, teacher_registration
-from functions.storage import MongodbService
-from functions.logger import logger
-from tools.keyboards import *
-from actions.search.prep_and_group_search import start_search, handler_buttons
+from tg_bot.actions import commands
+from tg_bot.actions.main_menu import schedule, reminders, main_menu
+from tg_bot.actions.registration import student_registration, teacher_registration
+from tg_bot.functions.storage import MongodbService
+from tg_bot.functions.logger import logger
+from tg_bot.tools.keyboards import *
+from tg_bot.actions.search.prep_and_group_search import start_search, handler_buttons, search
 
 from flask import Flask, request
 
-from tools import statistics
+from tg_bot.tools import statistics
 
 TOKEN = os.environ.get('TOKEN')
 HOST_URL = os.environ.get('HOST_URL')
@@ -154,6 +154,7 @@ def text(message):
     data = message.text
     user = storage.get_user(chat_id=chat_id)
     logger.info(f'Message data: {data}')
+
 
     if user:
         bot.send_message(chat_id, text='Я вас не понимаю 😞', reply_markup=make_keyboard_start_menu())
