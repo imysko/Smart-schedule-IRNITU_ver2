@@ -49,7 +49,6 @@ def search(message, bot, storage, tz, last_msg=None):
 
     if last_msg:
         message_id = last_msg.message_id
-
         bot.delete_message(message_id=message_id, chat_id=chat_id)
 
     if storage.get_search_list(message) or storage.get_search_list_prep(message):
@@ -164,8 +163,11 @@ def handler_buttons(bot, message, storage, tz):
 
     if not Condition_request[chat_id] and len(Condition_request[chat_id]) != 0:
         Condition_request[chat_id][1] = ''
+
+
     page = Condition_request[chat_id][0]
     request_word = Condition_request[chat_id][1]
+
     # Выходим из цикла поиска преподавателя по ФИО
     bot.clear_step_handler_by_chat_id(chat_id=chat_id)
     # Результат запроса по группам

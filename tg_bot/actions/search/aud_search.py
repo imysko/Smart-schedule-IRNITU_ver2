@@ -169,13 +169,12 @@ def handler_buttons_aud(bot, message, storage, tz):
 
     page = aud_list[chat_id][0]
 
-
     request_aud = storage.get_schedule_aud(aud_list[chat_id][1])
     # Циклы нужны для общего поиска. Здесь мы удаляем старые ключи в обоих реквестах и создаём один общий ключ, как для групп, так и для преподов
     for i in request_aud:
         i['search_aud'] = i.pop('aud')
     # Записываем слово, которое ищем
-    request_word = message
+    request_word = aud_list[chat_id][1]
     last_request = request_aud[-1]
     # Эти циклы записывают группы и преподов в нижнем регистре для удобной работы с ними
     for i in request_aud:
