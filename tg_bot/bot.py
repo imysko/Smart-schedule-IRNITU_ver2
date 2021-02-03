@@ -12,6 +12,7 @@ from tg_bot.functions.storage import MongodbService
 from tg_bot.functions.logger import logger
 from tg_bot.tools.keyboards import *
 from tg_bot.actions.search.prep_and_group_search import start_search, handler_buttons, search
+from tg_bot.actions.search.aud_search import start_search_aud, search, handler_buttons_aud
 
 from flask import Flask, request
 
@@ -36,6 +37,8 @@ content_main_menu_buttons = ['Основное меню', '<==Назад', 'Сп
 
 content_students_registration = ['institute', 'course', 'group']
 content_reminder_settings = ['notification_btn', 'del_notifications', 'add_notifications', 'save_notifications']
+content_prep_group = ["found_prep", "prep_list"]
+content_aud = ["search_aud", "menu_aud"]
 
 
 # Обработка запросов от telegram
@@ -104,10 +107,23 @@ def student_registration_handler(message):
 
 @bot.message_handler(func=lambda message: message.text == 'Поиск 🔎', content_types=['text'])
 def reminders_info_handler(message):
-    """Поиск"""
+    """Начало поиска"""
+    chat_id = message.chat.id
+    bot.send_message(chat_id=chat_id, text='Выберите, что будем искать',
+                     reply_markup=make_keyboard_search_goal())
+
+
+@bot.message_handler(func=lambda message: 'Группы и преподаватели' or 'Аудитории' in message.text,
+                     content_types=['text'])
+def reminders_info_handler(message):
+    """Выбор поиска"""
     data = message.chat.id
-    start_search(bot=bot, message=message, storage=storage, tz=TZ_IRKUTSK)
-    logger.info(f'Inline button data: {data}')
+    if message.text == "Группы и преподаватели":
+        start_search(bot=bot, message=message, storage=storage, tz=TZ_IRKUTSK)
+        logger.info(f'Inline button data: {data}')
+    else:
+        start_search_aud(bot=bot, message=message, storage=storage, tz=TZ_IRKUTSK)
+        logger.info(f'Inline button data: {data}')
 
 
 @bot.callback_query_handler(func=lambda message: 'prep_id' in message.data)
@@ -122,10 +138,17 @@ def reminder_settings_handler(message):
     logger.info(f'Inline button data: {data}')
 
 
-@bot.callback_query_handler(func=lambda message: 'main_menu' or 'search' in message.data)
+@bot.callback_query_handler(func=lambda message: any(word in message.data for word in content_prep_group))
 def prep_registration_handler(message):
     data = message.data
     handler_buttons(bot=bot, message=message, storage=storage, tz=TZ_IRKUTSK)
+    logger.info(f'Inline button data: {data}')
+
+
+@bot.callback_query_handler(func=lambda message: any(word in message.data for word in content_aud))
+def prep_registration_handler(message):
+    data = message.data
+    handler_buttons_aud(bot=bot, message=message, storage=storage, tz=TZ_IRKUTSK)
     logger.info(f'Inline button data: {data}')
 
 
@@ -154,7 +177,6 @@ def text(message):
     data = message.text
     user = storage.get_user(chat_id=chat_id)
     logger.info(f'Message data: {data}')
-
 
     if user:
         bot.send_message(chat_id, text='Я вас не понимаю 😞', reply_markup=make_keyboard_start_menu())

@@ -60,9 +60,9 @@ def search(message, bot, storage, tz, last_msg=None):
         # Циклы нужны для общего поиска. Здесь мы удаляем старые ключи в обоих реквестах и создаём один общий ключ,
         # как для групп, так и для преподов
         for i in request_group:
-            i['search'] = i.pop('name')
+            i['found_prep'] = i.pop('name')
         for i in request_prep:
-            i['search'] = i.pop('prep_short_name')
+            i['found_prep'] = i.pop('prep_short_name')
         # Записываем слово, которое ищем
         request_word = message
         # Склеиваем результаты двух запросов для общего поиска
@@ -71,9 +71,9 @@ def search(message, bot, storage, tz, last_msg=None):
         # Отправляем в функцию данные для создания клавиатуры
         # Эти циклы записывают группы и преподов в нижнем регистре для удобной работы с ними
         for i in request_group:
-            all_found_groups.append(i['search'].lower())
+            all_found_groups.append(i['found_prep'].lower())
         for i in request_prep:
-            all_found_prep.append(i['search'].lower())
+            all_found_prep.append(i['found_prep'].lower())
         # Создаём общий список
         all_found_results = all_found_groups + all_found_prep
         # Формируем полный багаж для пользователя
@@ -133,7 +133,7 @@ def search(message, bot, storage, tz, last_msg=None):
                                                f'Неделя: {week_name}',
                          reply_markup=keyboards.make_keyboard_start_menu())
         # Отправка расписания
-        schedule_processing.sending_schedule_serach(bot=bot, message=message, chat_id=chat_id, schedule_str=schedule_str)
+        schedule_processing.sending_schedule_search(bot=bot, message=message, chat_id=chat_id, schedule_str=schedule_str)
 
         bot.clear_step_handler_by_chat_id(chat_id=chat_id)
     else:
@@ -151,7 +151,8 @@ def handler_buttons(bot, message, storage, tz):
     message_id = message.message.message_id
     data = json.loads(message.data)
 
-    if data['main_menu'] == 'main':
+
+    if data['prep_list'] == 'main':
         msg = bot.send_message(chat_id=chat_id, text='Основное меню',
                                reply_markup=keyboards.make_keyboard_start_menu())
         bot.register_next_step_handler(msg, search, bot=bot, storage=storage, tz=tz, last_msg=msg)
@@ -174,23 +175,23 @@ def handler_buttons(bot, message, storage, tz):
     # Циклы нужны для общего поиска. Здесь мы удаляем старые ключи в обоих реквестах и создаём один общий ключ,
     # как для групп, так и для преподов
     for i in request_group:
-        i['search'] = i.pop('name')
+        i['found_prep'] = i.pop('name')
     for i in request_prep:
-        i['search'] = i.pop('prep_short_name')
+        i['found_prep'] = i.pop('prep_short_name')
     # Склеиваем результаты двух запросов для общего поиска
     request = request_group + request_prep
 
     last_request = request[-1]
 
     # Назад к институтам
-    if data['main_menu'].lower() in Condition_request[chat_id][2]:
-        Condition_request[chat_id][1] = data['main_menu'].lower()
+    if data['prep_list'].lower() in Condition_request[chat_id][2]:
+        Condition_request[chat_id][1] = data['prep_list'].lower()
         msg = bot.send_message(chat_id=chat_id, text='Выберите неделю',
                                reply_markup=keyboards.make_keyboard_choose_schedule())
         bot.register_next_step_handler(msg, search, bot=bot, storage=storage, tz=tz, last_msg=msg)
 
 
-    elif data['main_menu'] == 'back':
+    elif data['prep_list'] == 'back':
         more_than_10 = False
         if len(request) > 10:
             requests = request[10 * (page - 1):10 * page]
@@ -213,7 +214,7 @@ def handler_buttons(bot, message, storage, tz):
                                                                                             more_than_10=more_than_10))
         Condition_request[chat_id][0] -= 1
 
-    elif data['main_menu'] == 'next':
+    elif data['prep_list'] == 'next':
         bot.delete_message(message_id=message_id, chat_id=chat_id)
         more_than_10 = False
         if len(request) > 10:

@@ -19,6 +19,15 @@ def make_keyboard_start_menu():
     markup.add(btn5, btn6)
     return markup
 
+def make_keyboard_search_goal():
+    markup = types.ReplyKeyboardMarkup(one_time_keyboard=False, resize_keyboard=True)
+    btn1 = types.KeyboardButton('Группы и преподаватели')
+    btn2 = types.KeyboardButton('Аудитории')
+    markup.add(btn1)
+    markup.add(btn2)
+    return markup
+
+
 
 def make_inline_keyboard_choose_institute(institutes=[]):
     """Кнопки выбора института"""
@@ -102,25 +111,49 @@ def make_keyboard_main_menu():
 def make_keyboard_search_group(last_request, page, more_than_10=False, requests=[]):
     markup = types.InlineKeyboardMarkup()
     for request in requests:
-        name = request['search']
-        data = json.dumps({"main_menu": name}, ensure_ascii=False)
+        name = request['found_prep']
+        data = json.dumps({"prep_list": name}, ensure_ascii=False)
         markup.add(types.InlineKeyboardButton(text=name, callback_data=data))
     # Кнопка назад
     if page == 0:
         if more_than_10:
-            data = json.dumps({"main_menu": "next"}, ensure_ascii=False)
+            data = json.dumps({"prep_list": "next"}, ensure_ascii=False)
             markup.add(types.InlineKeyboardButton(text='>', callback_data=data))
-        data = json.dumps({"main_menu": "main"}, ensure_ascii=False)
+        data = json.dumps({"prep_list": "main"}, ensure_ascii=False)
         markup.add(types.InlineKeyboardButton(text='Основное меню', callback_data=data))
     elif last_request == requests[-1]:
-        data = json.dumps({"main_menu": "back"}, ensure_ascii=False)
+        data = json.dumps({"prep_list": "back"}, ensure_ascii=False)
         markup.add(types.InlineKeyboardButton(text='<', callback_data=data))
     else:
-        data_next = json.dumps({"main_menu": "next"}, ensure_ascii=False)
-        data_back = json.dumps({"main_menu": "back"}, ensure_ascii=False)
+        data_next = json.dumps({"prep_list": "next"}, ensure_ascii=False)
+        data_back = json.dumps({"prep_list": "back"}, ensure_ascii=False)
         markup.add(types.InlineKeyboardButton(text='<', callback_data=data_back),
                    types.InlineKeyboardButton(text='>', callback_data=data_next))
     return markup
+
+def make_keyboard_search_group_aud(last_request, page, more_than_10=False, requests=[]):
+    markup = types.InlineKeyboardMarkup()
+    for request in requests:
+        name = request['search_aud']
+        data = json.dumps({"menu_aud": name}, ensure_ascii=False)
+        markup.add(types.InlineKeyboardButton(text=name, callback_data=data))
+    # Кнопка назад
+    if page == 0:
+        if more_than_10:
+            data = json.dumps({"menu_aud": "next"}, ensure_ascii=False)
+            markup.add(types.InlineKeyboardButton(text='>', callback_data=data))
+        data = json.dumps({"menu_aud": "main"}, ensure_ascii=False)
+        markup.add(types.InlineKeyboardButton(text='Основное меню', callback_data=data))
+    elif last_request == requests[-1]:
+        data = json.dumps({"menu_aud": "back"}, ensure_ascii=False)
+        markup.add(types.InlineKeyboardButton(text='<', callback_data=data))
+    else:
+        data_next = json.dumps({"menu_aud": "next"}, ensure_ascii=False)
+        data_back = json.dumps({"menu_aud": "back"}, ensure_ascii=False)
+        markup.add(types.InlineKeyboardButton(text='<', callback_data=data_back),
+                   types.InlineKeyboardButton(text='>', callback_data=data_next))
+    return markup
+
 
 
 def make_inline_keyboard_set_notifications(time=0):

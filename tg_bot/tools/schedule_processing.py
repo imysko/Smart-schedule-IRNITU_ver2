@@ -12,7 +12,7 @@ def sending_schedule_is_not_available(bot, message):
     bot.send_message(chat_id=chat_id, text='Расписание временно недоступно\n'
                                            'Попробуйте позже⏱')
 
-def sending_schedule_serach(bot, message, chat_id, schedule_str: str):
+def sending_schedule_search(bot, message, chat_id, schedule_str: str):
     """Отправка расписания пользователю"""
     for schedule in schedule_str:
         bot.send_message(chat_id=chat_id, text=f'{schedule}')
