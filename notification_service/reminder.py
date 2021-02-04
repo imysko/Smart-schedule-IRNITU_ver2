@@ -36,7 +36,7 @@ class Reminder:
             try:
                 schedule = self.storage.get_schedule(group=group)['schedule']
             except Exception as e:
-                logger.exception(f'Error ({group}):\n{e}')
+                logger.exception(f'Error (group: {group}):\n{e}')
                 continue
 
             # Получение расписания из нужного дня.
