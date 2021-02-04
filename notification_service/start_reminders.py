@@ -6,7 +6,7 @@ import telebot
 import vk_api
 
 from reminder import Reminder
-from storage import MongodbService
+from tools.storage import MongodbService
 
 TG_TOKEN = os.environ.get('TG_TOKEN')
 VK_TOKEN = os.environ.get('VK_TOKEN')

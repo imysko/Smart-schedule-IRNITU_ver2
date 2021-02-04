@@ -7,15 +7,12 @@ from typing import Literal
 import pytz
 
 import tools
-from logger import logger
+from tools.logger import logger
 
 VK_TOKEN = os.environ.get('VK')
 TZ_IRKUTSK = pytz.timezone('Asia/Irkutsk')
 locale_name = ('ru_RU.UTF-8' if platform.system() == 'Linux' else 'ru_RU')
 locale.setlocale(locale.LC_TIME, locale_name)
-
-
-# storage = MongodbService().get_instance()
 
 
 class Reminder:
@@ -66,7 +63,6 @@ class Reminder:
                 except Exception as e:
                     logger.exception(e)
 
-
     def __check_platform(self):
         """Проверка, что работает для такой платформы"""
         if self.platform == 'vk':
@@ -110,7 +106,8 @@ class Reminder:
                     user_day_reminder_time = user_days.get(day_now.lower())
 
                     # если время совпадает с текущим, добавляем в список на отправку
-                    if tools.check_that_user_has_reminder_enabled_for_the_current_time(time_now, user_day_reminder_time):
+                    if tools.check_that_user_has_reminder_enabled_for_the_current_time(time_now,
+                                                                                       user_day_reminder_time):
                         chat_id = reminder['chat_id']
                         group = reminder['group']
                         notifications = reminder['notifications']
