@@ -56,12 +56,13 @@ class Reminder:
                 try:
                     self.bot.send_message(chat_id=chat_id, text=text)
                 except Exception as e:
-                    logger.exception(e)
+                    logger.exception('---TG---\n', e)
             elif self.platform == 'vk':
                 try:
+                    logger.info('vk send user_id: {chat_id}\n', text)
                     self.bot.method('messages.send', {'user_id': chat_id, 'message': text, 'random_id': 0})
                 except Exception as e:
-                    logger.exception(e)
+                    logger.exception('---VK---\n', e)
 
     def __check_platform(self):
         """Проверка, что работает для такой платформы"""
