@@ -7,10 +7,8 @@ services:
   tg_bot:
     build: tg_bot/
     restart: always
-    container_name: tg_bot
     environment:
-      - TOKEN=${TG_TOKEN} # токен telegram бота
-      - HOST_URL=${HOST_URL} # URL сервера (если оставить HOST_URL пустымм, то бот запустится локально)
+      - TG_TOKEN=${TG_TOKEN} # токен telegram бота
       - MONGO_DB_ADDR=mongodb # адрес mongoDB
       - MONGO_DB_PORT=27017 # порт mongoDB
       - MONGO_DB_DATABASE=Smart_schedule_IRNITU # название базы данных
@@ -19,7 +17,6 @@ services:
   vk_bot:
     build: vk_bot/
     restart: always
-    container_name: vk_bot
     environment:
       - VK=${VK_TOKEN} # токен telegram бота
       - MONGO_DB_ADDR=mongodb # адрес mongoDB
@@ -30,7 +27,6 @@ services:
   notification_service:
     build: notification_service/
     restart: always
-    container_name: notification_service
     environment:
       - TG_TOKEN=${TG_TOKEN} # токен telegram бота
       - VK_TOKEN=${VK_TOKEN} # токен VK бота
@@ -42,7 +38,6 @@ services:
   web_manager:
     build: web_manager/
     restart: always
-    container_name: web_manager
     environment:
       - TG_TOKEN=${TG_TOKEN} # токен telegram бота
       - MONGO_DB_ADDR=mongodb # адрес mongoDB
@@ -53,7 +48,6 @@ services:
   nginx:
     build: nginx/
     restart: always
-    container_name: nginx
     ports:
       - 0.0.0.0:8080:80
 
@@ -68,7 +62,6 @@ services:
   getting_schedule:
     build: getting_schedule/
     restart: always
-    container_name: getting_schedule
     environment:
       - MONGO_DB_ADDR=mongodb # адрес mongoDB
       - MONGO_DB_PORT=27017 # порт mongoDB (default: 27017)
@@ -79,16 +72,3 @@ services:
       - PG_DB_HOST=${PG_DB_HOST} # адрес PostgreSQL
       - PG_DB_PORT=5432 # порт PostgreSQL (default: 5432)
       - GETTING_SCHEDULE_TIME_HOURS=1 # время задержки (в часах) между обращениями к PostgreSQL для получения расписания (default: 1)
-
-
-# НЕ ИСПОЛЬЗУЕТСЯ ЕСЛИ ЕСТЬ ВОЗМОЖНОСТЬ ПОЛУЧАТЬ ДАННЫЕ НАПРЯМУЮ ИЗ БАЗЫ
-#    parser:
-#      build: parser/
-#      restart: always
-#      container_name: parser
-#      environment:
-#        - URL_INSTITUTES=https://www.istu.edu/schedule/ # URL на страницу с выбором института
-#        - MONGO_DB_ADDR=mongodb # адрес mongoDB
-#        - MONGO_DB_PORT=27017 # порт mongoDB
-#        - MONGO_DB_DATABASE=Smart_schedule_IRNITU # название базы данных
-#        - PARSE_TIME_HOURS=1 # задержка между циклами парсинга (в часах)
