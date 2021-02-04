@@ -33,7 +33,10 @@ class Reminder:
             group = user['group']
             notifications = user['notifications']
 
-            schedule = self.storage.get_schedule(group=group)['schedule']
+            try:
+                schedule = self.storage.get_schedule(group=group)['schedule']
+            except Exception as e:
+                logger.exception('Error:\n', e)
 
             # Получение расписания из нужного дня.
             lessons = tools.get_schedule_from_right_day(schedule=schedule, day_now=day_now)
