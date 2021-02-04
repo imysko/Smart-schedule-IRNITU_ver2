@@ -83,6 +83,8 @@ def search(message, bot, storage, tz, last_msg=None):
         if len(request) > 10:
             requests = request[:10 * (page + 1)]
             more_than_10 = True
+            bot.send_message(chat_id=chat_id, text='Новый поиск',
+                             reply_markup=keyboards.make_keyboard_search_goal())
             msg = bot.send_message(chat_id=chat_id, text='Результат поиска',
                                    reply_markup=keyboards.make_keyboard_search_group(last_request=last_request,
                                                                                      page=page,
@@ -91,6 +93,8 @@ def search(message, bot, storage, tz, last_msg=None):
             bot.register_next_step_handler(msg, search, bot=bot, storage=storage, tz=tz, last_msg=msg)
 
         else:
+            bot.send_message(chat_id=chat_id, text='Новый поиск',
+                             reply_markup=keyboards.make_keyboard_search_goal())
             msg = bot.send_message(chat_id=chat_id, text='Результат поиска',
                                    reply_markup=keyboards.make_keyboard_search_group(last_request=last_request,
                                                                                      page=page,

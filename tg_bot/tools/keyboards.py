@@ -11,7 +11,7 @@ def make_keyboard_start_menu():
     btn2 = types.KeyboardButton('Ближайшая пара ⏱')
     btn3 = types.KeyboardButton('Расписание на сегодня 🍏')
     btn4 = types.KeyboardButton('Расписание на завтра 🍎')
-    btn5 = types.KeyboardButton('Напоминание 📣')
+    btn5 = types.KeyboardButton('Поиск 🔎')
     btn6 = types.KeyboardButton('Другое ⚡')
     markup.add(btn1, btn2)
     markup.add(btn3)
@@ -198,7 +198,7 @@ def make_keyboard_extra():
     """Создаём кнопки Другое ⚡ """
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=False, resize_keyboard=True)
     btn1 = types.KeyboardButton('Список команд')
-    btn2 = types.KeyboardButton('Поиск 🔎')
+    btn2 = types.KeyboardButton('Напоминание 📣')
     btn3 = types.KeyboardButton('Основное меню')
     markup.add(btn1)
     markup.add(btn2)
