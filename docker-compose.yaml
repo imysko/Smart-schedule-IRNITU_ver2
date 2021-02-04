@@ -1,7 +1,5 @@
 version: "3"
 
-volumes:
-  mongodb_volume:
 
 services:
   tg_bot:
