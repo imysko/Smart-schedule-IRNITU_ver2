@@ -1,31 +1,24 @@
-import telebot
+import os
 
 import pytz
-
-import os
-from time import sleep
-
+import telebot
 from actions import commands
 from actions.main_menu import schedule, reminders, main_menu
 from actions.registration import student_registration
-from functions.storage import MongodbService
 from functions.logger import logger
+from functions.storage import MongodbService
 from tools.keyboards import *
-
-from flask import Flask, request
 
 from tools import statistics
 
-TOKEN = os.environ.get('TOKEN')
-HOST_URL = os.environ.get('HOST_URL')
+TG_TOKEN = os.environ.get('TG_TOKEN')
+
 
 TZ_IRKUTSK = pytz.timezone('Asia/Irkutsk')
 
-bot = telebot.TeleBot(TOKEN, threaded=False)
+bot = telebot.TeleBot(TG_TOKEN, threaded=False)
 
 storage = MongodbService().get_instance()
-
-app = Flask(__name__)
 
 content_schedule = ['Расписание 🗓', 'Ближайшая пара ⏱', 'Расписание на сегодня 🍏', 'На текущую неделю',
                     'На следующую неделю',
@@ -35,19 +28,6 @@ content_main_menu_buttons = ['Основное меню', '<==Назад', 'Сп
 
 content_students_registration = ['institute', 'course', 'group']
 content_reminder_settings = ['notification_btn', 'del_notifications', 'add_notifications', 'save_notifications']
-
-
-# Обработка запросов от telegram
-@app.route(f'/telegram-bot/{TOKEN}', methods=["POST"])
-def webhook():
-    bot.process_new_updates([telebot.types.Update.de_json(request.stream.read().decode("utf-8"))])
-    return 'ok', 200
-
-
-# Проверка работы сервера бота
-@app.route('/telegram-bot/status')
-def status():
-    return 'Бот активен', 200
 
 
 # ==================== Обработка команд ==================== #
@@ -140,11 +120,6 @@ def text(message):
 
 
 if __name__ == '__main__':
-    bot.skip_pending = True
     bot.remove_webhook()
-    logger.info('Бот запущен локально')
-    bot.polling(none_stop=True, interval=0)
-else:
-    bot.remove_webhook()
-    sleep(1)
-    bot.set_webhook(url=f'{HOST_URL}/telegram-bot/{TOKEN}')
+    logger.info('Бот запущен...')
+    bot.infinity_polling(none_stop=True)

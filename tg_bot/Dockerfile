@@ -16,8 +16,4 @@ ENV LANG ru_RU.UTF-8
 ENV LC_ALL ru_RU.UTF-8
 
 
-EXPOSE 8080
-
-RUN chmod a+x ./run.sh
-
-CMD ["./run.sh"]
+CMD ["python3", "tg_bot.py"]
