@@ -37,13 +37,14 @@ class Reminder:
                 schedule = self.storage.get_schedule(group=group)['schedule']
             except Exception as e:
                 logger.exception(f'Error ({group}):\n{e}')
+                continue
 
-                # Получение расписания из нужного дня.
-                lessons = tools.get_schedule_from_right_day(schedule=schedule, day_now=day_now)
+            # Получение расписания из нужного дня.
+            lessons = tools.get_schedule_from_right_day(schedule=schedule, day_now=day_now)
 
-                # если не нашлось переходем к след user
-                if not lessons:
-                    continue
+            # если не нашлось переходем к след user
+            if not lessons:
+                continue
 
             lessons_for_reminders = tools.forming_message_text(lessons=lessons, week=week, time=time)
 
