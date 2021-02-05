@@ -44,9 +44,10 @@ def search_aud(message, bot, storage, tz, last_msg=None):
     prep_list = []
     page = 0
 
-    if last_msg:
-        message_id = last_msg.message_id
-        bot.delete_message(message_id=message_id, chat_id=chat_id)
+    if ('На текущую неделю' == message or 'На следующую неделю' == message):
+        return
+
+
 
     if not storage.get_schedule_aud(message) and len(message.replace(' ', '')) < 15:
         # Отправляем запросы в базу посимвольно
@@ -95,6 +96,8 @@ def search_aud(message, bot, storage, tz, last_msg=None):
         if len(request_aud) > 10:
             requests = request_aud[:10 * (page + 1)]
             more_than_10 = True
+            bot.send_message(chat_id=chat_id, text='Новый поиск',
+                             reply_markup=keyboards.make_keyboard_search_goal())
             msg = bot.send_message(chat_id=chat_id, text='Результат поиска',
                                    reply_markup=keyboards.make_keyboard_search_group_aud(last_request=last_request,
                                                                                          page=page,
@@ -103,6 +106,8 @@ def search_aud(message, bot, storage, tz, last_msg=None):
             bot.register_next_step_handler(msg, search_aud, bot=bot, storage=storage, tz=tz, last_msg=msg)
 
         else:
+            bot.send_message(chat_id=chat_id, text='Новый поиск',
+                             reply_markup=keyboards.make_keyboard_search_goal())
             msg = bot.send_message(chat_id=chat_id, text='Результат поиска',
                                    reply_markup=keyboards.make_keyboard_search_group_aud(last_request=last_request,
                                                                                          page=page,
@@ -111,46 +116,11 @@ def search_aud(message, bot, storage, tz, last_msg=None):
             bot.register_next_step_handler(msg, search_aud, bot=bot, storage=storage, tz=tz, last_msg=msg)
 
 
-
-    elif ('На текущую неделю' == message or 'На следующую неделю' == message):
-        request_word = aud_list[chat_id][1]
-
-        request_aud = storage.get_schedule_aud(request_word)
-
-        # Если есть запрос для группы, то формируем расписание для группы, а если нет, то для препода
-        schedule = request_aud[0]
-
-        if not schedule:
-            schedule_processing.sending_schedule_is_not_available_search(message=message, chat_id=chat_id, bot=bot)
-            return
-
-        schedule = schedule['schedule']
-        week = find_week()
-
-        # меняем неделю
-        if message == 'На следующую неделю':
-            week = 'odd' if week == 'even' else 'even'
-
-        week_name = 'четная' if week == 'odd' else 'нечетная'
-        aud = request_word
-        schedule_str = full_schedule_in_str_prep(schedule, week=week, aud=aud)
-
-        bot.send_message(chat_id=chat_id, text=f'Расписание {request_word}\n'
-                                               f'Неделя: {week_name}',
-                         reply_markup=keyboards.make_keyboard_start_menu())
-
-        # Отправка расписания
-        schedule_processing.sending_schedule_search(bot=bot, message=message, chat_id=chat_id,
-                                                    schedule_str=schedule_str)
-
-        bot.clear_step_handler_by_chat_id(chat_id=chat_id)
-
-
     else:
+
         msg = bot.send_message(chat_id=chat_id, text='Проверьте правильность ввода 😞',
                                reply_markup=keyboards.make_keyboard_main_menu())
         bot.register_next_step_handler(msg, search_aud, bot=bot, storage=storage, tz=tz, last_msg=msg)
-
 
     return
 
@@ -185,10 +155,13 @@ def handler_buttons_aud(bot, message, storage, tz):
     aud_list[chat_id] = list_search
 
     if data['menu_aud'].lower() in aud_list[chat_id][2]:
+        bot.delete_message(message_id=message_id, chat_id=chat_id)
         aud_list[chat_id][1] = data['menu_aud'].lower()
-        msg = bot.send_message(chat_id=chat_id, text='Выберите неделю',
+        des = message.data.split(":")[1].replace("}", "").replace('"', '')
+        msg = bot.send_message(chat_id=chat_id,
+                               text=f'Выберите неделю для аудитории{des}',
                                reply_markup=keyboards.make_keyboard_choose_schedule())
-        bot.register_next_step_handler(msg, search_aud, bot=bot, storage=storage, tz=tz, last_msg=msg)
+        bot.register_next_step_handler(msg, choose_week, bot=bot, storage=storage, tz=tz, last_msg=msg)
 
 
     elif data['menu_aud'] == 'back':
@@ -199,12 +172,11 @@ def handler_buttons_aud(bot, message, storage, tz):
 
         if aud_list[chat_id][0] - 1 == 0:
             bot.delete_message(message_id=message_id, chat_id=chat_id)
-            msg = bot.send_message(chat_id=chat_id, text=f'Первая страница поиска:',
-                                   reply_markup=keyboards.make_keyboard_search_group_aud(last_request=last_request,
-                                                                                         page=page - 1,
-                                                                                         requests=requests,
-                                                                                         more_than_10=more_than_10))
-            bot.register_next_step_handler(msg, search_aud, bot=bot, storage=storage, tz=tz, last_msg=msg)
+            bot.send_message(chat_id=chat_id, text=f'Результат поиска',
+                             reply_markup=keyboards.make_keyboard_search_group_aud(last_request=last_request,
+                                                                                   page=page - 1,
+                                                                                   requests=requests,
+                                                                                   more_than_10=more_than_10))
 
         else:
             bot.edit_message_reply_markup(message_id=message_id, chat_id=chat_id,
@@ -221,19 +193,52 @@ def handler_buttons_aud(bot, message, storage, tz):
         if len(request_aud) > 10:
             requests = request_aud[10 * (page + 1):10 * (page + 2)]
             more_than_10 = True
-        msg = bot.send_message(chat_id=chat_id, text=f'Следующая страница',
-                               reply_markup=keyboards.make_keyboard_search_group_aud(last_request=last_request,
-                                                                                     page=page + 1,
-                                                                                     requests=requests,
-                                                                                     more_than_10=more_than_10))
-        bot.register_next_step_handler(msg, search_aud, bot=bot, storage=storage, tz=tz, last_msg=msg)
+        bot.send_message(chat_id=chat_id, text=f'Результат поиска',
+                         reply_markup=keyboards.make_keyboard_search_group_aud(last_request=last_request,
+                                                                               page=page + 1,
+                                                                               requests=requests,
+                                                                               more_than_10=more_than_10))
         aud_list[chat_id][0] += 1
-
-    # Регистрируем преподавателя по выбранной кнопке
 
     else:
         msg = bot.send_message(chat_id=chat_id, text='Проверьте правильность ввода 😞',
                                reply_markup=keyboards.make_keyboard_main_menu())
         bot.register_next_step_handler(msg, search_aud, bot=bot, storage=storage, tz=tz, last_msg=msg)
 
+def choose_week(message, bot, storage, tz, last_msg=None):
+    global aud_list
+    chat_id = message.chat.id
+    message = message.text
 
+    if ('На текущую неделю' == message or 'На следующую неделю' == message):
+        request_word = aud_list[chat_id][1]
+
+        request_aud = storage.get_schedule_aud(request_word)
+
+        # Если есть запрос для группы, то формируем расписание для группы, а если нет, то для препода
+        schedule = request_aud[0]
+
+        if not schedule:
+            schedule_processing.sending_schedule_is_not_available_search(message=message, chat_id=chat_id, bot=bot)
+            return
+
+        schedule = schedule['schedule']
+        week = find_week()
+
+        # меняем неделю
+        if message == 'На следующую неделю':
+            week = 'odd' if week == 'even' else 'even'
+
+        week_name = 'четная' if week == 'odd' else 'нечетная'
+        aud = request_word
+        schedule_str = full_schedule_in_str_prep(schedule, week=week, aud=aud)
+
+        bot.send_message(chat_id=chat_id, text=f'Расписание {request_word}\n'
+                                               f'Неделя: {week_name}',
+                         reply_markup=keyboards.make_keyboard_start_menu())
+
+        # Отправка расписания
+        schedule_processing.sending_schedule_search(bot=bot, message=message, chat_id=chat_id,
+                                                    schedule_str=schedule_str)
+
+        bot.clear_step_handler_by_chat_id(chat_id=chat_id)
