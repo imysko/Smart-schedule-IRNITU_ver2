@@ -236,7 +236,8 @@ def make_keyboard_search_group(page, search_result=[]):
     list_keyboard = []
     overflow = 0
     for group in search_result:
-        group = group['search']
+        if type(search_result[0]) == dict:
+            group = group['search']
         overflow += 1
         if overflow == 25:
             list_keyboard_main.append(list_keyboard)
