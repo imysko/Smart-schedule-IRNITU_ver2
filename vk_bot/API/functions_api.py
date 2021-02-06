@@ -103,3 +103,25 @@ def get_now_lesson(schedule: list, week: str) -> list:
     now_lessons = get_api_data(url=url, data=data)
 
     return now_lessons
+
+
+def calculating_reminder_times(schedule, time: int) -> list:
+    """Прощитывает время уведомления перед кадой парой"""
+    url = 'notifications/calculating_reminder_times/'
+    data = {
+        'schedule': schedule,
+        'time': time,
+    }
+    reminders = get_api_data(url=url, data=data)
+    return reminders
+
+
+def get_notifications_status(time):
+    """Статус напоминаний"""
+    url = 'notifications/get_notifications_status/'
+    data = {
+        'time': time
+    }
+    notifications_status = get_api_data(url=url, data=data)
+
+    return notifications_status
