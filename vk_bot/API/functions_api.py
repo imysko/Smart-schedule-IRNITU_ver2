@@ -5,10 +5,17 @@ import requests
 FUNCTIONS_API_URL = os.environ.get('FUNCTIONS_API_URL')
 
 
-def get_api_data(url: str, data: dict):
+def get_api_data(url: str, data: dict = {}):
     answer = requests.get(url=FUNCTIONS_API_URL + url, json=data)
     json_answer = answer.json()
     return json_answer
+
+
+def find_week():
+    url = 'find_week/'
+    week = get_api_data(url=url)
+
+    return week
 
 
 def full_schedule_in_str(schedule: list, week: str) -> list:

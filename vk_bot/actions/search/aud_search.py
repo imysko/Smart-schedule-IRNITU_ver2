@@ -1,7 +1,6 @@
 from vkbottle.bot import Bot, Message
 
-from API.find_week import find_week
-from API.functions_api import full_schedule_in_str_prep
+from API.functions_api import find_week, full_schedule_in_str_prep
 from tools import keyboards, schedule_processing
 
 aud_list = {}
