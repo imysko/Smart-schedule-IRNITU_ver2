@@ -1,13 +1,13 @@
+from datetime import datetime
+
 from vkbottle.bot import Message
 
-from functions.creating_schedule import full_schedule_in_str, full_schedule_in_str_prep, \
+from API.find_week import find_week
+from API.functions_api import full_schedule_in_str, full_schedule_in_str_prep, \
     get_one_day_schedule_in_str_prep, get_one_day_schedule_in_str, get_next_day_schedule_in_str, \
     get_next_day_schedule_in_str_prep
-from functions.find_week import find_week
-from functions.near_lesson import get_near_lesson, get_now_lesson
+from API.near_lesson import get_near_lesson, get_now_lesson
 from tools import keyboards, statistics, schedule_processing
-
-from datetime import datetime
 
 
 async def get_schedule(ans: Message, storage, tz):
