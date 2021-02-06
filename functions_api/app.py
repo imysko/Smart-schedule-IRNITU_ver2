@@ -1,6 +1,6 @@
 from flask import Flask, request, make_response, jsonify
 
-from functions import find_week, creating_schedule, near_lesson
+from functions import find_week, creating_schedule, near_lesson, notifications
 
 app = Flask(__name__)
 
@@ -102,6 +102,30 @@ def get_now_lesson_route():
         return make_response("Bad request", 400)
     try:
         result = near_lesson.get_now_lesson(**data)
+    except TypeError:
+        return make_response("Bad request", 400)
+    return jsonify(result)
+
+
+@app.route('/api/notifications/calculating_reminder_times/')
+def calculating_reminder_times_route():
+    data = request.json
+    if not data:
+        return make_response("Bad request", 400)
+    try:
+        result = notifications.calculating_reminder_times(**data)
+    except TypeError:
+        return make_response("Bad request", 400)
+    return jsonify(result)
+
+
+@app.route('/api/notifications/get_notifications_status/')
+def get_notifications_status_route():
+    data = request.json
+    if not data:
+        return make_response("Bad request", 400)
+    try:
+        result = notifications.get_notifications_status(**data)
     except TypeError:
         return make_response("Bad request", 400)
     return jsonify(result)
