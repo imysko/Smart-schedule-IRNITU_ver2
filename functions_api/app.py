@@ -1,6 +1,6 @@
 from flask import Flask, request, make_response, jsonify
 
-from functions import find_week, creating_schedule
+from functions import find_week, creating_schedule, near_lesson
 
 app = Flask(__name__)
 
@@ -78,6 +78,30 @@ def full_schedule_in_str_prep_route():
         return make_response("Bad request", 400)
     try:
         result = creating_schedule.full_schedule_in_str_prep(**data)
+    except TypeError:
+        return make_response("Bad request", 400)
+    return jsonify(result)
+
+
+@app.route('/api/near_lesson/get_near_lesson/')
+def get_near_lesson_route():
+    data = request.json
+    if not data:
+        return make_response("Bad request", 400)
+    try:
+        result = near_lesson.get_near_lesson(**data)
+    except TypeError:
+        return make_response("Bad request", 400)
+    return jsonify(result)
+
+
+@app.route('/api/near_lesson/get_now_lesson/')
+def get_now_lesson_route():
+    data = request.json
+    if not data:
+        return make_response("Bad request", 400)
+    try:
+        result = near_lesson.get_now_lesson(**data)
     except TypeError:
         return make_response("Bad request", 400)
     return jsonify(result)
