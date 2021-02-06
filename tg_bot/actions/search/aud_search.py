@@ -39,15 +39,18 @@ def search_aud(message, bot, storage, tz, last_msg=None):
     """Регистрация преподавателя"""
     global aud_list
     chat_id = message.chat.id
+    message_id = message.message_id
+    data = message
     message = message.text
     all_found_aud = []
     prep_list = []
     page = 0
 
+    if last_msg:
+        bot.delete_message(data.chat.id, data.message_id - 1)
+
     if ('На текущую неделю' == message or 'На следующую неделю' == message):
         return
-
-
 
     if not storage.get_schedule_aud(message) and len(message.replace(' ', '')) < 15:
         # Отправляем запросы в базу посимвольно
@@ -96,8 +99,6 @@ def search_aud(message, bot, storage, tz, last_msg=None):
         if len(request_aud) > 10:
             requests = request_aud[:10 * (page + 1)]
             more_than_10 = True
-            bot.send_message(chat_id=chat_id, text='Новый поиск',
-                             reply_markup=keyboards.make_keyboard_search_goal())
             msg = bot.send_message(chat_id=chat_id, text='Результат поиска',
                                    reply_markup=keyboards.make_keyboard_search_group_aud(last_request=last_request,
                                                                                          page=page,
@@ -106,8 +107,6 @@ def search_aud(message, bot, storage, tz, last_msg=None):
             bot.register_next_step_handler(msg, search_aud, bot=bot, storage=storage, tz=tz, last_msg=msg)
 
         else:
-            bot.send_message(chat_id=chat_id, text='Новый поиск',
-                             reply_markup=keyboards.make_keyboard_search_goal())
             msg = bot.send_message(chat_id=chat_id, text='Результат поиска',
                                    reply_markup=keyboards.make_keyboard_search_group_aud(last_request=last_request,
                                                                                          page=page,
@@ -117,7 +116,6 @@ def search_aud(message, bot, storage, tz, last_msg=None):
 
 
     else:
-
         msg = bot.send_message(chat_id=chat_id, text='Проверьте правильность ввода 😞',
                                reply_markup=keyboards.make_keyboard_main_menu())
         bot.register_next_step_handler(msg, search_aud, bot=bot, storage=storage, tz=tz, last_msg=msg)
@@ -163,6 +161,12 @@ def handler_buttons_aud(bot, message, storage, tz):
                                reply_markup=keyboards.make_keyboard_choose_schedule())
         bot.register_next_step_handler(msg, choose_week, bot=bot, storage=storage, tz=tz, last_msg=msg)
 
+    elif data['menu_aud'] == 'main':
+        bot.send_message(chat_id=chat_id, text='Вы покинули поиск',
+                         reply_markup=keyboards.make_keyboard_start_menu())
+        bot.delete_message(chat_id, message_id)
+        bot.clear_step_handler_by_chat_id(chat_id=chat_id)
+
 
     elif data['menu_aud'] == 'back':
         more_than_10 = False
@@ -200,10 +204,13 @@ def handler_buttons_aud(bot, message, storage, tz):
                                                                                more_than_10=more_than_10))
         aud_list[chat_id][0] += 1
 
+
+
     else:
         msg = bot.send_message(chat_id=chat_id, text='Проверьте правильность ввода 😞',
                                reply_markup=keyboards.make_keyboard_main_menu())
         bot.register_next_step_handler(msg, search_aud, bot=bot, storage=storage, tz=tz, last_msg=msg)
+
 
 def choose_week(message, bot, storage, tz, last_msg=None):
     global aud_list

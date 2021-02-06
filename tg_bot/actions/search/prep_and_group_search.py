@@ -28,7 +28,6 @@ def start_search(bot, message, storage, tz):
                                reply_markup=keyboards.make_keyboard_main_menu())
 
         bot.register_next_step_handler(msg, search, bot=bot, tz=tz, storage=storage)
-        # bot.delete_message(message_id=message_id, chat_id=chat_id)
 
     else:
 
@@ -41,6 +40,7 @@ def start_search(bot, message, storage, tz):
 def search(message, bot, storage, tz, last_msg=None):
     """Регистрация преподавателя"""
     global Condition_request
+    data = message
     chat_id = message.chat.id
     message = message.text
     all_found_groups = []
@@ -48,8 +48,7 @@ def search(message, bot, storage, tz, last_msg=None):
     page = 0
 
     if last_msg:
-        message_id = last_msg.message_id
-        bot.delete_message(message_id=message_id, chat_id=chat_id)
+        bot.delete_message(data.chat.id, data.message_id - 1)
 
     if storage.get_search_list(message) or storage.get_search_list_prep(message):
         # Результат запроса по группам
@@ -83,8 +82,6 @@ def search(message, bot, storage, tz, last_msg=None):
         if len(request) > 10:
             requests = request[:10 * (page + 1)]
             more_than_10 = True
-            bot.send_message(chat_id=chat_id, text='Новый поиск',
-                             reply_markup=keyboards.make_keyboard_search_goal())
             msg = bot.send_message(chat_id=chat_id, text='Результат поиска',
                                    reply_markup=keyboards.make_keyboard_search_group(last_request=last_request,
                                                                                      page=page,
@@ -93,16 +90,12 @@ def search(message, bot, storage, tz, last_msg=None):
             bot.register_next_step_handler(msg, search, bot=bot, storage=storage, tz=tz, last_msg=msg)
 
         else:
-            bot.send_message(chat_id=chat_id, text='Новый поиск',
-                             reply_markup=keyboards.make_keyboard_search_goal())
             msg = bot.send_message(chat_id=chat_id, text='Результат поиска',
                                    reply_markup=keyboards.make_keyboard_search_group(last_request=last_request,
                                                                                      page=page,
                                                                                      more_than_10=False,
                                                                                      requests=request))
             bot.register_next_step_handler(msg, search, bot=bot, storage=storage, tz=tz, last_msg=msg)
-
-        # bot.clear_step_handler_by_chat_id(chat_id=chat_id)
 
     elif ('На текущую неделю' == message or 'На следующую неделю' == message):
         request_word = Condition_request[chat_id][1]
@@ -156,7 +149,6 @@ def handler_buttons(bot, message, storage, tz):
     data = json.loads(message.data)
 
     if data['prep_list'] == 'main':
-
         bot.send_message(chat_id=chat_id, text='Основное меню',
                          reply_markup=keyboards.make_keyboard_start_menu())
         bot.delete_message(message_id=message_id, chat_id=chat_id)
@@ -167,7 +159,6 @@ def handler_buttons(bot, message, storage, tz):
 
     if not Condition_request[chat_id] and len(Condition_request[chat_id]) != 0:
         Condition_request[chat_id][1] = ''
-
 
     page = Condition_request[chat_id][0]
     request_word = Condition_request[chat_id][1]
@@ -189,10 +180,11 @@ def handler_buttons(bot, message, storage, tz):
 
     last_request = request[-1]
 
-    # Назад к институтам
     if data['prep_list'].lower() in Condition_request[chat_id][2]:
+        bot.delete_message(message_id=message_id, chat_id=chat_id)
         Condition_request[chat_id][1] = data['prep_list'].lower()
-        msg = bot.send_message(chat_id=chat_id, text='Выберите неделю',
+        des = message.data.split(":")[1].replace("}", "").replace('"', '')
+        msg = bot.send_message(chat_id=chat_id, text=f'Выберите неделю для {des}',
                                reply_markup=keyboards.make_keyboard_choose_schedule())
         bot.register_next_step_handler(msg, search, bot=bot, storage=storage, tz=tz, last_msg=msg)
 
@@ -205,12 +197,11 @@ def handler_buttons(bot, message, storage, tz):
 
         if Condition_request[chat_id][0] - 1 == 0:
             bot.delete_message(message_id=message_id, chat_id=chat_id)
-            msg = bot.send_message(chat_id=chat_id, text=f'Первая страница поиска:',
-                                   reply_markup=keyboards.make_keyboard_search_group(last_request=last_request,
-                                                                                     page=page - 1,
-                                                                                     requests=requests,
-                                                                                     more_than_10=more_than_10))
-            bot.register_next_step_handler(msg, search, bot=bot, storage=storage, tz=tz, last_msg=msg)
+            bot.send_message(chat_id=chat_id, text=f'Первая страница поиска:',
+                             reply_markup=keyboards.make_keyboard_search_group(last_request=last_request,
+                                                                               page=page - 1,
+                                                                               requests=requests,
+                                                                               more_than_10=more_than_10))
 
         else:
             bot.edit_message_reply_markup(message_id=message_id, chat_id=chat_id,
@@ -226,12 +217,11 @@ def handler_buttons(bot, message, storage, tz):
         if len(request) > 10:
             requests = request[10 * (page + 1):10 * (page + 2)]
             more_than_10 = True
-        msg = bot.send_message(chat_id=chat_id, text=f'Следующая страница',
-                               reply_markup=keyboards.make_keyboard_search_group(last_request=last_request,
-                                                                                 page=page + 1,
-                                                                                 requests=requests,
-                                                                                 more_than_10=more_than_10))
-        bot.register_next_step_handler(msg, search, bot=bot, storage=storage, tz=tz, last_msg=msg)
+        bot.send_message(chat_id=chat_id, text=f'Следующая страница',
+                         reply_markup=keyboards.make_keyboard_search_group(last_request=last_request,
+                                                                           page=page + 1,
+                                                                           requests=requests,
+                                                                           more_than_10=more_than_10))
         Condition_request[chat_id][0] += 1
 
     # Регистрируем преподавателя по выбранной кнопке

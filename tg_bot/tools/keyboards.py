@@ -27,6 +27,9 @@ def make_keyboard_search_goal():
     markup.add(btn2)
     return markup
 
+def make_keyboard_empty():
+    markup = types.ReplyKeyboardRemove()
+    return markup
 
 
 def make_inline_keyboard_choose_institute(institutes=[]):

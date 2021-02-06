@@ -119,8 +119,12 @@ def reminders_info_handler(message):
     """Выбор поиска"""
     data = message.chat.id
     if message.text == "Группы и преподаватели":
+        bot.send_message(chat_id=data, text='Вы выбрали поиск по группам и преподавателям',
+                         reply_markup=make_keyboard_empty())
         start_search(bot=bot, message=message, storage=storage, tz=TZ_IRKUTSK)
     else:
+        bot.send_message(chat_id=data, text='Вы выбрали поиск по аудиториям',
+                         reply_markup=make_keyboard_empty())
         start_search_aud(bot=bot, message=message, storage=storage, tz=TZ_IRKUTSK)
     logger.info(f'Inline button data: {data}')
 
@@ -172,6 +176,7 @@ def main_menu_buttons_handler(message):
 @bot.callback_query_handler(func=lambda call: True)
 def callback_inline(call):
     print(call)
+
 
 # ==================== Обработка текста ==================== #
 @bot.message_handler(content_types=['text'])
