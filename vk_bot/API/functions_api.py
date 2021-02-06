@@ -79,3 +79,27 @@ def full_schedule_in_str_prep(schedule: list, week: str, aud=None) -> list:
     }
     schedule_str = get_api_data(url=url, data=data)
     return schedule_str
+
+
+def get_near_lesson(schedule: list, week: str) -> list:
+    """Возвращает ближайшую пару"""
+    url = 'near_lesson/get_near_lesson/'
+    data = {
+        'schedule': schedule,
+        'week': week,
+    }
+    near_lessons = get_api_data(url=url, data=data)
+
+    return near_lessons
+
+
+def get_now_lesson(schedule: list, week: str) -> list:
+    """"Возвращает текущую пару"""
+    url = 'near_lesson/get_now_lesson/'
+    data = {
+        'schedule': schedule,
+        'week': week,
+    }
+    now_lessons = get_api_data(url=url, data=data)
+
+    return now_lessons
