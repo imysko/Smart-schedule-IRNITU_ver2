@@ -12,7 +12,7 @@ from tg_bot.functions.storage import MongodbService
 from tg_bot.functions.logger import logger
 from tg_bot.tools.keyboards import *
 from tg_bot.actions.search.prep_and_group_search import start_search, handler_buttons, search
-from tg_bot.actions.search.aud_search import start_search_aud, handler_buttons_aud
+from tg_bot.actions.search.aud_search import start_search_aud, handler_buttons_aud, handler_buttons_aud_all_results
 
 from flask import Flask, request
 
@@ -174,8 +174,10 @@ def main_menu_buttons_handler(message):
 
 
 @bot.callback_query_handler(func=lambda call: True)
-def callback_inline(call):
-    print(call)
+def callback_inline(message):
+    data = message.data
+    handler_buttons_aud_all_results(bot=bot, message=message, storage=storage, tz=TZ_IRKUTSK)
+    logger.info(f'Inline button data: {data}')
 
 
 # ==================== Обработка текста ==================== #

@@ -219,8 +219,7 @@ def make_keyboard_choose_schedule():
     keyboard.row()
     keyboard.add(Text(label="На текущую неделю"), color=KeyboardButtonColor.PRIMARY)
     keyboard.add(Text(label="На следующую неделю"), color=KeyboardButtonColor.PRIMARY)
-    keyboard.row()
-    keyboard.add(Text(label="Основное меню"), color=KeyboardButtonColor.SECONDARY)
+
     return keyboard
 
 

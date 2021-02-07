@@ -1,6 +1,7 @@
 from functions.creating_schedule import full_schedule_in_str, full_schedule_in_str_prep
 from functions.find_week import find_week
 from functions.logger import logger
+from keyboa import keyboa_maker
 from tg_bot.tools import keyboards, schedule_processing, statistics
 import json
 
@@ -43,6 +44,7 @@ def search_aud(message, bot, storage, tz, last_msg=None):
     data = message
     message = message.text
     all_found_aud = []
+    all_results = []
     prep_list = []
     page = 0
 
@@ -75,10 +77,10 @@ def search_aud(message, bot, storage, tz, last_msg=None):
             if qty > qty_most_common:
                 qty_most_common = qty
                 # Переменная с результатом сортировки
-            if item.replace('-', '').lower() in message.replace(' ', '').lower():
-                message = item
+            if message.replace(' ', '').lower() in item.replace('-', '').lower():
+                all_results.append(item.lower())
 
-    if storage.get_schedule_aud(message):
+    if storage.get_schedule_aud(message) and not all_results:
         # Результат запроса по аудам
         request_aud = storage.get_schedule_aud(message)
         # Циклы нужны для общего поиска. Здесь мы удаляем старые ключи в обоих реквестах и создаём один общий ключ, как для групп, так и для преподов
@@ -114,11 +116,34 @@ def search_aud(message, bot, storage, tz, last_msg=None):
                                                                                          requests=request_aud))
             bot.register_next_step_handler(msg, search_aud, bot=bot, storage=storage, tz=tz, last_msg=msg)
 
+    if all_results and aud_list[chat_id] == []:
+        all_found_aud = all_results
+        request_word = data
+        list_search = [page, request_word, all_found_aud]
+        aud_list[chat_id] = list_search
+        kb_all_results = keyboa_maker(items=all_found_aud, copy_text_to_callback=True, items_in_row=3)
+
+        msg = bot.send_message(
+            chat_id=chat_id, reply_markup=kb_all_results,
+            text="Результат поиска")
+
+        bot.register_next_step_handler(msg, search_aud, bot=bot, storage=storage, tz=tz, last_msg=msg)
+
+
 
     else:
-        msg = bot.send_message(chat_id=chat_id, text='Проверьте правильность ввода 😞',
-                               reply_markup=keyboards.make_keyboard_main_menu())
-        bot.register_next_step_handler(msg, search_aud, bot=bot, storage=storage, tz=tz, last_msg=msg)
+        if len(aud_list[chat_id]) == 3:
+            pass
+        elif all_results:
+            kb_all_results = keyboa_maker(items=all_found_aud, copy_text_to_callback=True, items_in_row=3)
+            bot.send_message(
+                chat_id=chat_id, reply_markup=kb_all_results,
+                text="Результат поиска")
+        else:
+            msg = bot.send_message(chat_id=chat_id, text='Проверьте правильность ввода 😕',
+                                   reply_markup=keyboards.make_keyboard_main_menu())
+            bot.register_next_step_handler(msg, search_aud, bot=bot, storage=storage, tz=tz, last_msg=msg)
+            return
 
     return
 
@@ -131,6 +156,14 @@ def handler_buttons_aud(bot, message, storage, tz):
     message_id = message.message.message_id
     data = json.loads(message.data)
     all_found_aud = []
+
+    if data['menu_aud'] == 'main':
+        bot.send_message(chat_id=chat_id, text='Вы покинули поиск',
+                         reply_markup=keyboards.make_keyboard_start_menu())
+        bot.delete_message(chat_id, message_id)
+        bot.clear_step_handler_by_chat_id(chat_id=chat_id)
+
+        return
 
     if not aud_list[chat_id] and len(aud_list[chat_id]) != 0:
         aud_list[chat_id][1] = ''
@@ -161,11 +194,6 @@ def handler_buttons_aud(bot, message, storage, tz):
                                reply_markup=keyboards.make_keyboard_choose_schedule())
         bot.register_next_step_handler(msg, choose_week, bot=bot, storage=storage, tz=tz, last_msg=msg)
 
-    elif data['menu_aud'] == 'main':
-        bot.send_message(chat_id=chat_id, text='Вы покинули поиск',
-                         reply_markup=keyboards.make_keyboard_start_menu())
-        bot.delete_message(chat_id, message_id)
-        bot.clear_step_handler_by_chat_id(chat_id=chat_id)
 
 
     elif data['menu_aud'] == 'back':
@@ -249,3 +277,21 @@ def choose_week(message, bot, storage, tz, last_msg=None):
                                                     schedule_str=schedule_str)
 
         bot.clear_step_handler_by_chat_id(chat_id=chat_id)
+
+
+def handler_buttons_aud_all_results(bot, message, storage, tz):
+    chat_id = message.message.chat.id
+    message_id = message.message.message_id
+    data = message.data
+
+
+    if data.lower() in aud_list[chat_id][2]:
+        bot.delete_message(message_id=message_id, chat_id=chat_id)
+        aud_list[chat_id][1] = data.lower()
+        msg = bot.send_message(chat_id=chat_id,
+                               text=f'Выберите неделю для аудитории{data}',
+                               reply_markup=keyboards.make_keyboard_choose_schedule())
+        bot.register_next_step_handler(msg, choose_week, bot=bot, storage=storage, tz=tz, last_msg=msg)
+
+    else:
+        return
