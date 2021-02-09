@@ -46,6 +46,28 @@ class MongodbService(object):
         """возвращает список институтов"""
         return list(self._db.institutes.find())
 
+    def get_register_list_prep(self, search_words: str) -> list:
+        """возвращает список преподавателей по слову из поиска"""
+        return list(self._db.prepods_schedule.find(
+            filter={'prep': {'$regex': f"(^{search_words}\s.*)|(.*\s{search_words}\s.*)|(.*\s{search_words}$)",
+                             "$options": '/i'}}))
+
+    def get_search_list(self, search_words: str) -> list:
+        """возвращает список групп по слову из поиска"""
+        return list(self._db.groups.find(filter={'name': {'$regex': f'.*{search_words}.*', "$options": '/i'}}))
+
+    def get_search_list_prep(self, search_words: str) -> list:
+        """возвращает список преподавателей по слову из поиска"""
+        return list(self._db.prepods_schedule.find(
+            filter={'prep_short_name': {'$regex': f'.*{search_words}.*', "$options": '/i'}}))
+
+    def get_prep(self, surname: str) -> list:
+        """возвращает список ФИО всех преподавателей"""
+        return list(self._db.prepods.find(filter={'prep': {'$regex': f'^{surname}$', "$options": '/i'}}))
+
+    def get_prep_for_id(self, prep_id: int):
+        return self._db.prepods_schedule.find_one(filter={'pg_id': prep_id})
+
     def get_courses(self, institute='') -> list:
         """возвращает список курсов у определённого института"""
         return list(self._db.courses.find(filter={'institute': {'$regex': f'{institute}*'}}))
@@ -53,6 +75,34 @@ class MongodbService(object):
     def get_groups(self, institute: str, course: str) -> list:
         """возвращает список групп на определённом курсе в определеннои институте"""
         return list(self._db.groups.find(filter={'institute': {'$regex': f'{institute}*'}, 'course': course}))
+
+    def get_search_list_prep(self, search_words: str) -> list:
+        """возвращает список преподавателей по слову из поиска"""
+        return list(self._db.prepods_schedule.find(
+            filter={'prep_short_name': {'$regex': f'.*{search_words}.*', "$options": '/i'}}))
+
+    # Поиск по ФИО преподавателя или его части
+    def get_register_list_prep(self, search_words: str) -> list:
+        """возвращает список преподавателей по слову из поиска"""
+        return list(self._db.prepods_schedule.find(
+            filter={'prep': {'$regex': f"(^{search_words}\s.*)|(.*\s{search_words}\s.*)|(.*\s{search_words}$)",
+                             "$options": '/i'}}))
+
+    def get_prep(self, surname: str) -> list:
+        """возвращает список ФИО всех преподавателей"""
+        return list(self._db.prepods.find(filter={'prep': {'$regex': f'^{surname}$', "$options": '/i'}}))
+
+    def get_search_list(self, search_words: str) -> list:
+        """возвращает список групп по слову из поиска"""
+        return list(self._db.groups.find(filter={'name': {'$regex': f'.*{search_words}.*', "$options": '/i'}}))
+
+    def get_schedule_aud(self, aud: str) -> list:
+        """возвращает расписание преподавателя"""
+        return list(self._db.auditories_schedule.find(filter={'aud': {'$regex': f'.*{aud}.*', "$options": '/i'}}))
+
+    def get_schedule_prep(self, group):
+        """возвращает расписание преподавателя"""
+        return self._db.prepods_schedule.find_one(filter={'prep': group})
 
     def save_or_update_user(self, chat_id: int, institute='', course='', group='', notifications=0, reminders=[]):
         """сохраняет или изменяет данные пользователя (коллекция users)"""

@@ -30,6 +30,7 @@ async def search(bot: Bot, ans: Message, storage):
     # Задаём состояние для первой страницы
     page = 1
     prep_list = []
+    all_results = []
 
     if not storage.get_schedule_aud(data) and len(ans.text.replace(' ', '')) < 15:
         # Отправляем запросы в базу посимвольно
@@ -54,11 +55,11 @@ async def search(bot: Bot, ans: Message, storage):
             if qty > qty_most_common:
                 qty_most_common = qty
                 # Переменная с результатом сортировки
-            if item.replace('-', '').lower() in ans.text.replace(' ', '').lower():
-                data = item
+            if ans.text.replace(' ', '').lower() in item.replace('-', '').lower():
+                all_results.append(item.lower())
 
     # Условие для первичного входа пользователя
-    if storage.get_schedule_aud(data) and aud_list[chat_id] == []:
+    if storage.get_schedule_aud(data) and aud_list[chat_id] == [] and not all_results:
         # Результат запроса по аудам
         request_aud = storage.get_schedule_aud(data)
         # Циклы нужны для общего поиска. Здесь мы удаляем старые ключи в обоих реквестах и создаём один общий ключ, как для групп, так и для преподов
@@ -78,7 +79,13 @@ async def search(bot: Bot, ans: Message, storage):
         # Выводим результат поиска с клавиатурой (кливиатур формируется по поисковому запросу)
         await ans.answer("Результат поиска", keyboard=keyboard)
 
-
+    if all_results and aud_list[chat_id] == []:
+        all_found_aud = all_results
+        request_word = data
+        keyboard = keyboards.make_keyboard_search_group(page, all_found_aud)
+        list_search = [page, request_word, all_found_aud]
+        aud_list[chat_id] = list_search
+        await ans.answer("Результат поиска", keyboard=keyboard)
 
     # Здесь уловия для выхода в основное меню
     elif data == "Основное меню":
@@ -179,11 +186,15 @@ async def search(bot: Bot, ans: Message, storage):
             await ans.answer("Результат поиска", keyboard=keyboard)
 
         else:
-            # Проверяем есть ли результат на запрос с "-"
-            if len(aud_list[chat_id]) == 3:
-                aud_list[chat_id][1] = ''
-                await ans.answer('Поиск не дал результатов 😕', keyboard=keyboards.make_keyboard_main_menu())
-                return
-            else:
-                await ans.answer('Поиск не дал результатов 😕', keyboard=keyboards.make_keyboard_main_menu())
-                return
+            try:
+                if len(aud_list[chat_id]) == 3:
+                    aud_list[chat_id] = []
+
+            finally:
+                if all_results:
+                    keyboard = keyboards.make_keyboard_search_group(page, all_results)
+                    await ans.answer("Результат поиска", keyboard=keyboard)
+                else:
+                    await ans.answer('Поиск не дал результатов :confused:',
+                                     keyboard=keyboards.make_keyboard_main_menu())
+                    return

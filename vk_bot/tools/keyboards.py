@@ -219,8 +219,7 @@ def make_keyboard_choose_schedule():
     keyboard.row()
     keyboard.add(Text(label="На текущую неделю"), color=KeyboardButtonColor.PRIMARY)
     keyboard.add(Text(label="На следующую неделю"), color=KeyboardButtonColor.PRIMARY)
-    keyboard.row()
-    keyboard.add(Text(label="Основное меню"), color=KeyboardButtonColor.SECONDARY)
+
     return keyboard
 
 
@@ -236,7 +235,8 @@ def make_keyboard_search_group(page, search_result=[]):
     list_keyboard = []
     overflow = 0
     for group in search_result:
-        group = group['search']
+        if type(search_result[0]) == dict:
+            group = group['search']
         overflow += 1
         if overflow == 25:
             list_keyboard_main.append(list_keyboard)
