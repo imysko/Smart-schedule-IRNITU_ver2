@@ -1,7 +1,7 @@
 from functions.creating_schedule import full_schedule_in_str, full_schedule_in_str_prep
 from functions.find_week import find_week
-from functions.logger import logger
-from tg_bot.tools import keyboards, schedule_processing, statistics
+
+from tools import keyboards, schedule_processing, statistics
 import json
 
 # Глобальная переменная(словарь), которая хранит в себе 3 состояния
