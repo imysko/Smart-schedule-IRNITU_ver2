@@ -1,17 +1,15 @@
+import os
+
+import pytz
+from actions.search import prep_and_group_search, aud_search
+from tools.state import SuperStates
 from vkbottle.bot import Bot, Message
 
-from functions.storage import MongodbService
-
-from tools.state import SuperStates
-from tools import statistics
-
-from actions.registration import teacher_registration, student_registration
-from actions.search import prep_and_group_search, aud_search
 from actions import commands
 from actions.main_menu import reminders, main_menu, schedule
-
-import os
-import pytz
+from actions.registration import teacher_registration, student_registration
+from tools import statistics
+from tools.storage import MongodbService
 
 TOKEN = os.environ.get('VK')
 

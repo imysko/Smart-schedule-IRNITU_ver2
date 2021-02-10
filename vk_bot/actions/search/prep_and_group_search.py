@@ -1,8 +1,7 @@
 from vkbottle.bot import Bot, Message
 
-from functions.creating_schedule import full_schedule_in_str, full_schedule_in_str_prep
-from functions.find_week import find_week
-from functions.logger import logger
+from API.functions_api import find_week, full_schedule_in_str, full_schedule_in_str_prep
+from tools.logger import logger
 from tools import keyboards, schedule_processing
 
 # Глобальная переменная(словарь), которая хранит в себе 3 состояния
