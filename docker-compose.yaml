@@ -45,7 +45,7 @@ services:
 
   functions_api:
     build: functions_api/
-      restart: always
+    restart: always
 
 
   mongodb:
