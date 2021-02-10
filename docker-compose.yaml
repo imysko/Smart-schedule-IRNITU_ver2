@@ -43,6 +43,11 @@ services:
       - PG_DB_PORT=5432 # порт PostgreSQL (default: 5432)
       - GETTING_SCHEDULE_TIME_HOURS=1 # время задержки (в часах) между обращениями к PostgreSQL для получения расписания (default: 1)
 
+  functions_api:
+    build: functions_api/
+      restart: always
+
+
   mongodb:
     image: mongo:latest
     volumes:
