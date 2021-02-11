@@ -93,6 +93,11 @@ async def authors_handler(ans: Message):
     await commands.authors(ans=ans)
     statistics.add(action='authors', storage=storage, tz=TZ_IRKUTSK)
 
+@bot.on.message(text=['Подсказка', 'подсказка'])
+async def tip_handler(ans: Message):
+    """Команда Подсказка"""
+    await commands.tip(ans=ans)
+    statistics.add(action='tip', storage=storage, tz=TZ_IRKUTSK)
 
 # ==================== РАСПИСАНИЕ ==================== #
 
