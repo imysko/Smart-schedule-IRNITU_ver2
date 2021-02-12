@@ -4,7 +4,7 @@ from vkbottle.bot import Message
 
 from API.functions_api import find_week, full_schedule_in_str, full_schedule_in_str_prep, \
     get_one_day_schedule_in_str_prep, get_one_day_schedule_in_str, get_next_day_schedule_in_str, \
-    get_next_day_schedule_in_str_prep
+    get_next_day_schedule_in_str_prep, APIError
 from API.functions_api import get_near_lesson, get_now_lesson
 from tools import keyboards, statistics, schedule_processing
 
@@ -45,6 +45,11 @@ async def get_schedule(ans: Message, storage, tz):
         elif storage.get_vk_user(chat_id=chat_id)['course'] == 'None':
             schedule_str = full_schedule_in_str_prep(schedule, week=week)
 
+        # Проверяем, что расписание сформировалось
+        if isinstance(schedule_str, APIError):
+            await schedule_processing.sending_schedule_is_not_available(ans=ans)
+            return
+
         await ans.answer(f'Расписание {group}\n'
                          f'Неделя: {week_name}', keyboard=keyboards.make_keyboard_start_menu())
 
@@ -64,8 +69,7 @@ async def get_schedule(ans: Message, storage, tz):
             group = storage.get_vk_user(chat_id=chat_id)['group']
             schedule = storage.get_schedule_prep(group=group)
         if not schedule:
-            await ans.answer('Расписание временно недоступно🚫😣\n'
-                             'Попробуйте позже⏱', keyboard=keyboards.make_keyboard_start_menu())
+            schedule_processing.sending_schedule_is_not_available(ans=ans)
             statistics.add(action='Расписание на сегодня', storage=storage, tz=tz)
             return
         schedule = schedule['schedule']
@@ -75,6 +79,12 @@ async def get_schedule(ans: Message, storage, tz):
             schedule_one_day = get_one_day_schedule_in_str(schedule=schedule, week=week)
         elif storage.get_vk_user(chat_id=chat_id)['course'] == 'None':
             schedule_one_day = get_one_day_schedule_in_str_prep(schedule=schedule, week=week)
+
+        # Проверяем, что расписание сформировалось
+        if isinstance(schedule_one_day, APIError):
+            await schedule_processing.sending_schedule_is_not_available(ans=ans)
+            return
+
         if not schedule_one_day:
             await ans.answer('Сегодня пар нет 😎')
             return
@@ -109,6 +119,11 @@ async def get_schedule(ans: Message, storage, tz):
         elif storage.get_vk_user(chat_id=chat_id)['course'] == 'None':
             schedule_next_day = get_next_day_schedule_in_str_prep(schedule=schedule, week=week)
 
+        # Проверяем, что расписание сформировалось
+        if isinstance(schedule_next_day, APIError):
+            await schedule_processing.sending_schedule_is_not_available(ans=ans)
+            return
+
         if not schedule_next_day:
             await ans.answer('Завтра пар нет 😎')
             return
@@ -137,6 +152,11 @@ async def get_schedule(ans: Message, storage, tz):
         week = find_week()
 
         now_lessons = get_now_lesson(schedule=schedule, week=week)
+
+        # Проверяем, что расписание сформировалось
+        if isinstance(now_lessons, APIError):
+            await schedule_processing.sending_schedule_is_not_available(ans=ans)
+            return
 
         # если пар нет
         if not now_lessons:
@@ -208,6 +228,11 @@ async def get_schedule(ans: Message, storage, tz):
         week = find_week()
 
         near_lessons = get_near_lesson(schedule=schedule, week=week)
+
+        # Проверяем, что расписание сформировалось
+        if isinstance(near_lessons, APIError):
+            await schedule_processing.sending_schedule_is_not_available(ans=ans)
+            return
 
         # если пар нет
         if not near_lessons:

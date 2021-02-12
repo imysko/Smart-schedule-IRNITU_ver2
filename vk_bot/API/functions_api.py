@@ -2,12 +2,19 @@ import os
 
 import requests
 
+from tools.logger import logger
+
 FUNCTIONS_API_URL = os.environ.get('FUNCTIONS_API_URL')
 
 
 def get_api_data(url: str, data: dict = {}):
-    answer = requests.get(url=FUNCTIONS_API_URL + url, json=data)
-    json_answer = answer.json()
+    try:
+        answer = requests.get(url=FUNCTIONS_API_URL + url, json=data)
+        json_answer = answer.json()
+    except Exception as e:
+        logger.error(e)
+        error = APIError(error_msg=e)
+        return error
     return json_answer
 
 
@@ -125,3 +132,8 @@ def get_notifications_status(time):
     notifications_status = get_api_data(url=url, data=data)
 
     return notifications_status
+
+
+class APIError:
+    def __init__(self, error_msg=None):
+        self.error_msg = error_msg
