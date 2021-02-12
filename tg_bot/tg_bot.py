@@ -9,8 +9,8 @@ from actions.registration import student_registration, teacher_registration
 from actions.search.prep_and_group_search import start_search, handler_buttons, search
 from actions.search.aud_search import start_search_aud, handler_buttons_aud, handler_buttons_aud_all_results
 
-from functions.logger import logger
-from functions.storage import MongodbService
+from tools.logger import logger
+from tools.storage import MongodbService
 from tools.keyboards import *
 
 from tools import statistics

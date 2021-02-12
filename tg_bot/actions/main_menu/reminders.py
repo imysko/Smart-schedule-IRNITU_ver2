@@ -1,8 +1,9 @@
-from functions.calculating_reminder_times import calculating_reminder_times
-from functions.notifications import get_notifications_status
-from functions.logger import logger
-from tools import keyboards, statistics
 import json
+
+from API.functions_api import calculating_reminder_times
+from API.functions_api import get_notifications_status
+from tools import keyboards, statistics
+from tools.logger import logger
 
 
 def reminder_info(bot, message, storage, tz):

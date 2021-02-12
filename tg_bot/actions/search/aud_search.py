@@ -1,5 +1,5 @@
-from functions.creating_schedule import full_schedule_in_str, full_schedule_in_str_prep
-from functions.find_week import find_week
+from API.functions_api import full_schedule_in_str, full_schedule_in_str_prep
+from API.functions_api import find_week
 
 from keyboa import keyboa_maker
 from tools import keyboards, schedule_processing, statistics
