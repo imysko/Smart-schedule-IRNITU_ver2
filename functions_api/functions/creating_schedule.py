@@ -298,8 +298,8 @@ def get_now_lesson_in_str_stud(now_lessons: list):
         now_lessons_str += f'{time}\n' \
                            f'{aud}' \
                            f'👉{name}\n' \
-                           f'{info} {prep}'
-    now_lessons_str += '\n-------------------------------------------'
+                           f'{info} {prep}\n'
+    now_lessons_str += '-------------------------------------------\n'
     return now_lessons_str
 
 
@@ -318,6 +318,6 @@ def get_now_lesson_in_str_prep(now_lessons: list):
         now_lessons_str += f'{time}\n' \
                            f'{aud}' \
                            f'👉{name}\n' \
-                           f'{info} {groups}'
-    now_lessons_str += '\n-------------------------------------------\n'
+                           f'{info} {groups}\n'
+    now_lessons_str += '-------------------------------------------\n'
     return now_lessons_str
