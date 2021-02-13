@@ -39,41 +39,46 @@ content_aud = ["search_aud", "menu_aud"]
 # ==================== Обработка команд ==================== #
 
 # Команда /start
-@bot.message_handler(func=lambda message: message.text in ['Начать', '/start'], content_types=['text'])
+@bot.message_handler(func=lambda message: message.text in ['Начать', 'начать', 'Старт', 'старт', '/start', 'start'], content_types=['text'])
 def start_handler(message):
     commands.start(bot=bot, message=message, storage=storage, tz=TZ_IRKUTSK)
 
 
 # Команда /reg
-@bot.message_handler(func=lambda message: message.text in ['Регистрация', '/reg'], content_types=['text'])
+@bot.message_handler(func=lambda message: message.text in ['Регистрация', 'регистрация', '/reg', 'reg'], content_types=['text'])
 def registration_handler(message):
     commands.registration(bot=bot, message=message, storage=storage, tz=TZ_IRKUTSK)
 
 
 # Команда /help
-@bot.message_handler(func=lambda message: message.text in ['Помощь', '/help'], content_types=['text'])
+@bot.message_handler(func=lambda message: message.text in ['Помощь', 'помощь', '/help', 'help'], content_types=['text'])
 def help_handler(message):
     commands.help_info(bot=bot, message=message, storage=storage, tz=TZ_IRKUTSK)
 
 
 # Команда /map Карта
 
-@bot.message_handler(func=lambda message: message.text in ['Карта', '/map'], content_types=['text'])
+@bot.message_handler(func=lambda message: message.text in ['Карта', 'карта', '/map', 'map'], content_types=['text'])
 def map_handler(message):
     commands.show_map(bot=bot, message=message, storage=storage, tz=TZ_IRKUTSK)
 
 
 # Команда /about
-@bot.message_handler(func=lambda message: message.text in ['О проекте', '/about'], content_types=['text'])
+@bot.message_handler(func=lambda message: message.text in ['О проекте', 'о проекте', '/about', 'about'], content_types=['text'])
 def about_handler(message):
     commands.about(bot=bot, message=message, storage=storage, tz=TZ_IRKUTSK)
 
 
 # Команда /authors
-@bot.message_handler(func=lambda message: message.text in ['Авторы', '/authors'], content_types=['text'])
+@bot.message_handler(func=lambda message: message.text in ['Авторы', 'авторы', '/authors', 'authors'], content_types=['text'])
 def authors_handler(message):
     commands.authors(bot=bot, message=message, storage=storage, tz=TZ_IRKUTSK)
 
+
+# Команда /tip
+@bot.message_handler(func=lambda message: message.text in ['Подсказка', 'подсказка', 'tip', '/tip'], content_types=['text'])
+def authors_handler(message):
+    commands.tip(bot=bot, message=message, storage=storage, tz=TZ_IRKUTSK)
 
 # ==================== Обработка Inline кнопок ==================== #
 @bot.callback_query_handler(func=lambda message: any(word in message.data for word in content_students_registration))
