@@ -129,8 +129,7 @@ def search(message, bot, storage, tz, last_msg=None):
                                                f'Неделя: {week_name}',
                          reply_markup=keyboards.make_keyboard_start_menu())
         # Отправка расписания
-        schedule_processing.sending_schedule_search(bot=bot, message=message, chat_id=chat_id,
-                                                    schedule_str=schedule_str)
+        schedule_processing.sending_schedule(bot=bot, chat_id=chat_id, schedule_str=schedule_str)
 
         bot.clear_step_handler_by_chat_id(chat_id=chat_id)
     else:

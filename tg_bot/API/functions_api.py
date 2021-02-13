@@ -123,7 +123,6 @@ def get_now_lesson_in_str_stud(now_lessons: list) -> str:
     return now_lessons_str
 
 
-
 def get_now_lesson_in_str_prep(now_lessons: list) -> str:
     """"Возвращает текущую пару как строку"""
     url = 'creating_schedule/get_now_lesson_in_str_prep/'

@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from API.functions_api import find_week
+from API.functions_api import find_week, APIError
 from API.functions_api import full_schedule_in_str, full_schedule_in_str_prep, \
     get_one_day_schedule_in_str_prep, get_one_day_schedule_in_str, get_next_day_schedule_in_str, \
     get_next_day_schedule_in_str_prep
@@ -49,7 +49,7 @@ def get_schedule(bot, message, storage, tz):
                                                f'Неделя: {week_name}',
                          reply_markup=keyboards.make_keyboard_start_menu())
         # Отправка расписания
-        schedule_processing.sending_schedule(bot=bot, message=message, schedule_str=schedule_str)
+        schedule_processing.sending_schedule(bot=bot, chat_id=chat_id, schedule_str=schedule_str)
 
         statistics.add(action=data, storage=storage, tz=tz)
 
@@ -142,6 +142,11 @@ def get_schedule(bot, message, storage, tz):
 
         now_lessons = get_now_lesson(schedule=schedule, week=week)
 
+        # Проверяем, что расписание сформировалось
+        if isinstance(now_lessons, APIError):
+            schedule_processing.sending_schedule_is_not_available(bot=bot, chat_id=chat_id)
+            return
+
         # если пар нет
         if not now_lessons:
             bot.send_message(chat_id=chat_id, text='Сейчас пары нет, можете отдохнуть)',
@@ -180,6 +185,11 @@ def get_schedule(bot, message, storage, tz):
 
         near_lessons = get_near_lesson(schedule=schedule, week=week)
 
+        # Проверяем, что расписание сформировалось
+        if isinstance(near_lessons, APIError):
+            schedule_processing.sending_schedule_is_not_available(bot=bot, chat_id=chat_id)
+            return
+
         # если пар нет
         if not near_lessons:
             bot.send_message(chat_id=chat_id, text='Сегодня больше пар нет 😎',
@@ -194,6 +204,12 @@ def get_schedule(bot, message, storage, tz):
         # Преподаватель
         elif storage.get_user(chat_id=chat_id)['course'] == 'None':
             near_lessons_str = get_now_lesson_in_str_prep(near_lessons)
+
+
+        # Проверяем, что расписание сформировалось
+        if isinstance(near_lessons_str, APIError):
+            schedule_processing.sending_schedule_is_not_available(bot=bot, chat_id=chat_id)
+            return
 
         bot.send_message(chat_id=chat_id, text=f'🧠Ближайшая пара🧠\n'f'{near_lessons_str}',
                          reply_markup=keyboards.make_keyboard_start_menu())
