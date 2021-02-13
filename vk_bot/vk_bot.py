@@ -70,7 +70,7 @@ async def start_message_handler(ans: Message):
     statistics.add(action='start', storage=storage, tz=TZ_IRKUTSK)
 
 
-@bot.on.message(text='Регистрация')
+@bot.on.message(text=['Регистрация','регистрация'])
 async def registration_handler(ans: Message):
     """Команда Регистрация"""
     chat_id = ans.from_id
@@ -85,7 +85,7 @@ async def show_map_handler(ans: Message):
     statistics.add(action='map', storage=storage, tz=TZ_IRKUTSK)
 
 
-@bot.on.message(text='Авторы')
+@bot.on.message(text=['Авторы', 'авторы'])
 async def authors_handler(ans: Message):
     """Команда Авторы"""
     await commands.authors(ans=ans)
