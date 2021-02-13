@@ -149,8 +149,6 @@ def get_schedule(bot, message, storage, tz):
             statistics.add(action='Текущая', storage=storage, tz=tz)
             return
 
-        now_lessons_str = ''
-
         # Студент
         if storage.get_user(chat_id=chat_id)['course'] != 'None':
             now_lessons_str = get_now_lesson_in_str_stud(now_lessons)
@@ -189,54 +187,15 @@ def get_schedule(bot, message, storage, tz):
             statistics.add(action='Следующая', storage=storage, tz=tz)
             return
 
-        near_lessons_str = ''
-
+        # Студент
         if storage.get_user(chat_id=chat_id)['course'] != 'None':
-            for near_lesson in near_lessons:
-                name = near_lesson['name']
-                if name == 'свободно':
-                    bot.send_message(chat_id=chat_id, text='Сегодня больше пар нет 😎',
-                                     reply_markup=keyboards.make_keyboard_start_menu())
-                    return
-                near_lessons_str += '-------------------------------------------\n'
-                aud = near_lesson['aud']
-                if aud:
-                    aud = f'Аудитория: {aud}\n'
-                time = near_lesson['time']
+            near_lessons_str = get_now_lesson_in_str_stud(near_lessons)
 
-                info = near_lesson['info'].replace(",", "")
-                prep = near_lesson['prep']
-
-                near_lessons_str += f'{time}\n' \
-                                    f'{aud}' \
-                                    f'👉{name}\n' \
-                                    f'{info} {prep}\n'
-
-            near_lessons_str += '-------------------------------------------\n'
-            bot.send_message(chat_id=chat_id, text=f'🧠Ближайшая пара🧠\n'f'{near_lessons_str}',
-                             reply_markup=keyboards.make_keyboard_start_menu())
-
+        # Преподаватель
         elif storage.get_user(chat_id=chat_id)['course'] == 'None':
-            for near_lesson in near_lessons:
-                name = near_lesson['name']
-                if name == 'свободно':
-                    bot.send_message(chat_id=chat_id, text='Сегодня больше пар нет 😎',
-                                     reply_markup=keyboards.make_keyboard_start_menu())
-                    return
-                near_lessons_str += '-------------------------------------------\n'
-                aud = near_lesson['aud']
-                if aud:
-                    aud = f'Аудитория: {aud}\n'
-                time = near_lesson['time']
-                info = near_lesson['info'].replace(",", "")
-                groups = ', '.join(near_lesson['groups'])
+            near_lessons_str = get_now_lesson_in_str_prep(near_lessons)
 
-                near_lessons_str += f'{time}\n' \
-                                    f'{aud}' \
-                                    f'👉{name}\n' \
-                                    f'{info} {groups}\n'
-            near_lessons_str += '-------------------------------------------\n'
-            bot.send_message(chat_id=chat_id, text=f'🧠Ближайшая пара🧠\n'f'{near_lessons_str}',
-                             reply_markup=keyboards.make_keyboard_start_menu())
+        bot.send_message(chat_id=chat_id, text=f'🧠Ближайшая пара🧠\n'f'{near_lessons_str}',
+                         reply_markup=keyboards.make_keyboard_start_menu())
 
         statistics.add(action='Следующая', storage=storage, tz=tz)
