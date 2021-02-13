@@ -99,6 +99,12 @@ async def tip_handler(ans: Message):
     await commands.tip(ans=ans)
     statistics.add(action='tip', storage=storage, tz=TZ_IRKUTSK)
 
+@bot.on.message(text=['Помощь', 'помощь'])
+async def tip_handler(ans: Message):
+    """Команда Помощь"""
+    await commands.help(ans=ans)
+    statistics.add(action='help', storage=storage, tz=TZ_IRKUTSK)
+
 # ==================== РАСПИСАНИЕ ==================== #
 
 @bot.on.message(text=content_schedule['text'])
