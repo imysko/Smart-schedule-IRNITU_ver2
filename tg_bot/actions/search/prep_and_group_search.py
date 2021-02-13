@@ -1,4 +1,4 @@
-from API.functions_api import full_schedule_in_str, full_schedule_in_str_prep
+from API.functions_api import full_schedule_in_str, full_schedule_in_str_prep, APIError
 from API.functions_api import find_week
 
 from tools import keyboards, schedule_processing, statistics
@@ -124,6 +124,12 @@ def search(message, bot, storage, tz, last_msg=None):
             schedule_str = full_schedule_in_str(schedule, week=week)
         elif request_prep:
             schedule_str = full_schedule_in_str_prep(schedule, week=week)
+
+        # Проверяем, что расписание сформировалось
+        if isinstance(schedule_str, APIError):
+            schedule_processing.sending_schedule_is_not_available(bot=bot, chat_id=chat_id)
+            return
+
 
         bot.send_message(chat_id=chat_id, text=f'Расписание {group}\n'
                                                f'Неделя: {week_name}',
