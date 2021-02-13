@@ -107,6 +107,17 @@ def get_now_lesson_route():
     return jsonify(result)
 
 
+@app.route('/api/creating_schedule/get_now_lesson_in_str_stud/')
+def get_now_lesson_in_str_stud_route():
+    data = request.json
+    if not data:
+        return make_response("Bad request", 400)
+    try:
+        result = creating_schedule.get_now_lesson_in_str_stud(**data)
+    except TypeError:
+        return make_response("Bad request", 400)
+    return jsonify(result)
+
 @app.route('/api/notifications/calculating_reminder_times/')
 def calculating_reminder_times_route():
     data = request.json

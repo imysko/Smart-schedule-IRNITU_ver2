@@ -4,7 +4,7 @@ from API.functions_api import find_week
 from API.functions_api import full_schedule_in_str, full_schedule_in_str_prep, \
     get_one_day_schedule_in_str_prep, get_one_day_schedule_in_str, get_next_day_schedule_in_str, \
     get_next_day_schedule_in_str_prep
-from API.functions_api import get_near_lesson, get_now_lesson
+from API.functions_api import get_near_lesson, get_now_lesson, get_now_lesson_in_str_stud
 from tools import keyboards, statistics, schedule_processing
 
 
@@ -151,26 +151,9 @@ def get_schedule(bot, message, storage, tz):
 
         now_lessons_str = ''
 
+        # Студент
         if storage.get_user(chat_id=chat_id)['course'] != 'None':
-            for near_lesson in now_lessons:
-                name = near_lesson['name']
-                if name == 'свободно':
-                    bot.send_message(chat_id=chat_id, text='Сейчас пары нет, можете отдохнуть)',
-                                     reply_markup=keyboards.make_keyboard_start_menu())
-                    return
-                now_lessons_str += '-------------------------------------------\n'
-                aud = near_lesson['aud']
-                if aud:
-                    aud = f'Аудитория: {aud}\n'
-                time = near_lesson['time']
-                info = near_lesson['info'].replace(",", "")
-                prep = near_lesson['prep']
-
-                now_lessons_str += f'{time}\n' \
-                                   f'{aud}' \
-                                   f'👉{name}\n' \
-                                   f'{info} {prep}\n'
-            now_lessons_str += '-------------------------------------------\n'
+            now_lessons_str = get_now_lesson_in_str_stud(now_lessons)
 
         elif storage.get_user(chat_id=chat_id)['course'] == 'None':
             for near_lesson in now_lessons:

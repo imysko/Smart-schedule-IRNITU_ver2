@@ -1,6 +1,7 @@
-from datetime import datetime, timedelta
-import platform
 import locale
+import platform
+from datetime import datetime, timedelta
+
 import pytz
 
 TZ_IRKUTSK = pytz.timezone('Asia/Irkutsk')
@@ -280,3 +281,23 @@ def full_schedule_in_str_prep(schedule: list, week: str, aud=None) -> list:
                                     f'{lessons_str}')
 
     return schedule_str
+
+
+def get_now_lesson_in_str_stud(now_lessons: list):
+    now_lessons_str = ''
+    for near_lesson in now_lessons:
+        name = near_lesson['name']
+
+        now_lessons_str += '-------------------------------------------\n'
+        aud = f'Аудитория: {", ".join(near_lesson["aud"])}\n' if near_lesson["aud"] and near_lesson["aud"][0] else ''
+
+        time = near_lesson['time']
+        info = near_lesson['info'].replace(",", "")
+        prep = ', '.join(near_lesson['prep'])
+
+        now_lessons_str += f'{time}\n' \
+                           f'{aud}' \
+                           f'👉{name}\n' \
+                           f'{info} {prep}'
+    now_lessons_str += '\n-------------------------------------------'
+    return now_lessons_str
