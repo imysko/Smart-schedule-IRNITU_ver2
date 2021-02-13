@@ -111,6 +111,26 @@ def get_now_lesson(schedule: list, week: str) -> list:
 
     return now_lessons
 
+def get_now_lesson_in_str_stud(now_lessons: list) -> str:
+    """"Возвращает текущую пару как строку"""
+    url = 'creating_schedule/get_now_lesson_in_str_stud/'
+    data = {
+        'now_lessons': now_lessons,
+    }
+    now_lessons_str = get_api_data(url=url, data=data)
+
+    return now_lessons_str
+
+
+def get_now_lesson_in_str_prep(now_lessons: list) -> str:
+    """"Возвращает текущую пару как строку"""
+    url = 'creating_schedule/get_now_lesson_in_str_prep/'
+    data = {
+        'now_lessons': now_lessons,
+    }
+    now_lessons_str = get_api_data(url=url, data=data)
+
+    return now_lessons_str
 
 def calculating_reminder_times(schedule, time: int) -> list:
     """Прощитывает время уведомления перед кадой парой"""

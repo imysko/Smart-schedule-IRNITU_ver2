@@ -4,7 +4,7 @@ from vkbottle.bot import Message
 
 from API.functions_api import find_week, full_schedule_in_str, full_schedule_in_str_prep, \
     get_one_day_schedule_in_str_prep, get_one_day_schedule_in_str, get_next_day_schedule_in_str, \
-    get_next_day_schedule_in_str_prep, APIError
+    get_next_day_schedule_in_str_prep, APIError, get_now_lesson_in_str_stud, get_now_lesson_in_str_prep
 from API.functions_api import get_near_lesson, get_now_lesson
 from tools import keyboards, statistics, schedule_processing
 
@@ -164,49 +164,18 @@ async def get_schedule(ans: Message, storage, tz):
             statistics.add(action='Текущая', storage=storage, tz=tz)
             return
 
-        now_lessons_str = ''
-
+        # Студент
         if storage.get_vk_user(chat_id=chat_id)['course'] != 'None':
-            for near_lesson in now_lessons:
-                name = near_lesson['name']
-                if name == 'свободно':
-                    await ans.answer('Сейчас пары нет, можете отдохнуть)',
-                                     keyboard=keyboards.make_keyboard_start_menu())
-                    return
-                now_lessons_str += '-------------------------------------------\n'
-                aud = near_lesson['aud']
-                if aud:
-                    aud = f'Аудитория: {aud}\n'
-                time = near_lesson['time']
-                info = near_lesson['info'].replace(",", "")
-                prep = near_lesson['prep']
+            now_lessons_str = get_now_lesson_in_str_stud(now_lessons)
 
-                now_lessons_str += f'{time}\n' \
-                                   f'{aud}' \
-                                   f'👉{name}\n' \
-                                   f'{info} {prep}\n'
-            now_lessons_str += '-------------------------------------------\n'
-
+        # Преподаватель
         elif storage.get_vk_user(chat_id=chat_id)['course'] == 'None':
-            for near_lesson in now_lessons:
-                name = near_lesson['name']
-                if name == 'свободно':
-                    await ans.answer('Сейчас пары нет, можете отдохнуть)',
-                                     keyboard=keyboards.make_keyboard_start_menu())
-                    return
-                now_lessons_str += '-------------------------------------------\n'
-                aud = near_lesson['aud']
-                if aud:
-                    aud = f'Аудитория: {aud}\n'
-                time = near_lesson['time']
-                info = near_lesson['info'].replace(",", "")
-                groups = ', '.join(near_lesson['groups'])
+            now_lessons_str = get_now_lesson_in_str_prep(now_lessons)
 
-                now_lessons_str += f'{time}\n' \
-                                   f'{aud}' \
-                                   f'👉{name}\n' \
-                                   f'{info} {groups}\n'
-            now_lessons_str += '-------------------------------------------\n'
+        # Проверяем, что расписание сформировалось
+        if isinstance(now_lessons_str, APIError):
+            await schedule_processing.sending_schedule_is_not_available(ans=ans)
+            return
 
         await ans.answer(f'🧠Текущая пара🧠\n'f'{now_lessons_str}', keyboard=keyboards.make_keyboard_start_menu())
 
@@ -240,52 +209,20 @@ async def get_schedule(ans: Message, storage, tz):
             statistics.add(action='Следующая', storage=storage, tz=tz)
             return
 
-        near_lessons_str = ''
-
+        # Студент
         if storage.get_vk_user(chat_id=chat_id)['course'] != 'None':
-            for near_lesson in near_lessons:
-                name = near_lesson['name']
-                if name == 'свободно':
-                    await ans.answer('Сегодня больше пар нет 😎', keyboard=keyboards.make_keyboard_start_menu())
-                    return
-                near_lessons_str += '-------------------------------------------\n'
-                aud = near_lesson['aud']
-                if aud:
-                    aud = f'Аудитория: {aud}\n'
-                time = near_lesson['time']
+            near_lessons_str = get_now_lesson_in_str_stud(near_lessons)
 
-                info = near_lesson['info'].replace(",", "")
-                prep = near_lesson['prep']
-
-                near_lessons_str += f'{time}\n' \
-                                    f'{aud}' \
-                                    f'👉{name}\n' \
-                                    f'{info} {prep}\n'
-
-            near_lessons_str += '-------------------------------------------\n'
-            await ans.answer(f'🧠Ближайшая пара🧠\n'f'{near_lessons_str}',
-                             keyboard=keyboards.make_keyboard_start_menu())
-
+        # Преподаватель
         elif storage.get_vk_user(chat_id=chat_id)['course'] == 'None':
-            for near_lesson in near_lessons:
-                name = near_lesson['name']
-                if name == 'свободно':
-                    await ans.answer('Сегодня больше пар нет 😎', keyboard=keyboards.make_keyboard_start_menu())
-                    return
-                near_lessons_str += '-------------------------------------------\n'
-                aud = near_lesson['aud']
-                if aud:
-                    aud = f'Аудитория: {aud}\n'
-                time = near_lesson['time']
-                info = near_lesson['info'].replace(",", "")
-                groups = ', '.join(near_lesson['groups'])
+            near_lessons_str = get_now_lesson_in_str_prep(near_lessons)
 
-                near_lessons_str += f'{time}\n' \
-                                    f'{aud}' \
-                                    f'👉{name}\n' \
-                                    f'{info} {groups}\n'
-            near_lessons_str += '-------------------------------------------\n'
-            await ans.answer(f'🧠Ближайшая пара🧠\n'f'{near_lessons_str}',
-                             keyboard=keyboards.make_keyboard_start_menu())
+        # Проверяем, что расписание сформировалось
+        if isinstance(near_lessons_str, APIError):
+            await schedule_processing.sending_schedule_is_not_available(ans=ans)
+            return
+
+        await ans.answer(f'🧠Ближайшая пара🧠\n'f'{near_lessons_str}',
+                         keyboard=keyboards.make_keyboard_start_menu())
 
         statistics.add(action='Следующая', storage=storage, tz=tz)
