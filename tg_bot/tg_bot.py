@@ -17,7 +17,6 @@ from tools import statistics
 
 TG_TOKEN = os.environ.get('TG_TOKEN')
 
-
 TZ_IRKUTSK = pytz.timezone('Asia/Irkutsk')
 
 bot = telebot.TeleBot(TG_TOKEN)
@@ -158,8 +157,9 @@ def main_menu_buttons_handler(message):
 @bot.callback_query_handler(func=lambda call: True)
 def callback_inline(message):
     data = message.data
-    handler_buttons_aud_all_results(bot=bot, message=message, storage=storage, tz=TZ_IRKUTSK)
-    logger.info(f'Inline button data: {data}')
+    if data != 'None':
+        handler_buttons_aud_all_results(bot=bot, message=message, storage=storage, tz=TZ_IRKUTSK)
+        logger.info(f'Inline button data: {data}')
 
 
 # ==================== Обработка текста ==================== #
