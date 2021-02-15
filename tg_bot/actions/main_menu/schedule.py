@@ -1,11 +1,11 @@
-from functions.creating_schedule import full_schedule_in_str, full_schedule_in_str_prep, \
+from datetime import datetime
+
+from API.functions_api import find_week, APIError
+from API.functions_api import full_schedule_in_str, full_schedule_in_str_prep, \
     get_one_day_schedule_in_str_prep, get_one_day_schedule_in_str, get_next_day_schedule_in_str, \
     get_next_day_schedule_in_str_prep
-from functions.find_week import find_week
-from functions.near_lesson import get_near_lesson, get_now_lesson
+from API.functions_api import get_near_lesson, get_now_lesson, get_now_lesson_in_str_stud, get_now_lesson_in_str_prep
 from tools import keyboards, statistics, schedule_processing
-
-from datetime import datetime
 
 
 def get_schedule(bot, message, storage, tz):
@@ -45,12 +45,16 @@ def get_schedule(bot, message, storage, tz):
         elif storage.get_user(chat_id=chat_id)['course'] == 'None':
             schedule_str = full_schedule_in_str_prep(schedule, week=week)
 
+        # Проверяем, что расписание сформировалось
+        if isinstance(schedule_str, APIError):
+            schedule_processing.sending_schedule_is_not_available(bot=bot, chat_id=chat_id)
+            return
+
         bot.send_message(chat_id=chat_id, text=f'Расписание {group}\n'
                                                f'Неделя: {week_name}',
                          reply_markup=keyboards.make_keyboard_start_menu())
         # Отправка расписания
-        schedule_processing.sending_schedule(bot=bot, message=message, schedule_str=schedule_str)
-
+        schedule_processing.sending_schedule(bot=bot, chat_id=chat_id, schedule_str=schedule_str)
 
         statistics.add(action=data, storage=storage, tz=tz)
 
@@ -77,6 +81,12 @@ def get_schedule(bot, message, storage, tz):
             schedule_one_day = get_one_day_schedule_in_str(schedule=schedule, week=week)
         elif storage.get_user(chat_id=chat_id)['course'] == 'None':
             schedule_one_day = get_one_day_schedule_in_str_prep(schedule=schedule, week=week)
+
+        # Проверяем, что расписание сформировалось
+        if isinstance(schedule_one_day, APIError):
+            schedule_processing.sending_schedule_is_not_available(bot=bot, chat_id=chat_id)
+            return
+
         if not schedule_one_day:
             bot.send_message(chat_id=chat_id, text='Сегодня пар нет 😎')
             return
@@ -112,6 +122,11 @@ def get_schedule(bot, message, storage, tz):
         elif storage.get_user(chat_id=chat_id)['course'] == 'None':
             schedule_next_day = get_next_day_schedule_in_str_prep(schedule=schedule, week=week)
 
+        # Проверяем, что расписание сформировалось
+        if isinstance(schedule_next_day, APIError):
+            schedule_processing.sending_schedule_is_not_available(bot=bot, chat_id=chat_id)
+            return
+
         if not schedule_next_day:
             bot.send_message(chat_id=chat_id, text='Завтра пар нет 😎')
             return
@@ -143,6 +158,11 @@ def get_schedule(bot, message, storage, tz):
 
         now_lessons = get_now_lesson(schedule=schedule, week=week)
 
+        # Проверяем, что расписание сформировалось
+        if isinstance(now_lessons, APIError):
+            schedule_processing.sending_schedule_is_not_available(bot=bot, chat_id=chat_id)
+            return
+
         # если пар нет
         if not now_lessons:
             bot.send_message(chat_id=chat_id, text='Сейчас пары нет, можете отдохнуть)',
@@ -150,49 +170,19 @@ def get_schedule(bot, message, storage, tz):
             statistics.add(action='Текущая', storage=storage, tz=tz)
             return
 
-        now_lessons_str = ''
-
+        # Студент
         if storage.get_user(chat_id=chat_id)['course'] != 'None':
-            for near_lesson in now_lessons:
-                name = near_lesson['name']
-                if name == 'свободно':
-                    bot.send_message(chat_id=chat_id, text='Сейчас пары нет, можете отдохнуть)',
-                                     reply_markup=keyboards.make_keyboard_start_menu())
-                    return
-                now_lessons_str += '-------------------------------------------\n'
-                aud = near_lesson['aud']
-                if aud:
-                    aud = f'Аудитория: {aud}\n'
-                time = near_lesson['time']
-                info = near_lesson['info'].replace(",", "")
-                prep = near_lesson['prep']
+            now_lessons_str = get_now_lesson_in_str_stud(now_lessons)
 
-                now_lessons_str += f'{time}\n' \
-                                   f'{aud}' \
-                                   f'👉{name}\n' \
-                                   f'{info} {prep}\n'
-            now_lessons_str += '-------------------------------------------\n'
-
+        # Преподаватель
         elif storage.get_user(chat_id=chat_id)['course'] == 'None':
-            for near_lesson in now_lessons:
-                name = near_lesson['name']
-                if name == 'свободно':
-                    bot.send_message(chat_id=chat_id, text='Сейчас пары нет, можете отдохнуть)',
-                                     reply_markup=keyboards.make_keyboard_start_menu())
-                    return
-                now_lessons_str += '-------------------------------------------\n'
-                aud = near_lesson['aud']
-                if aud:
-                    aud = f'Аудитория: {aud}\n'
-                time = near_lesson['time']
-                info = near_lesson['info'].replace(",", "")
-                groups = ', '.join(near_lesson['groups'])
+            now_lessons_str = get_now_lesson_in_str_prep(now_lessons)
 
-                now_lessons_str += f'{time}\n' \
-                                   f'{aud}' \
-                                   f'👉{name}\n' \
-                                   f'{info} {groups}\n'
-            now_lessons_str += '-------------------------------------------\n'
+        # Проверяем, что расписание сформировалось
+        if isinstance(now_lessons_str, APIError):
+            schedule_processing.sending_schedule_is_not_available(bot=bot, chat_id=chat_id)
+            return
+
 
         bot.send_message(chat_id=chat_id, text=f'🧠Текущая пара🧠\n'f'{now_lessons_str}',
                          reply_markup=keyboards.make_keyboard_start_menu())
@@ -208,7 +198,7 @@ def get_schedule(bot, message, storage, tz):
             schedule = storage.get_schedule_prep(group=group)
         if not schedule:
             bot.send_message(chat_id=chat_id, text='Расписание временно недоступно🚫😣\n'
-                             'Попробуйте позже⏱',
+                                                   'Попробуйте позже⏱',
                              reply_markup=keyboards.make_keyboard_start_menu())
             statistics.add(action='Следующая', storage=storage, tz=tz)
             return
@@ -217,6 +207,11 @@ def get_schedule(bot, message, storage, tz):
 
         near_lessons = get_near_lesson(schedule=schedule, week=week)
 
+        # Проверяем, что расписание сформировалось
+        if isinstance(near_lessons, APIError):
+            schedule_processing.sending_schedule_is_not_available(bot=bot, chat_id=chat_id)
+            return
+
         # если пар нет
         if not near_lessons:
             bot.send_message(chat_id=chat_id, text='Сегодня больше пар нет 😎',
@@ -224,54 +219,20 @@ def get_schedule(bot, message, storage, tz):
             statistics.add(action='Следующая', storage=storage, tz=tz)
             return
 
-        near_lessons_str = ''
-
+        # Студент
         if storage.get_user(chat_id=chat_id)['course'] != 'None':
-            for near_lesson in near_lessons:
-                name = near_lesson['name']
-                if name == 'свободно':
-                    bot.send_message(chat_id=chat_id, text='Сегодня больше пар нет 😎',
-                                     reply_markup=keyboards.make_keyboard_start_menu())
-                    return
-                near_lessons_str += '-------------------------------------------\n'
-                aud = near_lesson['aud']
-                if aud:
-                    aud = f'Аудитория: {aud}\n'
-                time = near_lesson['time']
+            near_lessons_str = get_now_lesson_in_str_stud(near_lessons)
 
-                info = near_lesson['info'].replace(",", "")
-                prep = near_lesson['prep']
-
-                near_lessons_str += f'{time}\n' \
-                                    f'{aud}' \
-                                    f'👉{name}\n' \
-                                    f'{info} {prep}\n'
-
-            near_lessons_str += '-------------------------------------------\n'
-            bot.send_message(chat_id=chat_id, text=f'🧠Ближайшая пара🧠\n'f'{near_lessons_str}',
-                             reply_markup=keyboards.make_keyboard_start_menu())
-
+        # Преподаватель
         elif storage.get_user(chat_id=chat_id)['course'] == 'None':
-            for near_lesson in near_lessons:
-                name = near_lesson['name']
-                if name == 'свободно':
-                    bot.send_message(chat_id=chat_id, text='Сегодня больше пар нет 😎',
-                                     reply_markup=keyboards.make_keyboard_start_menu())
-                    return
-                near_lessons_str += '-------------------------------------------\n'
-                aud = near_lesson['aud']
-                if aud:
-                    aud = f'Аудитория: {aud}\n'
-                time = near_lesson['time']
-                info = near_lesson['info'].replace(",", "")
-                groups = ', '.join(near_lesson['groups'])
+            near_lessons_str = get_now_lesson_in_str_prep(near_lessons)
 
-                near_lessons_str += f'{time}\n' \
-                                    f'{aud}' \
-                                    f'👉{name}\n' \
-                                    f'{info} {groups}\n'
-            near_lessons_str += '-------------------------------------------\n'
-            bot.send_message(chat_id=chat_id, text=f'🧠Ближайшая пара🧠\n'f'{near_lessons_str}',
-                             reply_markup=keyboards.make_keyboard_start_menu())
+        # Проверяем, что расписание сформировалось
+        if isinstance(near_lessons_str, APIError):
+            schedule_processing.sending_schedule_is_not_available(bot=bot, chat_id=chat_id)
+            return
+
+        bot.send_message(chat_id=chat_id, text=f'🧠Ближайшая пара🧠\n'f'{near_lessons_str}',
+                         reply_markup=keyboards.make_keyboard_start_menu())
 
         statistics.add(action='Следующая', storage=storage, tz=tz)
