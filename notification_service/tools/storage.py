@@ -31,10 +31,26 @@ class MongodbService(object):
         return self._db[collection].insert_one(data)
 
     def get_users_with_reminders_tg(self):
-        return list(self._db.users.find(filter={'reminders': {'$ne': []}}))
+        return list(self._db.users.find(filter={'notifications': {'$ne': 0}}))
 
     def get_users_with_reminders_vk(self):
-        return list(self._db.VK_users.find(filter={'reminders': {'$ne': []}}))
+        return list(self._db.VK_users.find(filter={'notifications': {'$ne': 0}}))
+
+    def save_or_update_vk_user(self, chat_id: int, institute='', course='', group='', notifications=0, reminders=[]):
+        """сохраняет или изменяет данные пользователя (коллекция users)"""
+        update = {'chat_id': chat_id, 'notifications': 0}
+        if institute:
+            update['institute'] = institute
+        if course:
+            update['course'] = course
+        if group:
+            update['group'] = group
+        if notifications:
+            update['notifications'] = notifications
+        if reminders:
+            update['reminders'] = reminders
+
+        return self._db.VK_users.update_one(filter={'chat_id': chat_id}, update={'$set': update}, upsert=True)
 
 
     def get_schedule(self, group):
