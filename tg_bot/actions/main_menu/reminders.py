@@ -1,19 +1,27 @@
-from functions.calculating_reminder_times import calculating_reminder_times
-from functions.notifications import get_notifications_status
-from functions.logger import logger
-from tools import keyboards, statistics
 import json
+
+from API.functions_api import calculating_reminder_times, APIError
+from API.functions_api import get_notifications_status
+from tools import keyboards, statistics, schedule_processing
+from tools.logger import logger
 
 
 def reminder_info(bot, message, storage, tz):
     chat_id = message.chat.id
     user = storage.get_user(chat_id=chat_id)
 
+    time = user['notifications']
+    if not time:
+        time = 0
+
+    # Проверяем статус напоминания
+    notifications_status = get_notifications_status(time)
+    if isinstance(notifications_status, APIError):
+        schedule_processing.sending_service_is_not_available(bot, chat_id)
+        return
+
     if user:
-        time = user['notifications']
-        if not time:
-            time = 0
-        bot.send_message(chat_id=chat_id, text=get_notifications_status(time),
+        bot.send_message(chat_id=chat_id, text=notifications_status,
                          reply_markup=keyboards.make_inline_keyboard_notifications(time))
 
         statistics.add(action='Напоминания', storage=storage, tz=tz)
@@ -35,6 +43,12 @@ def reminder_settings(bot, message, storage, tz):
                 return
         time = data['notification_btn']
 
+        # Проверяем статус напоминания
+        notifications_status = get_notifications_status(time)
+        if isinstance(notifications_status, APIError):
+            schedule_processing.sending_service_is_not_available(bot, chat_id)
+            return
+
         try:
             bot.edit_message_text(message_id=message_id, chat_id=chat_id,
                                   text='Настройка напоминаний ⚙\n\n'
@@ -54,6 +68,12 @@ def reminder_settings(bot, message, storage, tz):
         if time < 0:
             time = 0
 
+        # Проверяем статус напоминания
+        notifications_status = get_notifications_status(time)
+        if isinstance(notifications_status, APIError):
+            schedule_processing.sending_service_is_not_available(bot, chat_id)
+            return
+
         try:
             bot.edit_message_reply_markup(message_id=message_id, chat_id=chat_id,
                                           reply_markup=keyboards.make_inline_keyboard_set_notifications(time))
@@ -66,6 +86,12 @@ def reminder_settings(bot, message, storage, tz):
         time = data['add_notifications']
         time += 5
 
+        # Проверяем статус напоминания
+        notifications_status = get_notifications_status(time)
+        if isinstance(notifications_status, APIError):
+            schedule_processing.sending_service_is_not_available(bot, chat_id)
+            return
+
         try:
             bot.edit_message_reply_markup(message_id=message_id, chat_id=chat_id,
                                           reply_markup=keyboards.make_inline_keyboard_set_notifications(time))
@@ -76,6 +102,12 @@ def reminder_settings(bot, message, storage, tz):
     elif 'save_notifications' in data:
         data = json.loads(data)
         time = data['save_notifications']
+
+        # Проверяем статус напоминания
+        notifications_status = get_notifications_status(time)
+        if isinstance(notifications_status, APIError):
+            schedule_processing.sending_service_is_not_available(bot, chat_id)
+            return
 
         group = storage.get_user(chat_id=chat_id)['group']
 

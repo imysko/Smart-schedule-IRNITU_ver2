@@ -1,9 +1,10 @@
-from functions.creating_schedule import full_schedule_in_str, full_schedule_in_str_prep
-from functions.find_week import find_week
+import json
 
 from keyboa import keyboa_maker
-from tools import keyboards, schedule_processing, statistics
-import json
+
+from API.functions_api import find_week
+from API.functions_api import full_schedule_in_str_prep, APIError
+from tools import keyboards, schedule_processing
 
 # Глобальная переменная(словарь), которая хранит в себе 3 состояния
 # (номер страницы; слово, которые находим; список соответствия для выхода по условию в стейте)
@@ -268,13 +269,17 @@ def choose_week(message, bot, storage, tz, last_msg=None):
         aud = request_word
         schedule_str = full_schedule_in_str_prep(schedule, week=week, aud=aud)
 
+        # Проверяем, что расписание сформировалось
+        if isinstance(schedule_str, APIError):
+            schedule_processing.sending_schedule_is_not_available(bot=bot, chat_id=chat_id)
+            return
+
         bot.send_message(chat_id=chat_id, text=f'Расписание {request_word}\n'
                                                f'Неделя: {week_name}',
                          reply_markup=keyboards.make_keyboard_start_menu())
 
         # Отправка расписания
-        schedule_processing.sending_schedule_search(bot=bot, message=message, chat_id=chat_id,
-                                                    schedule_str=schedule_str)
+        schedule_processing.sending_schedule(bot=bot, chat_id=chat_id, schedule_str=schedule_str)
 
         bot.clear_step_handler_by_chat_id(chat_id=chat_id)
 
@@ -283,7 +288,6 @@ def handler_buttons_aud_all_results(bot, message, storage, tz):
     chat_id = message.message.chat.id
     message_id = message.message.message_id
     data = message.data
-
 
     if data.lower() in aud_list[chat_id][2]:
         bot.delete_message(message_id=message_id, chat_id=chat_id)
