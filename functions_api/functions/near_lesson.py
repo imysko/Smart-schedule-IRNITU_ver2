@@ -1,6 +1,7 @@
-from datetime import datetime, timedelta
-import platform
 import locale
+import platform
+from datetime import datetime
+
 import pytz
 
 TZ_IRKUTSK = pytz.timezone('Asia/Irkutsk')
@@ -23,7 +24,7 @@ def get_near_lesson(schedule: list, week: str) -> list:
             break
     # если сегодняшнего дня нет в расписании значит пар сегодня нет
     if not lessons:
-        return
+        return []
 
     near_lessons = []
     for lesson in lessons:
@@ -41,8 +42,8 @@ def get_near_lesson(schedule: list, week: str) -> list:
             if lesson['time'] == near_lessons[0]['time']:
                 near_lessons.append(lesson)
 
-
     return near_lessons
+
 
 def get_now_lesson(schedule: list, week: str) -> list:
     """"Возвращает текущую пару"""
@@ -59,7 +60,7 @@ def get_now_lesson(schedule: list, week: str) -> list:
             break
     # если сегодняшнего дня нет в расписании значит пар сегодня нет
     if not lessons:
-        return
+        return []
 
     now_lessons = []
     for lesson in lessons:
