@@ -8,15 +8,13 @@ class ReminderUpdater:
 
     def __init__(self, storage):
         self.users = []
-        self.last_schedule_update_date = None
         self.storage = storage
 
     def start(self):
         self.print_status_info()
         while True:
-            if self.check_updates_db():
-                self.calculation()
-            time.sleep(10 * 60)
+            self.calculation()
+            time.sleep(1 * 60 * 60)  # каждый час
 
     def get_users(self) -> list:
         raise NotImplementedError
@@ -37,12 +35,8 @@ class ReminderUpdater:
             except Exception as e:
                 logger.error(e)
                 continue
-
             user['reminders'] = reminders
             self.save_user(user)
-
-    def check_updates_db(self) -> bool:
-        return True
 
     @staticmethod
     def print_status_info():
@@ -61,3 +55,17 @@ class VKReminderUpdater(ReminderUpdater):
     @staticmethod
     def print_status_info():
         logger.info('vk_reminder_updater is started')
+
+
+class TGReminderUpdater(ReminderUpdater):
+
+    def get_users(self):
+        return self.storage.get_users_with_reminders_tg()
+
+    def save_user(self, user: dict):
+        del user['_id']
+        self.storage.save_or_update_tg_user(**user)
+
+    @staticmethod
+    def print_status_info():
+        logger.info('tg_reminder_updater is started')

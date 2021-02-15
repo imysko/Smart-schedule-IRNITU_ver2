@@ -1,4 +1,5 @@
 import os
+
 from pymongo import MongoClient
 
 MONGO_DB_ADDR = os.environ.get('MONGO_DB_ADDR')
@@ -52,6 +53,20 @@ class MongodbService(object):
 
         return self._db.VK_users.update_one(filter={'chat_id': chat_id}, update={'$set': update}, upsert=True)
 
+    def save_or_update_tg_user(self, chat_id: int, institute='', course='', group='', notifications=0, reminders=[]):
+        update = {'chat_id': chat_id, 'notifications': 0, 'reminders': {}}
+        if institute:
+            update['institute'] = institute
+        if course:
+            update['course'] = course
+        if group:
+            update['group'] = group
+        if notifications:
+            update['notifications'] = notifications
+        if reminders:
+            update['reminders'] = reminders
+
+        return self._db.users.update_one(filter={'chat_id': chat_id}, update={'$set': update}, upsert=True)
 
     def get_schedule(self, group):
         """возвращает расписание группы"""
