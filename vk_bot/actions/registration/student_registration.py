@@ -48,7 +48,7 @@ async def start_student_reg(ans: Message, storage, tz):
                 message_inst = institute
 
     # Если пользователя нет в базе данных
-    if not user:
+    if not user and ans.payload:
         institutes = name_institutes(storage.get_institutes())
         # Смотрим выбрал ли пользователь институт
         if message_inst in institutes:
@@ -75,7 +75,7 @@ async def start_student_reg(ans: Message, storage, tz):
         return
 
     # Регистрация после выбора института
-    elif not 'course' in user.keys():
+    elif ans.payload and not 'course' in user.keys():
         institute = user['institute']
         course = storage.get_courses(institute)
         # Если нажал кнопку курса
@@ -95,7 +95,7 @@ async def start_student_reg(ans: Message, storage, tz):
         return
 
     # Регистрация после выбора курса
-    elif not 'group' in user.keys():
+    elif ans.payload and not 'group' in user.keys():
         institute = user['institute']
         course = user['course']
         groups = storage.get_groups(institute=institute, course=course)
@@ -122,8 +122,16 @@ async def start_student_reg(ans: Message, storage, tz):
 
 
     else:
-        await ans.answer('Такому ещё не научили 😇, знаю только эти команды:\n'
-                         'Авторы - список авторов \n'
-                         'Регистрация - повторная регистрация\n'
-                         'Карта - карта университета')
-        statistics.add(action='bullshit', storage=storage, tz=tz)
+        if user == None:
+            user = []
+        try:
+            if len(user) == 6:
+                await ans.answer('Такому ещё не научили 😇, знаю только эти команды:\n'
+                                 'Авторы - список авторов \n'
+                                 'Регистрация - повторная регистрация\n'
+                                 'Карта - карта университета')
+        finally:
+            if len(user) != 6:
+                await ans.answer('Пожалуйста, закончите регистрацию 😇')
+
+
