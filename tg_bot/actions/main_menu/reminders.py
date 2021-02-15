@@ -31,6 +31,7 @@ def reminder_settings(bot, message, storage, tz):
     chat_id = message.message.chat.id
     message_id = message.message.message_id
     data = message.data
+
     if 'notification_btn' in data:
         data = json.loads(data)
         if data['notification_btn'] == 'close':
@@ -110,7 +111,11 @@ def reminder_settings(bot, message, storage, tz):
 
         group = storage.get_user(chat_id=chat_id)['group']
 
-        schedule = storage.get_schedule(group=group)['schedule']
+        if storage.get_user(chat_id=chat_id)['course'] == 'None':
+            schedule = storage.get_schedule_prep(group=group)['schedule']
+        else:
+            schedule = storage.get_schedule(group=group)['schedule']
+
         if time > 0:
             reminders = calculating_reminder_times(schedule=schedule, time=int(time))
         else:
