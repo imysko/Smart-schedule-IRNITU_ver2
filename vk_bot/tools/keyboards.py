@@ -17,63 +17,129 @@ def parametres_for_buttons_start_menu_vk(text, color):
 def make_inline_keyboard_notifications():
     """ Кнопка 'Настройка уведомлений' """
     keyboard = Keyboard(one_time=False)
-    keyboard.row()
-    keyboard.add(Text(label='Настройки ⚙'), color=KeyboardButtonColor.PRIMARY)
-    keyboard.row()
-    keyboard.add(Text(label='<==Назад'), color=KeyboardButtonColor.SECONDARY)
+    # keyboard.row()
+    # keyboard.add(Text(label='Настройки ⚙'), color=KeyboardButtonColor.PRIMARY)
+    # keyboard.row()
+    # keyboard.add(Text(label='<==Назад'), color=KeyboardButtonColor.SECONDARY)
+    keyboard.schema(
+        [
+            [
+                {"label": "Настройки ⚙", "type": "text", "color": "primary", "payload": "1"},
+            ],
+            [
+                {"label": "<==Назад", "type": "text", "color": "secondary", "payload": "1"},
+            ]
+        ]
+    )
     return keyboard
 
 
 def make_keyboard_start_menu():
     """ Клавиатура основного меню """
     keyboard = Keyboard(one_time=False)
-    keyboard.row()
-    keyboard.add(Text(label="Расписание 🗓"), color=KeyboardButtonColor.PRIMARY)
-    keyboard.add(Text(label="Ближайшая пара ⏱"), color=KeyboardButtonColor.PRIMARY)
-    keyboard.row()
-    keyboard.add(Text(label="Расписание на сегодня 🍏"), color=KeyboardButtonColor.SECONDARY)
-    keyboard.row()
-    keyboard.add(Text(label="Расписание на завтра 🍎"), color=KeyboardButtonColor.SECONDARY)
-    keyboard.row()
-    keyboard.add(Text(label="Поиск 🔎"), color=KeyboardButtonColor.PRIMARY)
-    keyboard.add(Text(label="Другое ⚡"), color=KeyboardButtonColor.PRIMARY)
+    # keyboard.row()
+    # keyboard.add(Text(label="Расписание 🗓"), color=KeyboardButtonColor.PRIMARY)
+    # keyboard.add(Text(label="Ближайшая пара ⏱"), color=KeyboardButtonColor.PRIMARY)
+    # keyboard.row()
+    # keyboard.add(Text(label="Расписание на сегодня 🍏"), color=KeyboardButtonColor.SECONDARY)
+    # keyboard.row()
+    # keyboard.add(Text(label="Расписание на завтра 🍎"), color=KeyboardButtonColor.SECONDARY)
+    # keyboard.row()
+    # keyboard.add(Text(label="Поиск 🔎"), color=KeyboardButtonColor.PRIMARY)
+    # keyboard.add(Text(label="Другое ⚡"), color=KeyboardButtonColor.PRIMARY)
+    # print(keyboard)
+    keyboard.schema(
+        [
+            [
+                {"label": "Расписание 🗓", "type": "text", "color": "primary", "payload": "1"},
+                {"label": "Ближайшая пара ⏱", "type": "text", "color": "primary", "payload": "1"},
+            ],
+            [
+                {"label": "Расписание на сегодня 🍏", "type": "text", "color": "secondary", "payload": "1"},
+            ],
+            [
+                {"label": "Расписание на завтра 🍎", "type": "text", "color": "secondary", "payload": "1"},
+            ],
+            [
+                {"label": "Поиск 🔎", "type": "text", "color": "primary", "payload": "1"},
+                {"label": "Другое ⚡", "type": "text", "color": "primary", "payload": "1"},
+            ]
+        ]
+    )
     return keyboard
 
 
 def make_keyboard_commands():
     """ Клавиатура текстовых команд"""
     keyboard = Keyboard(one_time=False)
-    keyboard.row()
-    # keyboard.add(Text(label="about"), color=KeyboardButtonColor.PRIMARY)
-    keyboard.add(Text(label="Авторы"), color=KeyboardButtonColor.PRIMARY)
-    keyboard.row()
-    keyboard.add(Text(label="Регистрация"), color=KeyboardButtonColor.SECONDARY)
-    keyboard.add(Text(label="Карта"), color=KeyboardButtonColor.SECONDARY)
-    keyboard.row()
-    keyboard.add(Text(label="<==Назад"), color=KeyboardButtonColor.SECONDARY)
+    # keyboard.row()
+    # keyboard.add(Text(label="Авторы"), color=KeyboardButtonColor.PRIMARY)
+    # keyboard.row()
+    # keyboard.add(Text(label="Регистрация"), color=KeyboardButtonColor.SECONDARY)
+    # keyboard.add(Text(label="Карта"), color=KeyboardButtonColor.SECONDARY)
+    # keyboard.row()
+    # keyboard.add(Text(label="<==Назад"), color=KeyboardButtonColor.SECONDARY)
+    keyboard.schema(
+        [
+            [
+                {"label": "Авторы", "type": "text", "color": "primary", "payload": "1"},
+            ],
+            [
+                {"label": "Регистрация", "type": "text", "color": "secondary", "payload": "1"},
+                {"label": "Карта", "type": "text", "color": "secondary", "payload": "1"},
+            ],
+            [
+                {"label": "<==Назад", "type": "text", "color": "secondary", "payload": "1"},
+            ]
+        ]
+    )
     return keyboard
 
 
 def make_keyboard_extra():
     """ Клавиатура дополнительных кнопок меню - Другое"""
     keyboard = Keyboard(one_time=False)
-    keyboard.row()
-    keyboard.add(Text(label="Список команд"), color=KeyboardButtonColor.PRIMARY)
-    keyboard.row()
-    keyboard.add(Text(label="Напоминание 📣"), color=KeyboardButtonColor.SECONDARY)
-    keyboard.row()
-    keyboard.add(Text(label="<==Назад"), color=KeyboardButtonColor.SECONDARY)
+    # keyboard.row()
+    # keyboard.add(Text(label="Список команд"), color=KeyboardButtonColor.PRIMARY)
+    # keyboard.row()
+    # keyboard.add(Text(label="Напоминание 📣"), color=KeyboardButtonColor.SECONDARY)
+    # keyboard.row()
+    # keyboard.add(Text(label="<==Назад"), color=KeyboardButtonColor.SECONDARY)
+    keyboard.schema(
+        [
+            [
+                {"label": "Список команд", "type": "text", "color": "primary", "payload": "1"},
+            ],
+            [
+                {"label": "Напоминание 📣", "type": "text", "color": "secondary", "payload": "1"},
+            ],
+            [
+                {"label": "<==Назад", "type": "text", "color": "secondary", "payload": "1"},
+            ]
+        ]
+    )
     return keyboard
 
 
 def make_keyboard_nearlesson():
     """ Клавиатура выбора недели """
     keyboard = Keyboard(one_time=False)
-    keyboard.row()
-    keyboard.add(Text(label="Текущая"), color=KeyboardButtonColor.PRIMARY)
-    keyboard.add(Text(label="Следующая"), color=KeyboardButtonColor.PRIMARY)
-    keyboard.row()
-    keyboard.add(Text(label="<==Назад"), color=KeyboardButtonColor.SECONDARY)
+    # keyboard.row()
+    # keyboard.add(Text(label="Текущая"), color=KeyboardButtonColor.PRIMARY)
+    # keyboard.add(Text(label="Следующая"), color=KeyboardButtonColor.PRIMARY)
+    # keyboard.row()
+    # keyboard.add(Text(label="<==Назад"), color=KeyboardButtonColor.SECONDARY)
+    keyboard.schema(
+        [
+            [
+                {"label": "Текущая", "type": "text", "color": "primary", "payload": "1"},
+                {"label": "Следующая", "type": "text", "color": "primary", "payload": "1"},
+            ],
+            [
+                {"label": "<==Назад", "type": "text", "color": "secondary", "payload": "1"},
+            ]
+        ]
+    )
     return keyboard
 
 
@@ -86,12 +152,24 @@ def make_inline_keyboard_set_notifications(time=0):
         text_check = 'off'
 
     keyboard = Keyboard(one_time=False)
-    keyboard.row()
-    keyboard.add(Text(label="-"), color=KeyboardButtonColor.PRIMARY)
-    keyboard.add(Text(label=text_check), color=KeyboardButtonColor.PRIMARY)
-    keyboard.add(Text(label='+'), color=KeyboardButtonColor.PRIMARY)
-    keyboard.row()
-    keyboard.add(Text(label="Сохранить"), color=KeyboardButtonColor.SECONDARY)
+    # keyboard.row()
+    # keyboard.add(Text(label="-"), color=KeyboardButtonColor.PRIMARY)
+    # keyboard.add(Text(label=text_check), color=KeyboardButtonColor.PRIMARY)
+    # keyboard.add(Text(label='+'), color=KeyboardButtonColor.PRIMARY)
+    # keyboard.row()
+    # keyboard.add(Text(label="Сохранить"), color=KeyboardButtonColor.SECONDARY)
+    keyboard.schema(
+        [
+            [
+                {"label": "-", "type": "text", "color": "primary", "payload": "1"},
+                {"label": f"{text_check}", "type": "text", "color": "primary", "payload": "1"},
+                {"label": "+", "type": "text", "color": "primary", "payload": "1"},
+            ],
+            [
+                {"label": "Сохранить", "type": "text", "color": "secondary", "payload": "1"},
+            ]
+        ]
+    )
     return keyboard
 
 
@@ -216,9 +294,23 @@ def make_keyboard_choose_schedule():
     """ Клавиатура для выбора недели """
 
     keyboard = Keyboard(one_time=False)
-    keyboard.row()
-    keyboard.add(Text(label="На текущую неделю"), color=KeyboardButtonColor.PRIMARY)
-    keyboard.add(Text(label="На следующую неделю"), color=KeyboardButtonColor.PRIMARY)
+    # keyboard.row()
+    # keyboard.add(Text(label="На текущую неделю"), color=KeyboardButtonColor.PRIMARY)
+    # keyboard.add(Text(label="На следующую неделю"), color=KeyboardButtonColor.PRIMARY)
+    # keyboard.row()
+    # keyboard.add(Text(label="Основное меню"), color=KeyboardButtonColor.PRIMARY)
+    keyboard.schema(
+        [
+            [
+                {"label": "На текущую неделю", "type": "text", "color": "primary", "payload": "1"},
+                {"label": "На следующую неделю", "type": "text", "color": "primary", "payload": "1"},
+            ],
+            [
+                {"label": "Основное меню", "type": "text", "color": "secondary", "payload": "1"},
+            ]
+        ]
+    )
+
 
     return keyboard
 
@@ -291,28 +383,55 @@ def make_keyboard_main_menu():
     """ Клавиатура выхода в основное меню """
 
     keyboard = Keyboard(one_time=False)
-    keyboard.row()
-    keyboard.add(Text(label="Основное меню"), color=KeyboardButtonColor.PRIMARY)
+    # keyboard.row()
+    # keyboard.add(Text(label="Основное меню"), color=KeyboardButtonColor.PRIMARY)
+    keyboard.schema(
+        [
+            [
+                {"label": "Основное меню", "type": "text", "color": "primary", "payload": "1"},
+            ]
+        ]
+    )
     return keyboard
 
 def make_keyboard_search():
     """ Клавиатура для поиска """
 
     keyboard = Keyboard(one_time=False)
-    keyboard.row()
-    keyboard.add(Text(label="Группы и преподаватели"), color=KeyboardButtonColor.PRIMARY)
-    keyboard.row()
-    keyboard.add(Text(label="Аудитории"), color=KeyboardButtonColor.PRIMARY)
-    keyboard.row()
-    keyboard.add(Text(label="Основное меню"), color=KeyboardButtonColor.PRIMARY)
+    # keyboard.row()
+    # keyboard.add(Text(label="Группы и преподаватели"), color=KeyboardButtonColor.PRIMARY)
+    # keyboard.row()
+    # keyboard.add(Text(label="Аудитории"), color=KeyboardButtonColor.PRIMARY)
+    # keyboard.row()
+    # keyboard.add(Text(label="Основное меню"), color=KeyboardButtonColor.PRIMARY)
+    keyboard.schema(
+        [
+            [
+                {"label": "Группы и преподаватели", "type": "text", "color": "primary", "payload": "1"},
+            ],
+            [
+                {"label": "Аудитории", "type": "text", "color": "secondary", "payload": "1"},
+            ],
+            [
+                {"label": "Основное меню", "type": "text", "color": "secondary", "payload": "1"},
+            ]
+        ]
+    )
     return keyboard
 
 def back_for_prep():
     """ Клавиатура перехода к старту регистрации для преподавателей """
 
     keyboard = Keyboard(one_time=False)
-    keyboard.row()
-    keyboard.add(Text(label="Назад к институтам"), color=KeyboardButtonColor.PRIMARY)
+    # keyboard.row()
+    # keyboard.add(Text(label="Назад к институтам"), color=KeyboardButtonColor.PRIMARY)
+    keyboard.schema(
+        [
+            [
+                {"label": "Назад к институтам", "type": "text", "color": "primary", "payload": "1"},
+            ]
+        ]
+    )
     return keyboard
 
 
