@@ -40,25 +40,25 @@ def make_keyboard_start_menu():
     return keyboard
 
 
-def make_keyboard_commands():
-    """ Клавиатура текстовых команд"""
-    keyboard = Keyboard(one_time=False)
-    keyboard.row()
-    # keyboard.add(Text(label="about"), color=KeyboardButtonColor.PRIMARY)
-    keyboard.add(Text(label="Авторы"), color=KeyboardButtonColor.PRIMARY)
-    keyboard.row()
-    keyboard.add(Text(label="Регистрация"), color=KeyboardButtonColor.SECONDARY)
-    keyboard.add(Text(label="Карта"), color=KeyboardButtonColor.SECONDARY)
-    keyboard.row()
-    keyboard.add(Text(label="<==Назад"), color=KeyboardButtonColor.SECONDARY)
-    return keyboard
+# def make_keyboard_commands():
+#     """ Клавиатура текстовых команд"""
+#     keyboard = Keyboard(one_time=False)
+#     keyboard.row()
+#     # keyboard.add(Text(label="about"), color=KeyboardButtonColor.PRIMARY)
+#     keyboard.add(Text(label="Авторы"), color=KeyboardButtonColor.PRIMARY)
+#     keyboard.row()
+#     keyboard.add(Text(label="Регистрация"), color=KeyboardButtonColor.SECONDARY)
+#     keyboard.add(Text(label="Карта"), color=KeyboardButtonColor.SECONDARY)
+#     keyboard.row()
+#     keyboard.add(Text(label="<==Назад"), color=KeyboardButtonColor.SECONDARY)
+#     return keyboard
 
 
 def make_keyboard_extra():
     """ Клавиатура дополнительных кнопок меню - Другое"""
     keyboard = Keyboard(one_time=False)
     keyboard.row()
-    keyboard.add(Text(label="Список команд"), color=KeyboardButtonColor.PRIMARY)
+    keyboard.add(Text(label="Помощь"), color=KeyboardButtonColor.PRIMARY)
     keyboard.row()
     keyboard.add(Text(label="Напоминание 📣"), color=KeyboardButtonColor.SECONDARY)
     keyboard.row()
