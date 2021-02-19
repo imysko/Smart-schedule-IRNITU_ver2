@@ -21,7 +21,7 @@ content_schedule = {
              'На следующую неделю',
              'Расписание на завтра 🍎', 'Следующая', 'Текущая']}
 
-content_commands = {'text': ['Начать', 'начать', 'Начало', 'start']}
+content_commands = {'text': ['Начать', 'начать', 'Начало', 'start', 'Start']}
 
 content_main_menu_buttons = {'text': ['Основное меню', '<==Назад', 'Список команд', 'Другое ⚡', 'Поиск 🔎']}
 
@@ -39,7 +39,11 @@ map_image = "photo-198983266_457239216"
 @bot.on.message(text="Группы и преподаватели")
 async def start_search_handler(ans: Message):
     """Вхождение в стейт поиска групп и преподавателей"""
-    await prep_and_group_search.start_search(bot=bot, ans=ans, state=SuperStates, storage=storage)
+    if ans.payload:
+        await prep_and_group_search.start_search(bot=bot, ans=ans, state=SuperStates, storage=storage)
+    else:
+        await ans.answer('Пожалуйста, воспользуйтесь клавиатурой 😉')
+
 
 
 @bot.on.message(state=SuperStates.SEARCH)
@@ -51,7 +55,11 @@ async def search_handler(ans: Message):
 @bot.on.message(text="Аудитории")
 async def start_aud_search_handler(ans: Message):
     """Вхождение в стейт поиска аудитории"""
-    await aud_search.start_search(bot=bot, ans=ans, state=SuperStates)
+    if ans.payload:
+        await aud_search.start_search(bot=bot, ans=ans, state=SuperStates)
+    else:
+        await ans.answer('Пожалуйста, воспользуйтесь клавиатурой 😉')
+
 
 
 @bot.on.message(state=SuperStates.AUD_SEARCH)
@@ -81,14 +89,21 @@ async def registration_handler(ans: Message):
 @bot.on.message(text=content_map['text'])
 async def show_map_handler(ans: Message):
     """Команда Карта"""
-    await commands.show_map(ans=ans, photo_vk_name=map_image)
+    if ans.payload:
+        await commands.show_map(ans=ans, photo_vk_name=map_image)
+    else:
+        await ans.answer('Пожалуйста, воспользуйтесь клавиатурой 😉')
+
     statistics.add(action='map', storage=storage, tz=TZ_IRKUTSK)
 
 
 @bot.on.message(text=['Авторы', 'авторы'])
 async def authors_handler(ans: Message):
     """Команда Авторы"""
-    await commands.authors(ans=ans)
+    if ans.payload:
+        await commands.authors(ans=ans)
+    else:
+        await ans.answer('Пожалуйста, воспользуйтесь клавиатурой 😉')
     statistics.add(action='authors', storage=storage, tz=TZ_IRKUTSK)
 
 
@@ -97,15 +112,21 @@ async def authors_handler(ans: Message):
 @bot.on.message(text=content_schedule['text'])
 async def schedule_handler(ans: Message):
     """Получение расписания"""
-    await schedule.get_schedule(ans=ans, storage=storage, tz=TZ_IRKUTSK)
+    if ans.payload:
+        await schedule.get_schedule(ans=ans, storage=storage, tz=TZ_IRKUTSK)
+    else:
+        await ans.answer('Пожалуйста, воспользуйтесь клавиатурой 😉')
 
 
 # ==================== ГЛАВНОЕ МЕНЮ ==================== #
 
 @bot.on.message(text=content_main_menu_buttons['text'])
 async def main_menu_buttons_handler(ans: Message):
-    """Основные кнопки главног меню"""
-    await main_menu.processing_main_buttons(ans=ans, storage=storage, tz=TZ_IRKUTSK)
+    """Основные кнопки главного меню"""
+    if ans.payload:
+        await main_menu.processing_main_buttons(ans=ans, storage=storage, tz=TZ_IRKUTSK)
+    else:
+        await ans.answer('Пожалуйста, воспользуйтесь клавиатурой 😉')
 
 
 # ==================== НАПОМИНАНИЯ ==================== #
@@ -113,7 +134,10 @@ async def main_menu_buttons_handler(ans: Message):
 @bot.on.message(text=content_reminders['text'])
 async def reminders_handler(ans: Message):
     """Настройка напоминаний"""
-    await reminders.reminder_settings(ans=ans, storage=storage, tz=TZ_IRKUTSK)
+    if ans.payload:
+        await reminders.reminder_settings(ans=ans, storage=storage, tz=TZ_IRKUTSK)
+    else:
+        await ans.answer('Пожалуйста, воспользуйтесь клавиатурой 😉')
 
 
 # ==================== РЕГИСТРАЦИЯ ==================== #
@@ -121,13 +145,17 @@ async def reminders_handler(ans: Message):
 @bot.on.message(text="Преподаватель")
 async def start_prep_reg_handler(ans: Message):
     """Вхождение в стейт регистрации преподавателей"""
-    await teacher_registration.start_prep_reg(bot=bot, ans=ans, state=SuperStates, storage=storage)
+    if ans.payload:
+        await teacher_registration.start_prep_reg(bot=bot, ans=ans, state=SuperStates, storage=storage)
+    else:
+        await ans.answer('Пожалуйста, воспользуйтесь клавиатурой 😉')
 
 
 @bot.on.message(state=SuperStates.PREP_REG)
 async def reg_prep_handler(ans: Message):
     """Стейт регистрации преподавателей"""
     await teacher_registration.reg_prep(bot=bot, ans=ans, storage=storage)
+
 
 
 @bot.on.message()  # Должно быть последним обработчиком, так как принимает все сообщения.
