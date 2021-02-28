@@ -10,7 +10,7 @@ def find_week():
     # У нас формат данных 01:01:23.283+08:00
     # С 00.00.00 до 01.02.59 поломка
     error = False
-    now = datetime.fromisoformat(f'2021-02-28 01:03:00.000+08:00')
+    #now = datetime.fromisoformat(f'2021-02-28 01:03:00.000+08:00')
     if int(now.strftime('%H')) in [0, 1] and int(now.strftime('%M')) < 3:
         error = True
     sep = datetime(now.year if now.month >= 9 else now.year - 1, 9, 1, tzinfo=TZ_IRKUTSK)
