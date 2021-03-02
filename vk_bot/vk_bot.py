@@ -23,7 +23,7 @@ content_schedule = {
 
 content_commands = {'text': ['Начать', 'начать', 'Начало', 'start', 'Start']}
 
-content_main_menu_buttons = {'text': ['Основное меню', '<==Назад', 'Список команд', 'Другое ⚡', 'Поиск 🔎']}
+content_main_menu_buttons = {'text': ['Основное меню', '<==Назад', 'Другое ⚡', 'Поиск 🔎']}
 
 content_reminders = {'text': ['Напоминание 📣', 'Настройки ⚙', '-', '+', 'Сохранить']}
 
@@ -106,6 +106,17 @@ async def authors_handler(ans: Message):
         await ans.answer('Пожалуйста, воспользуйтесь клавиатурой 😉')
     statistics.add(action='authors', storage=storage, tz=TZ_IRKUTSK)
 
+@bot.on.message(text=['Подсказка', 'подсказка'])
+async def tip_handler(ans: Message):
+    """Команда Подсказка"""
+    await commands.tip(ans=ans)
+    statistics.add(action='tip', storage=storage, tz=TZ_IRKUTSK)
+
+@bot.on.message(text=['Помощь', 'помощь'])
+async def tip_handler(ans: Message):
+    """Команда Помощь"""
+    await commands.help(ans=ans)
+    statistics.add(action='help', storage=storage, tz=TZ_IRKUTSK)
 
 # ==================== РАСПИСАНИЕ ==================== #
 

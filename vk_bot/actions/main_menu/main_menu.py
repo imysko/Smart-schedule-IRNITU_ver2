@@ -15,14 +15,6 @@ async def processing_main_buttons(ans: Message, storage, tz):
     elif '<==Назад' == message and user.get('group'):
         await ans.answer('Основное меню', keyboard=keyboards.make_keyboard_start_menu())
 
-    elif 'Список команд' == message and user.get('group'):
-        await ans.answer('Список команд:\n'
-                         'Авторы - список авторов \n'
-                         'Регистрация- повторная регистрация\n'
-                         'Карта - карта университета', keyboard=keyboards.make_keyboard_commands())
-
-        statistics.add(action='help', storage=storage, tz=tz)
-        return
 
     elif 'Другое ⚡' == message and user.get('group'):
         await ans.answer('Другое', keyboard=keyboards.make_keyboard_extra())

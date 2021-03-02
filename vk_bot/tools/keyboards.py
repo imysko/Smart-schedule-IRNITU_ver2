@@ -1,5 +1,7 @@
-from vkbottle import Keyboard, KeyboardButtonColor, Text
 import json
+
+from vkbottle import Keyboard, KeyboardButtonColor, Text
+
 MAX_CALLBACK_RANGE = 41
 
 
@@ -13,6 +15,7 @@ def parametres_for_buttons_start_menu_vk(text, color):
         },
         "color": f"{color}"
     }
+
 
 def make_inline_keyboard_notifications():
     """ Кнопка 'Настройка уведомлений' """
@@ -72,13 +75,6 @@ def make_keyboard_start_menu():
 def make_keyboard_commands():
     """ Клавиатура текстовых команд"""
     keyboard = Keyboard(one_time=False)
-    # keyboard.row()
-    # keyboard.add(Text(label="Авторы"), color=KeyboardButtonColor.PRIMARY)
-    # keyboard.row()
-    # keyboard.add(Text(label="Регистрация"), color=KeyboardButtonColor.SECONDARY)
-    # keyboard.add(Text(label="Карта"), color=KeyboardButtonColor.SECONDARY)
-    # keyboard.row()
-    # keyboard.add(Text(label="<==Назад"), color=KeyboardButtonColor.SECONDARY)
     keyboard.schema(
         [
             [
@@ -99,16 +95,10 @@ def make_keyboard_commands():
 def make_keyboard_extra():
     """ Клавиатура дополнительных кнопок меню - Другое"""
     keyboard = Keyboard(one_time=False)
-    # keyboard.row()
-    # keyboard.add(Text(label="Список команд"), color=KeyboardButtonColor.PRIMARY)
-    # keyboard.row()
-    # keyboard.add(Text(label="Напоминание 📣"), color=KeyboardButtonColor.SECONDARY)
-    # keyboard.row()
-    # keyboard.add(Text(label="<==Назад"), color=KeyboardButtonColor.SECONDARY)
     keyboard.schema(
         [
             [
-                {"label": "Список команд", "type": "text", "color": "primary", "payload": "1"},
+                {"label": "Помощь", "type": "text", "color": "primary", "payload": "1"},
             ],
             [
                 {"label": "Напоминание 📣", "type": "text", "color": "secondary", "payload": "1"},
@@ -311,7 +301,6 @@ def make_keyboard_choose_schedule():
         ]
     )
 
-
     return keyboard
 
 
@@ -394,6 +383,7 @@ def make_keyboard_main_menu():
     )
     return keyboard
 
+
 def make_keyboard_search():
     """ Клавиатура для поиска """
 
@@ -418,6 +408,7 @@ def make_keyboard_search():
         ]
     )
     return keyboard
+
 
 def back_for_prep():
     """ Клавиатура перехода к старту регистрации для преподавателей """
