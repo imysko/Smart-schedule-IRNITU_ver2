@@ -1,9 +1,8 @@
 from vkbottle.bot import Bot, Message
 
-from functions.creating_schedule import full_schedule_in_str, full_schedule_in_str_prep
-from functions.find_week import find_week
-from functions.logger import logger
+from API.functions_api import find_week, full_schedule_in_str, full_schedule_in_str_prep, APIError
 from tools import keyboards, schedule_processing
+from tools.logger import logger
 
 # Глобальная переменная(словарь), которая хранит в себе 3 состояния
 # (номер страницы; слово, которые находим; список соответствия для выхода по условию в стейте)
@@ -141,6 +140,12 @@ async def search(bot: Bot, ans: Message, storage):
             schedule_str = full_schedule_in_str(schedule, week=week)
         elif request_prep:
             schedule_str = full_schedule_in_str_prep(schedule, week=week)
+
+        # Проверяем, что расписание сформировалось
+        if isinstance(schedule_str, APIError):
+            await schedule_processing.sending_schedule_is_not_available(ans=ans)
+            await bot.state_dispenser.delete(ans.peer_id)
+            return
 
         await ans.answer(f'Расписание {group}\n'
                          f'Неделя: {week_name}', keyboard=keyboards.make_keyboard_start_menu())

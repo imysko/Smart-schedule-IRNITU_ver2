@@ -48,7 +48,7 @@ async def start_student_reg(ans: Message, storage, tz):
                 message_inst = institute
 
     # Если пользователя нет в базе данных
-    if not user:
+    if not user and ans.payload:
         institutes = name_institutes(storage.get_institutes())
         # Смотрим выбрал ли пользователь институт
         if message_inst in institutes:
@@ -75,7 +75,7 @@ async def start_student_reg(ans: Message, storage, tz):
         return
 
     # Регистрация после выбора института
-    elif not 'course' in user.keys():
+    elif ans.payload and not 'course' in user.keys():
         institute = user['institute']
         course = storage.get_courses(institute)
         # Если нажал кнопку курса
@@ -95,7 +95,7 @@ async def start_student_reg(ans: Message, storage, tz):
         return
 
     # Регистрация после выбора курса
-    elif not 'group' in user.keys():
+    elif ans.payload and not 'group' in user.keys():
         institute = user['institute']
         course = user['course']
         groups = storage.get_groups(institute=institute, course=course)
@@ -124,16 +124,23 @@ async def start_student_reg(ans: Message, storage, tz):
             elif message == "Назад":
                 await ans.answer('Выберите группу.', keyboard=keyboards.make_keyboard_choose_group_vk(groups))
             else:
-                await ans.answer('Я очень сомневаюсь, что твоей группы нет в списке ниже 😉', keyboard=keyboards.make_keyboard_choose_group_vk(groups))
+                await ans.answer('Я очень сомневаюсь, что твоей группы нет в списке ниже 😉',
+                                 keyboard=keyboards.make_keyboard_choose_group_vk(groups))
         return
-
 
     elif 'Далее' in message:
         await ans.answer('Далее', keyboard=keyboards.make_keyboard_choose_group_vk_page_2())
 
-
     else:
-        await ans.answer('Такому ещё не научили 😇:\n'
-                         'Для вызова подсказки используйте комаду [Подсказка]\n'
-                         'Для просмотра списка команда используйте команду [Помощь]\n')
+        if not user:
+            user = []
+        try:
+            if len(user) == 6:
+                await ans.answer('Такому ещё не научили 😇:\n'
+                                 'Для вызова подсказки используйте комаду [Подсказка]\n'
+                                 'Для просмотра списка команда используйте команду [Помощь]\n')
+        finally:
+            if len(user) != 6:
+                await ans.answer('Пожалуйста, закончите регистрацию 😇')
+
         statistics.add(action='bullshit', storage=storage, tz=tz)
