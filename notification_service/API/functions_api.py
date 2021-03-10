@@ -6,7 +6,7 @@ FUNCTIONS_API_URL = os.environ.get('FUNCTIONS_API_URL')
 
 
 def get_api_data(url: str, data: dict = {}):
-    answer = requests.get(url=FUNCTIONS_API_URL + url, json=data)
+    answer = requests.get(url=FUNCTIONS_API_URL + url, json=data, verify=False)
     json_answer = answer.json()
 
     return json_answer
