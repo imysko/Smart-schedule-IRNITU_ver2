@@ -21,7 +21,7 @@ content_schedule = {
              'На следующую неделю',
              'Расписание на завтра 🍎', 'Следующая', 'Текущая']}
 
-content_commands = {'text': ['Начать', 'начать', 'Начало', 'start', 'Start']}
+content_commands = {'text': ['Начать', 'начать', 'Начало', 'start', 'Start', 'Старт', 'старт']}
 
 content_main_menu_buttons = {'text': ['Основное меню', '<==Назад', 'Другое ⚡', 'Поиск 🔎']}
 
@@ -78,7 +78,7 @@ async def start_message_handler(ans: Message):
     statistics.add(action='start', storage=storage, tz=TZ_IRKUTSK)
 
 
-@bot.on.message(text=['Регистрация','регистрация'])
+@bot.on.message(text=['Регистрация', 'регистрация'])
 async def registration_handler(ans: Message):
     """Команда Регистрация"""
     chat_id = ans.from_id
@@ -89,10 +89,14 @@ async def registration_handler(ans: Message):
 @bot.on.message(text=content_map['text'])
 async def show_map_handler(ans: Message):
     """Команда Карта"""
-    if ans.payload:
+    chat_id = ans.from_id
+    user = storage.get_vk_user(chat_id=chat_id)
+    if not user:
+        user = []
+    if len(user) == 6:
         await commands.show_map(ans=ans, photo_vk_name=map_image)
     else:
-        await ans.answer('Пожалуйста, воспользуйтесь клавиатурой 😉')
+        await ans.answer('Для начала пройдите регистрацию 😉')
 
     statistics.add(action='map', storage=storage, tz=TZ_IRKUTSK)
 
@@ -100,22 +104,40 @@ async def show_map_handler(ans: Message):
 @bot.on.message(text=['Авторы', 'авторы'])
 async def authors_handler(ans: Message):
     """Команда Авторы"""
-    if ans.payload:
+    chat_id = ans.from_id
+    user = storage.get_vk_user(chat_id=chat_id)
+    if not user:
+        user = []
+    if len(user) == 6:
         await commands.authors(ans=ans)
     else:
-        await ans.answer('Пожалуйста, воспользуйтесь клавиатурой 😉')
+        await ans.answer('Для начала пройдите регистрацию 😉')
     statistics.add(action='authors', storage=storage, tz=TZ_IRKUTSK)
 
 @bot.on.message(text=['Подсказка', 'подсказка'])
 async def tip_handler(ans: Message):
     """Команда Подсказка"""
-    await commands.tip(ans=ans)
+    chat_id = ans.from_id
+    user = storage.get_vk_user(chat_id=chat_id)
+    if not user:
+        user = []
+    if len(user) == 6:
+        await commands.tip(ans=ans)
+    else:
+        await ans.answer('Для начала пройдите регистрацию 😉')
     statistics.add(action='tip', storage=storage, tz=TZ_IRKUTSK)
 
 @bot.on.message(text=['Помощь', 'помощь'])
 async def tip_handler(ans: Message):
     """Команда Помощь"""
-    await commands.help(ans=ans)
+    chat_id = ans.from_id
+    user = storage.get_vk_user(chat_id=chat_id)
+    if not user:
+        user = []
+    if len(user) == 6:
+        await commands.help(ans=ans)
+    else:
+        await ans.answer('Для начала пройдите регистрацию 😉')
     statistics.add(action='help', storage=storage, tz=TZ_IRKUTSK)
 
 # ==================== РАСПИСАНИЕ ==================== #
