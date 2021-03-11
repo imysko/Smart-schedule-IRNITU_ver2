@@ -200,7 +200,7 @@ def make_keyboard_choose_schedule():
 def make_keyboard_extra():
     """Создаём кнопки Другое ⚡ """
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=False, resize_keyboard=True)
-    btn1 = types.KeyboardButton('Список команд')
+    btn1 = types.KeyboardButton('Помощь')
     btn2 = types.KeyboardButton('Напоминание 📣')
     btn3 = types.KeyboardButton('Основное меню')
     markup.add(btn1)
