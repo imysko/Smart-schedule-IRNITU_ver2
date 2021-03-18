@@ -7,6 +7,7 @@ from typing import Literal
 import pytz
 
 import tools
+from tools.storage import MongodbService
 from tools.logger import logger
 
 VK_TOKEN = os.environ.get('VK')
@@ -16,12 +17,11 @@ locale.setlocale(locale.LC_TIME, locale_name)
 
 
 class Reminder:
-
-    def __init__(self, bot_platform: Literal['vk', 'tg'], bot, storage):
+    def __init__(self, bot_platform: Literal['vk', 'tg'], bot):
         self.platform = bot_platform
         self.__check_platform()
         self.bot = bot
-        self.storage = storage
+        self.storage = MongodbService()
         self.users = []
 
     def sending_notifications(self):
