@@ -2,13 +2,13 @@ import time
 
 from API.functions_api import calculating_reminder_times
 from tools.logger import logger
+from tools.storage import MongodbService
 
 
 class ReminderUpdater:
-
-    def __init__(self, storage):
+    def __init__(self):
         self.users = []
-        self.storage = storage
+        self.storage = MongodbService()
 
     def start(self):
         self.print_status_info()
