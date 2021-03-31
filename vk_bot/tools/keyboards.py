@@ -292,8 +292,11 @@ def make_keyboard_choose_schedule():
     keyboard.schema(
         [
             [
-                {"label": "На текущую неделю", "type": "text", "color": "primary", "payload": "1"},
-                {"label": "На следующую неделю", "type": "text", "color": "primary", "payload": "1"},
+                {"label": "На текущую неделю", "type": "text", "color": "positive", "payload": "1"},
+                {"label": "На следующую неделю", "type": "text", "color": "negative", "payload": "1"},
+            ],
+            [
+                {"label": "Экзамены", "type": "text", "color": "primary", "payload": "1"},
             ],
             [
                 {"label": "Основное меню", "type": "text", "color": "secondary", "payload": "1"},

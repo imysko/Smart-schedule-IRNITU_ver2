@@ -135,6 +135,9 @@ async def get_schedule(ans: Message, storage, tz):
         statistics.add(action='Ближайшая пара', storage=storage, tz=tz)
         return
 
+    elif 'Экзамены' in data and user.get('group'):
+        await ans.answer('Vk_bot/actions/main_menu/schedule')
+
 
     elif 'Текущая' in data and user.get('group'):
         if storage.get_vk_user(chat_id=chat_id)['course'] != 'None':
