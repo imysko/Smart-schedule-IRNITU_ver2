@@ -10,6 +10,35 @@ locale_name = ('ru_RU.UTF-8' if platform.system() == 'Linux' else 'ru_RU')
 locale.setlocale(locale.LC_TIME, locale_name)
 
 
+
+def get_exams(schedule: list) -> list:
+    schedule_str = []
+    print(schedule)
+    for exam in schedule:
+        lessons_str = '-------------------------------------\n'
+        print(exam)
+        day = exam['time'].split(' ')[0]
+        name = exam['name']
+        time = exam['time'].split(' ')[1]
+        prep = exam['prep']
+        aud = f'Аудитория: {", ".join(exam["aud"])}\n' if exam["aud"] and exam["aud"][0] else ''
+
+        lessons_str += f'{time}\n' \
+                       f'{aud}' \
+                       f'👉{name}\n' \
+                       f'{prep}'
+
+        lessons_str += '\n-------------------------------------\n'
+
+        # Проверка, что день не пустой
+        schedule_str.append(f'\n🍏{day}🍏\n'
+                            f'{lessons_str}')
+    return schedule_str
+
+
+
+
+
 def full_schedule_in_str(schedule: list, week: str) -> list:
     schedule_str = []
     day_now = datetime.now(TZ_IRKUTSK).strftime('%A').lower()

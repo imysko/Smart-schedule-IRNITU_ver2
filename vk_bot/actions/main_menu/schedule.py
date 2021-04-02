@@ -2,9 +2,13 @@ from datetime import datetime
 
 from vkbottle.bot import Message
 
+from getting_schedule.functions.get_exams import groups_exam
+
+from functions_api.functions.creating_schedule import get_exams
+
 from API.functions_api import find_week, full_schedule_in_str, full_schedule_in_str_prep, \
     get_one_day_schedule_in_str_prep, get_one_day_schedule_in_str, get_next_day_schedule_in_str, \
-    get_next_day_schedule_in_str_prep, APIError, get_now_lesson_in_str_stud, get_now_lesson_in_str_prep
+    get_next_day_schedule_in_str_prep, APIError, get_now_lesson_in_str_stud, get_now_lesson_in_str_prep#, get_exams
 from API.functions_api import get_near_lesson, get_now_lesson
 from tools import keyboards, statistics, schedule_processing
 
@@ -135,8 +139,48 @@ async def get_schedule(ans: Message, storage, tz):
         statistics.add(action='Ближайшая пара', storage=storage, tz=tz)
         return
 
+
+
+
+
+
+
     elif 'Экзамены' in data and user.get('group'):
-        await ans.answer('Vk_bot/actions/main_menu/schedule')
+        # Если курс нуль, тогда это преподаватель
+        if storage.get_vk_user(chat_id=chat_id)['course'] != 'None':
+            group = storage.get_vk_user(chat_id=chat_id)['group']
+            schedule = groups_exam(group=group)
+        elif storage.get_vk_user(chat_id=chat_id)['course'] == 'None':
+            group = storage.get_vk_user(chat_id=chat_id)['group']
+            schedule = groups_exam(group=group)
+
+        if not schedule:
+            await ans.answer('Расписание экзаменов временно недоступно🚫😣\n'
+                             'Попробуйте позже⏱', keyboard=keyboards.make_keyboard_start_menu())
+            statistics.add(action='Экзамены', storage=storage, tz=tz)
+            return
+
+        #schedule = schedule['schedule']
+
+        if storage.get_vk_user(chat_id=chat_id)['course'] != 'None':
+            schedule_exams = get_exams(schedule=schedule)
+        elif storage.get_vk_user(chat_id=chat_id)['course'] == 'None':
+            schedule_exams = get_exams(schedule=schedule)
+
+        # Проверяем, что расписание сформировалось
+        if isinstance(schedule_exams, APIError):
+            await schedule_processing.sending_schedule_is_not_available(ans=ans)
+            return
+
+        await schedule_processing.sending_schedule(ans=ans, schedule_str=schedule_exams)
+        statistics.add(action='Экзамены', storage=storage, tz=tz)
+
+
+
+
+
+
+
 
 
     elif 'Текущая' in data and user.get('group'):
