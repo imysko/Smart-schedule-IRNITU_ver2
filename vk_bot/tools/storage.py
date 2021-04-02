@@ -98,7 +98,7 @@ class MongodbService(object):
                                                 upsert=True)
         return self._db.VK_users.delete_one(filter={'chat_id': chat_id})
 
-    def save_or_update_vk_user(self, chat_id: int, institute='', course='', group='', notifications=0, reminders=[]):
+    def save_or_update_vk_user(self, chat_id: int, institute='', course='', group='', notifications=0, reminders=[], exams = []):
         """сохраняет или изменяет данные пользователя (коллекция users)"""
         update = {'chat_id': chat_id, 'notifications': 0}
         if institute:
@@ -111,6 +111,8 @@ class MongodbService(object):
             update['notifications'] = notifications
         if reminders:
             update['reminders'] = reminders
+        if exams:
+            update['exams'] = exams
 
         return self._db.VK_users.update_one(filter={'chat_id': chat_id}, update={'$set': update}, upsert=True)
 

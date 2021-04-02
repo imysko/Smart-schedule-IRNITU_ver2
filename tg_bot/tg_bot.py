@@ -198,3 +198,5 @@ if __name__ == '__main__':
     bot.remove_webhook()
     logger.info('Бот запущен...')
     bot.infinity_polling(none_stop=True)
+
+

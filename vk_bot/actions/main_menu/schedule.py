@@ -149,10 +149,10 @@ async def get_schedule(ans: Message, storage, tz):
         # Если курс нуль, тогда это преподаватель
         if storage.get_vk_user(chat_id=chat_id)['course'] != 'None':
             group = storage.get_vk_user(chat_id=chat_id)['group']
-            schedule = groups_exam(group=group)
+            schedule = groups_exam(group=group, chat_id=chat_id)
         elif storage.get_vk_user(chat_id=chat_id)['course'] == 'None':
             group = storage.get_vk_user(chat_id=chat_id)['group']
-            schedule = groups_exam(group=group)
+            schedule = groups_exam(group=group, chat_id=chat_id)
 
         if not schedule:
             await ans.answer('Расписание экзаменов временно недоступно🚫😣\n'
@@ -166,6 +166,7 @@ async def get_schedule(ans: Message, storage, tz):
             schedule_exams = get_exams(schedule=schedule)
         elif storage.get_vk_user(chat_id=chat_id)['course'] == 'None':
             schedule_exams = get_exams(schedule=schedule)
+
 
         # Проверяем, что расписание сформировалось
         if isinstance(schedule_exams, APIError):

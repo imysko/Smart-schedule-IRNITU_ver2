@@ -16,7 +16,6 @@ def get_exams(schedule: list) -> list:
     print(schedule)
     for exam in schedule:
         lessons_str = '-------------------------------------\n'
-        print(exam)
         day = exam['time'].split(' ')[0]
         name = exam['name']
         time = exam['time'].split(' ')[1]
