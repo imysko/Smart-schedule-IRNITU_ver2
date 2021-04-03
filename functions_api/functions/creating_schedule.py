@@ -1,13 +1,70 @@
 import locale
 import platform
-from datetime import datetime, timedelta
-
+import time
+import datetime
 import pytz
+from time import strptime
 
 TZ_IRKUTSK = pytz.timezone('Asia/Irkutsk')
 # определяем на Linux или на Windows мы запускаемся
 locale_name = ('ru_RU.UTF-8' if platform.system() == 'Linux' else 'ru_RU')
 locale.setlocale(locale.LC_TIME, locale_name)
+
+
+def day_creating(day):
+    months = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября',
+              'декабря']
+    day_week = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье']
+
+    year = day[:4]
+    if day[5] == '0':
+        int_month = int(day[6])
+        month = months[int(day[6])]
+    else:
+        int_month = int(day[5:6])
+        month = months[int(day[5:6])]
+
+    if day[8] == '0':
+        int_day = int(day[9:10])
+    else:
+        int_day = int(day[8:10])
+
+    today = datetime.datetime(int(year), int_month, int_day)
+
+    int_day_week = today.weekday()
+
+    return str(day_week[int_day_week]) + ', ' + str(int_day) + ' ' + str(month) + ' ' + str(year) + ' г.'
+
+
+def schedule_view_exams(schedule: list) -> list:
+    schedule_str = []
+
+    schedule = schedule["exams"]["exams"]
+
+    for exam in schedule:
+        lessons_str = '-------------------------------------\n'
+        day = day_creating(exam['time'].split(' ')[0])
+        name = exam['name']
+        time = exam['time'].split(' ')[1][:5]
+        prep = exam['prep']
+        aud = f'Аудитория: {exam["aud"]}\n' if exam["aud"] and exam["aud"][0] else ''
+
+        if time == '00:00':
+            lessons_str += f'{aud}' \
+                           f'👉{name}\n' \
+                           f'{prep}'
+        else:
+            lessons_str += f'{time}\n' \
+                           f'{aud}' \
+                           f'👉{name}\n' \
+                           f'{prep}'
+
+        lessons_str += '\n-------------------------------------\n'
+
+        # Проверка, что день не пустой
+        schedule_str.append(f'\n🍏{day}🍏\n'
+                            f'{lessons_str}')
+    return schedule_str
 
 
 def full_schedule_in_str(schedule: list, week: str) -> list:
@@ -101,7 +158,7 @@ def get_one_day_schedule_in_str(schedule: list, week: str) -> str:
 
 
 def get_next_day_schedule_in_str(schedule: list, week: str) -> str:
-    day_tomorrow = (datetime.now(TZ_IRKUTSK) + timedelta(days=1)).strftime('%A')
+    day_tomorrow = str(datetime.now(TZ_IRKUTSK) + datetime.timedelta(days=1)).strftime('%A')
     for one_day in schedule:
         day = one_day['day'].upper()
         if day.lower() == day_tomorrow.lower():
@@ -186,7 +243,7 @@ def get_one_day_schedule_in_str_prep(schedule: list, week: str) -> str:
 
 
 def get_next_day_schedule_in_str_prep(schedule: list, week: str) -> str:
-    day_tomorrow = (datetime.now(TZ_IRKUTSK) + timedelta(days=1)).strftime('%A')
+    day_tomorrow = (datetime.now(TZ_IRKUTSK) + datetime.timedelta(days=1)).strftime('%A')
     for one_day in schedule:
         day = one_day['day'].upper()
         if day.lower() == day_tomorrow.lower():

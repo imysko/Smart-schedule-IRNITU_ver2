@@ -1,6 +1,7 @@
 from functions import postgre_storage
 import data_conversion
 from functions.mongo_storage import MongodbService
+from getting_schedule.functions import exams_storage
 
 from pymongo.errors import PyMongoError
 import psycopg2
@@ -170,8 +171,12 @@ def processing_schedule():
 
 def main():
     while True:
+
         # Время начала работы цикла.
         start_time = time.time()
+
+        # Обновление базы экзаменов
+        exams_storage.exam_update()
 
         # Институты
         processing_institutes()
