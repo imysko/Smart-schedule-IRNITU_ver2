@@ -12,8 +12,8 @@ locale.setlocale(locale.LC_TIME, locale_name)
 
 
 def day_creating(day):
-    months = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь',
-              'Декабрь']
+    months = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября',
+              'декабря']
     day_week = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье']
 
     year = day[:4]
@@ -24,11 +24,16 @@ def day_creating(day):
         int_month = int(day[5:6])
         month = months[int(day[5:6])]
 
-    today = datetime.datetime(int(year), int_month, int(day[8:10]))
+    if day[8] == '0':
+        int_day = int(day[9:10])
+    else:
+        int_day = int(day[8:10])
+
+    today = datetime.datetime(int(year), int_month, int_day)
 
     int_day_week = today.weekday()
 
-    return str(day_week[int_day_week]) + ', ' + str(day[8:10]) + ' ' + str(month) + ', ' + str(year)
+    return str(day_week[int_day_week]) + ', ' + str(int_day) + ' ' + str(month) + ' ' + str(year) + ' г.'
 
 
 def schedule_view_exams(schedule: list) -> list:
@@ -44,10 +49,15 @@ def schedule_view_exams(schedule: list) -> list:
         prep = exam['prep']
         aud = f'Аудитория: {", ".join(exam["aud"])}\n' if exam["aud"] and exam["aud"][0] else ''
 
-        lessons_str += f'{time}\n' \
-                       f'{aud}' \
-                       f'👉{name}\n' \
-                       f'{prep}'
+        if time == '00:00':
+            lessons_str += f'{aud}' \
+                           f'👉{name}\n' \
+                           f'{prep}'
+        else:
+            lessons_str += f'{time}\n' \
+                           f'{aud}' \
+                           f'👉{name}\n' \
+                           f'{prep}'
 
         lessons_str += '\n-------------------------------------\n'
 
