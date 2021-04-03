@@ -4,7 +4,7 @@ from vkbottle.bot import Message
 
 from getting_schedule.functions.get_exams import groups_exam
 
-from functions_api.functions.creating_schedule import get_exams
+from functions_api.functions.creating_schedule import schedule_view_exams
 
 from API.functions_api import find_week, full_schedule_in_str, full_schedule_in_str_prep, \
     get_one_day_schedule_in_str_prep, get_one_day_schedule_in_str, get_next_day_schedule_in_str, \
@@ -141,18 +141,16 @@ async def get_schedule(ans: Message, storage, tz):
 
 
 
-
-
-
-
     elif 'Экзамены' in data and user.get('group'):
         # Если курс нуль, тогда это преподаватель
+
         if storage.get_vk_user(chat_id=chat_id)['course'] != 'None':
             group = storage.get_vk_user(chat_id=chat_id)['group']
-            schedule = groups_exam(group=group, chat_id=chat_id)
+            schedule = groups_exam(group=group)
         elif storage.get_vk_user(chat_id=chat_id)['course'] == 'None':
             group = storage.get_vk_user(chat_id=chat_id)['group']
-            schedule = groups_exam(group=group, chat_id=chat_id)
+            schedule = groups_exam(group=group)
+
 
         if not schedule:
             await ans.answer('Расписание экзаменов временно недоступно🚫😣\n'
@@ -163,9 +161,9 @@ async def get_schedule(ans: Message, storage, tz):
         #schedule = schedule['schedule']
 
         if storage.get_vk_user(chat_id=chat_id)['course'] != 'None':
-            schedule_exams = get_exams(schedule=schedule)
+            schedule_exams = schedule_view_exams(schedule=schedule)
         elif storage.get_vk_user(chat_id=chat_id)['course'] == 'None':
-            schedule_exams = get_exams(schedule=schedule)
+            schedule_exams = schedule_view_exams(schedule=schedule)
 
 
         # Проверяем, что расписание сформировалось
