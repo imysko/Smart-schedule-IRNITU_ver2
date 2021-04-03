@@ -191,9 +191,11 @@ def make_keyboard_choose_schedule():
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=False, resize_keyboard=True)
     btn1 = types.KeyboardButton('На текущую неделю')
     btn2 = types.KeyboardButton('На следующую неделю')
-    btn3 = types.KeyboardButton('Основное меню')
+    btn3 = types.KeyboardButton('Экзамены')
+    btn4 = types.KeyboardButton('Основное меню')
     markup.add(btn1, btn2)
     markup.add(btn3)
+    markup.add(btn4)
     return markup
 
 
