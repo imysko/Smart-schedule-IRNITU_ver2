@@ -103,24 +103,27 @@ def get_schedule(bot, message, storage, tz):
     elif 'Экзамены' in data and user.get('group'):
         # Если курс нуль, тогда это преподаватель
 
-        if storage.get_vk_user(chat_id=chat_id)['course'] != 'None':
-            group = storage.get_vk_user(chat_id=chat_id)['group']
+        if storage.get_user(chat_id=chat_id)['course'] != 'None':
+            group = storage.get_user(chat_id=chat_id)['group']
             schedule = groups_exam(group=group)
-        elif storage.get_vk_user(chat_id=chat_id)['course'] == 'None':
-            group = storage.get_vk_user(chat_id=chat_id)['group']
+        elif storage.get_user(chat_id=chat_id)['course'] == 'None':
+            group = storage.get_user(chat_id=chat_id)['group']
             schedule = groups_exam(group=group)
 
+        print(group)
+        print(schedule)
+
         if not schedule:
-            bot.send_message('Расписание экзаменов временно недоступно🚫😣\n'
+            bot.send_message(chat_id=chat_id, text='Расписание экзаменов временно недоступно🚫😣\n'
                              'Попробуйте позже⏱', reply_markup=keyboards.make_keyboard_start_menu())
             statistics.add(action='Экзамены', storage=storage, tz=tz)
             return
 
         # schedule = schedule['schedule']
 
-        if storage.get_vk_user(chat_id=chat_id)['course'] != 'None':
+        if storage.get_user(chat_id=chat_id)['course'] != 'None':
             schedule_exams = schedule_view_exams(schedule=schedule)
-        elif storage.get_vk_user(chat_id=chat_id)['course'] == 'None':
+        elif storage.get_user(chat_id=chat_id)['course'] == 'None':
             schedule_exams = schedule_view_exams(schedule=schedule)
 
         # Проверяем, что расписание сформировалось
