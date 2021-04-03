@@ -73,8 +73,9 @@ async def get_schedule(ans: Message, storage, tz):
             group = storage.get_vk_user(chat_id=chat_id)['group']
             schedule = storage.get_schedule_prep(group=group)
         if not schedule:
-            schedule_processing.sending_schedule_is_not_available(ans=ans)
-            statistics.add(action='Расписание на сегодня', storage=storage, tz=tz)
+            await ans.answer('Расписание временно недоступно🚫😣\n'
+                             'Попробуйте позже⏱', keyboard=keyboards.make_keyboard_start_menu())
+            statistics.add(action='Расписание на завтра', storage=storage, tz=tz)
             return
         schedule = schedule['schedule']
         week = find_week()

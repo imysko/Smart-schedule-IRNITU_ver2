@@ -47,7 +47,7 @@ def schedule_view_exams(schedule: list) -> list:
         name = exam['name']
         time = exam['time'].split(' ')[1][:5]
         prep = exam['prep']
-        aud = f'Аудитория: {", ".join(exam["aud"])}\n' if exam["aud"] and exam["aud"][0] else ''
+        aud = f'Аудитория: {exam["aud"]}\n' if exam["aud"] and exam["aud"][0] else ''
 
         if time == '00:00':
             lessons_str += f'{aud}' \
@@ -158,7 +158,7 @@ def get_one_day_schedule_in_str(schedule: list, week: str) -> str:
 
 
 def get_next_day_schedule_in_str(schedule: list, week: str) -> str:
-    day_tomorrow = (datetime.now(TZ_IRKUTSK) + timedelta(days=1)).strftime('%A')
+    day_tomorrow = str(datetime.now(TZ_IRKUTSK) + datetime.timedelta(days=1)).strftime('%A')
     for one_day in schedule:
         day = one_day['day'].upper()
         if day.lower() == day_tomorrow.lower():
@@ -243,7 +243,7 @@ def get_one_day_schedule_in_str_prep(schedule: list, week: str) -> str:
 
 
 def get_next_day_schedule_in_str_prep(schedule: list, week: str) -> str:
-    day_tomorrow = (datetime.now(TZ_IRKUTSK) + timedelta(days=1)).strftime('%A')
+    day_tomorrow = (datetime.now(TZ_IRKUTSK) + datetime.timedelta(days=1)).strftime('%A')
     for one_day in schedule:
         day = one_day['day'].upper()
         if day.lower() == day_tomorrow.lower():
