@@ -24,11 +24,16 @@ class ReminderUpdater:
 
     def calculation(self):
         self.users = self.get_users()
+
         for user in self.users:
 
-            group = user['group']
+            group = user.get('group')
+            if not group:
+                continue
 
-            schedule = self.storage.get_schedule(group=group)['schedule']
+            schedule = self.storage.get_schedule(group=group).get('schedule')
+            if not schedule:
+                continue
 
             try:
                 reminders = calculating_reminder_times(schedule=schedule, time=int(user['notifications']))
