@@ -2,7 +2,7 @@ from datetime import datetime
 
 from vkbottle.bot import Message
 
-from getting_schedule.functions.get_exams import groups_exam
+import getting_schedule
 
 from functions_api.functions.creating_schedule import schedule_view_exams
 
@@ -147,10 +147,10 @@ async def get_schedule(ans: Message, storage, tz):
 
         if storage.get_vk_user(chat_id=chat_id)['course'] != 'None':
             group = storage.get_vk_user(chat_id=chat_id)['group']
-            schedule = groups_exam(group=group)
+            schedule = getting_schedule.functions.get_exams.groups_exam(group=group)
         elif storage.get_vk_user(chat_id=chat_id)['course'] == 'None':
             group = storage.get_vk_user(chat_id=chat_id)['group']
-            schedule = groups_exam(group=group)
+            schedule = getting_schedule.functions.get_exams.groups_exam(group=group)
 
 
         if not schedule:
