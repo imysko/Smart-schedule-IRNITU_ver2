@@ -10,7 +10,7 @@ services:
       - MONGO_DB_PORT=27017 # порт mongoDB
       - MONGO_DB_DATABASE=Smart_schedule_IRNITU # название базы данных
       - FUNCTIONS_API_URL=http://functions_api/api/
-      - EXAMS=https://361701-cs07173.tmweb.ru/api/exams
+      - EXAMS_API=${EXAMS_API}
 
   vk_bot:
     build: vk_bot/
@@ -21,7 +21,7 @@ services:
       - MONGO_DB_PORT=27017 # порт mongoDB
       - MONGO_DB_DATABASE=Smart_schedule_IRNITU # название базы данных
       - FUNCTIONS_API_URL=http://functions_api/api/
-      - EXAMS=https://361701-cs07173.tmweb.ru/api/exams
+      - EXAMS_API=${EXAMS_API}
 
   notification_service:
     build: notification_service/
@@ -47,7 +47,7 @@ services:
       - PG_DB_HOST=${PG_DB_HOST} # адрес PostgreSQL
       - PG_DB_PORT=5432 # порт PostgreSQL (default: 5432)
       - GETTING_SCHEDULE_TIME_HOURS=1 # время задержки (в часах) между обращениями к PostgreSQL для получения расписания (default: 1)
-      - EXAMS=https://361701-cs07173.tmweb.ru/api/exams
+      - EXAMS_API=${EXAMS_API}
 
   functions_api:
     build: functions_api/
