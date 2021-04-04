@@ -9,7 +9,7 @@ def exam_update():
     print(11)
     storage.delete_exam()
 
-    JSON_EXAMS = os.environ.get('EXAMS')
+    JSON_EXAMS = os.environ.get('EXAMS_API')
 
     try:
         response = requests.get(JSON_EXAMS)
