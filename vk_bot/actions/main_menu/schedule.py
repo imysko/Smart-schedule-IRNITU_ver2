@@ -1,16 +1,20 @@
 from datetime import datetime
-
+from tools.storage import MongodbService
 from vkbottle.bot import Message
-
-import getting_schedule
-
-from functions_api.functions.creating_schedule import schedule_view_exams
 
 from API.functions_api import find_week, full_schedule_in_str, full_schedule_in_str_prep, \
     get_one_day_schedule_in_str_prep, get_one_day_schedule_in_str, get_next_day_schedule_in_str, \
-    get_next_day_schedule_in_str_prep, APIError, get_now_lesson_in_str_stud, get_now_lesson_in_str_prep#, get_exams
+    get_next_day_schedule_in_str_prep, APIError, get_now_lesson_in_str_stud, get_now_lesson_in_str_prep,\
+    schedule_view_exams
 from API.functions_api import get_near_lesson, get_now_lesson
 from tools import keyboards, statistics, schedule_processing
+
+storage = MongodbService().get_instance()
+
+
+def groups_exam(group):
+    schedule = storage.get_schedule_exam(group=group)
+    return schedule
 
 
 async def get_schedule(ans: Message, storage, tz):
@@ -147,10 +151,10 @@ async def get_schedule(ans: Message, storage, tz):
 
         if storage.get_vk_user(chat_id=chat_id)['course'] != 'None':
             group = storage.get_vk_user(chat_id=chat_id)['group']
-            schedule = getting_schedule.functions.get_exams.groups_exam(group=group)
+            schedule = groups_exam(group=group)
         elif storage.get_vk_user(chat_id=chat_id)['course'] == 'None':
             group = storage.get_vk_user(chat_id=chat_id)['group']
-            schedule = getting_schedule.functions.get_exams.groups_exam(group=group)
+            schedule = groups_exam(group=group)
 
 
         if not schedule:

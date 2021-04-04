@@ -1,15 +1,21 @@
 from datetime import datetime
+from tools.storage import MongodbService
 
 from API.functions_api import find_week, APIError
 from API.functions_api import full_schedule_in_str, full_schedule_in_str_prep, \
     get_one_day_schedule_in_str_prep, get_one_day_schedule_in_str, get_next_day_schedule_in_str, \
-    get_next_day_schedule_in_str_prep
+    get_next_day_schedule_in_str_prep, schedule_view_exams
 from API.functions_api import get_near_lesson, get_now_lesson, get_now_lesson_in_str_stud, get_now_lesson_in_str_prep
 from tools import keyboards, statistics, schedule_processing
 
-from getting_schedule.functions.get_exams import groups_exam
 
-from functions_api.functions.creating_schedule import schedule_view_exams
+
+storage = MongodbService().get_instance()
+
+
+def groups_exam(group):
+    schedule = storage.get_schedule_exam(group=group)
+    return schedule
 
 
 def get_schedule(bot, message, storage, tz):
