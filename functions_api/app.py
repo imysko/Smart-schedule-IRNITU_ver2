@@ -46,6 +46,16 @@ def get_next_day_schedule_in_str_route():
         return make_response("Bad request", 400)
     return jsonify(result)
 
+@app.route('/api/creating_schedule/schedule_view_exams/')
+def schedule_view_exams():
+    data = request.json
+    if not data:
+        return make_response("Bad request", 400)
+    try:
+        result = creating_schedule.schedule_view_exams(**data)
+    except TypeError:
+        return make_response("Bad request", 400)
+    return jsonify(result)
 
 @app.route('/api/creating_schedule/get_one_day_schedule_in_str_prep/')
 def get_one_day_schedule_in_str_prep_route():

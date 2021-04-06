@@ -29,17 +29,16 @@ def day_creating(day):
     else:
         int_day = int(day[8:10])
 
-    today = datetime.datetime(int(year), int_month, int_day)
+    today = datetime(int(year), int_month, int_day)
 
     int_day_week = today.weekday()
 
     return str(day_week[int_day_week]) + ', ' + str(int_day) + ' ' + str(month) + ' ' + str(year) + ' г.'
 
 
-def schedule_view_exams(schedule: list) -> list:
+def schedule_view_exams(schedule):
+    print(schedule)
     schedule_str = []
-
-    schedule = schedule["exams"]["exams"]
 
     for exam in schedule:
         lessons_str = '-------------------------------------\n'
