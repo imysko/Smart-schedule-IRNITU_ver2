@@ -1,13 +1,15 @@
 from functions import postgre_storage
 import data_conversion
 from functions.mongo_storage import MongodbService
-from functions import exams_storage
 
 from pymongo.errors import PyMongoError
 import psycopg2
 
 import time
 import os
+
+import json
+import requests
 
 # Задержка работы цикла (в часах).
 GETTING_SCHEDULE_TIME_HOURS = float(os.environ.get('GETTING_SCHEDULE_TIME_HOURS')
@@ -169,6 +171,23 @@ def processing_schedule():
         print('convert_auditories_schedule error:\n', e)
 
 
+def exam_update():
+    print('Start processing_exams_schedule...')
+    storage = MongodbService().get_instance()
+
+    JSON_EXAMS = os.environ.get('EXAMS_API')
+
+    try:
+        response = requests.get(JSON_EXAMS)
+    except requests.exceptions.ConnectionError:
+        response.status_code = "Connection refused"
+
+    json_data = json.loads(response.text)
+
+    schedule_exams = [{'group': a, 'exams': d} for a, d in json_data.items()]
+    storage.save_schedule_exam(schedule_exams)
+    print('End processing_exams_schedule...')
+
 def main():
     while True:
 
@@ -176,7 +195,7 @@ def main():
         start_time = time.time()
 
         # Обновление базы экзаменов
-        exams_storage.exam_update()
+        exam_update()
 
         # Институты
         processing_institutes()
