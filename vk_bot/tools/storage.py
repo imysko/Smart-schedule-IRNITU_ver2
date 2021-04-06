@@ -122,14 +122,6 @@ class MongodbService(object):
         }
         return self._db.vk_statistics.insert_one(statistics)
 
-    def save_schedule_exam(self, exam):
-        """записывает расписание экзаменов"""
-        return self._db.exams_schedule.insert_many(exam)
-
     def get_schedule_exam(self, group):
         """возвращает расписание экзаменов"""
         return self._db.exams_schedule.find_one(filter={'group': group})
-
-
-    def delete_exam(self):
-        return self._db.exams_schedule.remove({})

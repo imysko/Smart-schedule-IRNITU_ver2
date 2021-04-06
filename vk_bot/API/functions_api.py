@@ -9,6 +9,7 @@ FUNCTIONS_API_URL = os.environ.get('FUNCTIONS_API_URL')
 
 def get_api_data(url: str, data: dict = {}):
     try:
+        print(FUNCTIONS_API_URL + url)
         answer = requests.get(url=FUNCTIONS_API_URL + url, json=data)
         json_answer = answer.json()
     except Exception as e:
@@ -24,18 +25,18 @@ def find_week():
 
     return week
 
-def get_exams(schedule: list) -> str:
-    url = 'creating_schedule/get_exams/'
-    data = {
-        'schedule': schedule
-    }
-    exams_str = get_api_data(url=url, data=data)
-    return exams_str
+# def get_exams(schedule: list) -> str:
+#     url = 'creating_schedule/get_exams/'
+#     data = {
+#         'schedule': schedule
+#     }
+#     exams_str = get_api_data(url=url, data=data)
+#     return exams_str
 
-def schedule_view_exams(schedule: list) -> str:
+def schedule_view_exams(schedule: list) -> list:
     url = 'creating_schedule/schedule_view_exams/'
     data = {
-        'schedule': schedule
+        'schedule': schedule['exams']['exams']
     }
     schedule_str = get_api_data(url=url, data=data)
     return schedule_str

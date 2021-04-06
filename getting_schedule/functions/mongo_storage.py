@@ -71,6 +71,10 @@ class MongodbService(object):
         return self._db.auditories_schedule.drop()
 
 
+    def save_schedule_exam(self, exam):
+        """записывает расписание экзаменов"""
+        self._db.exams_schedule.drop()
+        return self._db.exams_schedule.insert_many(exam)
 
 
     def save_status(self, date, time, getting_schedule_time_hours):

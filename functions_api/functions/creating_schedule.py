@@ -1,7 +1,7 @@
 import locale
 import platform
 import time
-import datetime
+from datetime import datetime, timedelta
 import pytz
 from time import strptime
 
@@ -29,17 +29,15 @@ def day_creating(day):
     else:
         int_day = int(day[8:10])
 
-    today = datetime.datetime(int(year), int_month, int_day)
+    today = datetime(int(year), int_month, int_day)
 
     int_day_week = today.weekday()
 
     return str(day_week[int_day_week]) + ', ' + str(int_day) + ' ' + str(month) + ' ' + str(year) + ' г.'
 
 
-def schedule_view_exams(schedule: list) -> list:
+def schedule_view_exams(schedule):
     schedule_str = []
-
-    schedule = schedule["exams"]["exams"]
 
     for exam in schedule:
         lessons_str = '-------------------------------------\n'
@@ -158,7 +156,7 @@ def get_one_day_schedule_in_str(schedule: list, week: str) -> str:
 
 
 def get_next_day_schedule_in_str(schedule: list, week: str) -> str:
-    day_tomorrow = str(datetime.now(TZ_IRKUTSK) + datetime.timedelta(days=1)).strftime('%A')
+    day_tomorrow = (datetime.now(TZ_IRKUTSK) + timedelta(days=1)).strftime('%A')
     for one_day in schedule:
         day = one_day['day'].upper()
         if day.lower() == day_tomorrow.lower():
@@ -243,7 +241,7 @@ def get_one_day_schedule_in_str_prep(schedule: list, week: str) -> str:
 
 
 def get_next_day_schedule_in_str_prep(schedule: list, week: str) -> str:
-    day_tomorrow = (datetime.now(TZ_IRKUTSK) + datetime.timedelta(days=1)).strftime('%A')
+    day_tomorrow = (datetime.now(TZ_IRKUTSK) + timedelta(days=1)).strftime('%A')
     for one_day in schedule:
         day = one_day['day'].upper()
         if day.lower() == day_tomorrow.lower():
