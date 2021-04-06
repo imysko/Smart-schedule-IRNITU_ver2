@@ -37,7 +37,6 @@ def day_creating(day):
 
 
 def schedule_view_exams(schedule):
-    print(schedule)
     schedule_str = []
 
     for exam in schedule:

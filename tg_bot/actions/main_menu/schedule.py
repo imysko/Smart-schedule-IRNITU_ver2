@@ -15,7 +15,14 @@ storage = MongodbService().get_instance()
 
 def groups_exam(group):
     schedule = storage.get_schedule_exam(group=group)
+    del schedule['_id']
+    clear_list = []
+    for i in range(len(schedule['exams']['exams'])):
+        if schedule['exams']['exams'][i] not in clear_list:
+            clear_list.append(schedule['exams']['exams'][i])
+    schedule['exams']['exams'] = clear_list
     return schedule
+
 
 
 def get_schedule(bot, message, storage, tz):

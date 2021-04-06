@@ -15,6 +15,11 @@ storage = MongodbService().get_instance()
 def groups_exam(group):
     schedule = storage.get_schedule_exam(group=group)
     del schedule['_id']
+    clear_list = []
+    for i in range(len(schedule['exams']['exams'])):
+        if schedule['exams']['exams'][i] not in clear_list:
+            clear_list.append(schedule['exams']['exams'][i])
+    schedule['exams']['exams'] = clear_list
     return schedule
 
 
@@ -149,7 +154,7 @@ async def get_schedule(ans: Message, storage, tz):
 
     elif 'Экзамены' in data and user.get('group'):
         # Если курс нуль, тогда это преподаватель
-
+        await ans.answer('Ваши экзамены', keyboard=keyboards.make_keyboard_start_menu())
         if storage.get_vk_user(chat_id=chat_id)['course'] != 'None':
             group = storage.get_vk_user(chat_id=chat_id)['group']
             schedule = groups_exam(group=group)
