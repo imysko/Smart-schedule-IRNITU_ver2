@@ -11,6 +11,7 @@ import os
 import json
 import requests
 
+print(1111)
 # Задержка работы цикла (в часах).
 GETTING_SCHEDULE_TIME_HOURS = float(os.environ.get('GETTING_SCHEDULE_TIME_HOURS')
                                     if os.environ.get('GETTING_SCHEDULE_TIME_HOURS')
