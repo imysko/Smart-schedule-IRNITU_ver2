@@ -209,7 +209,7 @@ def main():
 
         # Время окончания работы цикла.
         end_time = time.time()
-        logger.info('Total operating time --- {end_time - start_time} seconds ---')
+        logger.info(f'Total operating time --- {end_time - start_time} seconds ---')
 
         # Задержка работы цикла (в часах).
         logger.info(f'Waiting for the next cycle. The waiting time: {GETTING_SCHEDULE_TIME_HOURS / 60 / 60} hours...\n')
