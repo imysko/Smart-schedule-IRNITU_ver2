@@ -1,7 +1,7 @@
 import locale
 import platform
 import time
-import datetime
+from datetime import datetime, timedelta
 import pytz
 from time import strptime
 
@@ -158,7 +158,7 @@ def get_one_day_schedule_in_str(schedule: list, week: str) -> str:
 
 
 def get_next_day_schedule_in_str(schedule: list, week: str) -> str:
-    day_tomorrow = str(datetime.now(TZ_IRKUTSK) + datetime.timedelta(days=1)).strftime('%A')
+    day_tomorrow = (datetime.now(TZ_IRKUTSK) + timedelta(days=1)).strftime('%A')
     for one_day in schedule:
         day = one_day['day'].upper()
         if day.lower() == day_tomorrow.lower():
@@ -243,7 +243,7 @@ def get_one_day_schedule_in_str_prep(schedule: list, week: str) -> str:
 
 
 def get_next_day_schedule_in_str_prep(schedule: list, week: str) -> str:
-    day_tomorrow = (datetime.now(TZ_IRKUTSK) + datetime.timedelta(days=1)).strftime('%A')
+    day_tomorrow = (datetime.now(TZ_IRKUTSK) + timedelta(days=1)).strftime('%A')
     for one_day in schedule:
         day = one_day['day'].upper()
         if day.lower() == day_tomorrow.lower():
