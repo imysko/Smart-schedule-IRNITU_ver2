@@ -14,6 +14,7 @@ storage = MongodbService().get_instance()
 
 def groups_exam(group):
     schedule = storage.get_schedule_exam(group=group)
+    del schedule['_id']
     return schedule
 
 
