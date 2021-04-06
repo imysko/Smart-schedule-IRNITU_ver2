@@ -178,14 +178,14 @@ def exam_update():
 
     try:
         response = requests.get(JSON_EXAMS)
+        json_data = json.loads(response.text)
+        schedule_exams = [{'group': a, 'exams': d} for a, d in json_data.items()]
+        mongo_storage.save_schedule_exam(schedule_exams)
+        print('End processing_exams_schedule...')
+
     except requests.exceptions.ConnectionError:
-        response.status_code = "Connection refused"
+        print("Connection refused")
 
-    json_data = json.loads(response.text)
-
-    schedule_exams = [{'group': a, 'exams': d} for a, d in json_data.items()]
-    mongo_storage.save_schedule_exam(schedule_exams)
-    print('End processing_exams_schedule...')
 
 def main():
     while True:
