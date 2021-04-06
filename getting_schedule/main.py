@@ -173,7 +173,6 @@ def processing_schedule():
 
 def exam_update():
     print('Start processing_exams_schedule...')
-    storage = MongodbService().get_instance()
 
     JSON_EXAMS = os.environ.get('EXAMS_API')
 
@@ -185,7 +184,7 @@ def exam_update():
     json_data = json.loads(response.text)
 
     schedule_exams = [{'group': a, 'exams': d} for a, d in json_data.items()]
-    storage.save_schedule_exam(schedule_exams)
+    mongo_storage.save_schedule_exam(schedule_exams)
     print('End processing_exams_schedule...')
 
 def main():
