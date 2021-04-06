@@ -193,9 +193,6 @@ def main():
         # Время начала работы цикла.
         start_time = time.time()
 
-        # Обновление базы экзаменов
-        exam_update()
-
         # Институты
         processing_institutes()
 
@@ -207,6 +204,9 @@ def main():
 
         # Расписание
         processing_schedule()
+
+        # Обновление базы экзаменов
+        exam_update()
 
         # Время окончания работы цикла.
         end_time = time.time()
