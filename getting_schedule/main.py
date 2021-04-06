@@ -1,7 +1,7 @@
 from functions import postgre_storage
 import data_conversion
 from functions.mongo_storage import MongodbService
-from getting_schedule.functions import exams_storage
+from functions import exams_storage
 
 from pymongo.errors import PyMongoError
 import psycopg2
