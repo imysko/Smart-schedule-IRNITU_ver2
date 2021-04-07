@@ -15,6 +15,8 @@ storage = MongodbService().get_instance()
 
 def groups_exam(group):
     schedule = storage.get_schedule_exam(group=group)
+    if not schedule:
+        return 0
     del schedule['_id']
     clear_list = []
     for i in range(len(schedule['exams']['exams'])):
@@ -123,11 +125,8 @@ def get_schedule(bot, message, storage, tz):
             group = storage.get_user(chat_id=chat_id)['group']
             schedule = groups_exam(group=group)
 
-        print(group)
-        print(schedule)
-
         if not schedule:
-            bot.send_message(chat_id=chat_id, text='Расписание экзаменов временно недоступно🚫😣\n'
+            bot.send_message(chat_id=chat_id, text='Расписание экзаменов отсутствует😇\n'
                              'Попробуйте позже⏱', reply_markup=keyboards.make_keyboard_start_menu())
             statistics.add(action='Экзамены', storage=storage, tz=tz)
             return

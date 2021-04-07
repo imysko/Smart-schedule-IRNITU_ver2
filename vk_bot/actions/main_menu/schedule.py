@@ -14,6 +14,8 @@ storage = MongodbService().get_instance()
 
 def groups_exam(group):
     schedule = storage.get_schedule_exam(group=group)
+    if not schedule:
+        return 0
     del schedule['_id']
     clear_list = []
     for i in range(len(schedule['exams']['exams'])):
@@ -154,7 +156,6 @@ async def get_schedule(ans: Message, storage, tz):
 
     elif 'Экзамены' in data and user.get('group'):
         # Если курс нуль, тогда это преподаватель
-        await ans.answer('Ваши экзамены', keyboard=keyboards.make_keyboard_start_menu())
         if storage.get_vk_user(chat_id=chat_id)['course'] != 'None':
             group = storage.get_vk_user(chat_id=chat_id)['group']
             schedule = groups_exam(group=group)
@@ -164,12 +165,11 @@ async def get_schedule(ans: Message, storage, tz):
 
 
         if not schedule:
-            await ans.answer('Расписание экзаменов временно недоступно🚫😣\n'
+            await ans.answer('Расписание экзаменов отсутствует😇\n'
                              'Попробуйте позже⏱', keyboard=keyboards.make_keyboard_start_menu())
             statistics.add(action='Экзамены', storage=storage, tz=tz)
             return
 
-        #schedule = schedule['schedule']
 
         if storage.get_vk_user(chat_id=chat_id)['course'] != 'None':
             schedule_exams = schedule_view_exams(schedule=schedule)

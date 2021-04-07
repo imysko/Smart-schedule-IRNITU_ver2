@@ -9,7 +9,6 @@ FUNCTIONS_API_URL = os.environ.get('FUNCTIONS_API_URL')
 
 def get_api_data(url: str, data: dict = {}):
     try:
-        print(FUNCTIONS_API_URL + url)
         answer = requests.get(url=FUNCTIONS_API_URL + url, json=data)
         json_answer = answer.json()
     except Exception as e:
