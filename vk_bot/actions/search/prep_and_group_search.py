@@ -1,13 +1,26 @@
 from vkbottle.bot import Bot, Message
 
-from API.functions_api import find_week, full_schedule_in_str, full_schedule_in_str_prep, APIError
+from API.functions_api import find_week, full_schedule_in_str, full_schedule_in_str_prep, APIError, schedule_view_exams
 from tools import keyboards, schedule_processing
 from tools.logger import logger
+from tools.storage import MongodbService
 
 # Глобальная переменная(словарь), которая хранит в себе 3 состояния
 # (номер страницы; слово, которые находим; список соответствия для выхода по условию в стейте)
 Condition_request = {}
+storage = MongodbService().get_instance()
 
+def groups_exam(group):
+    schedule = storage.get_schedule_exam(group=group)
+    if not schedule:
+        return 0
+    del schedule['_id']
+    clear_list = []
+    for i in range(len(schedule['exams']['exams'])):
+        if schedule['exams']['exams'][i] not in clear_list:
+            clear_list.append(schedule['exams']['exams'][i])
+    schedule['exams']['exams'] = clear_list
+    return schedule
 
 async def start_search(bot: Bot, ans: Message, state, storage):
     # ID пользователя
@@ -151,6 +164,36 @@ async def search(bot: Bot, ans: Message, storage):
                          f'Неделя: {week_name}', keyboard=keyboards.make_keyboard_start_menu())
         # Отправка расписания
         await schedule_processing.sending_schedule(ans=ans, schedule_str=schedule_str)
+
+        await bot.state_dispenser.delete(ans.peer_id)
+
+    elif 'Экзамены' == data:
+        request_word = Condition_request[ans.from_id][1]
+        request_group = storage.get_search_list(request_word)
+        request_prep = storage.get_search_list_prep(request_word)
+
+        # Объявляем переменную с расписанием экзаменов группы или препода
+        if request_group:
+            schedule_str = groups_exam(request_group[0]['name'])
+        elif request_prep:
+            schedule_str = groups_exam(request_prep[0]['prep'])
+
+        # При отсутствии расписания выводится соответствующее предупреждение
+        if schedule_str == 0:
+            await ans.answer('Расписание экзаменов отсутствует😇\nПопробуйте позже⏱')
+            return
+
+        # Задаем расписанию экзаменов вид для подачи пользователю
+        schedule_exams = schedule_view_exams(schedule=schedule_str)
+
+        # Проверяем, что расписание сформировалось
+        if isinstance(schedule_str, APIError):
+            await schedule_processing.sending_schedule_is_not_available(ans=ans)
+            await bot.state_dispenser.delete(ans.peer_id)
+            return
+
+        # Отправка расписания
+        await schedule_processing.sending_schedule(ans=ans, schedule_str=schedule_exams)
 
         await bot.state_dispenser.delete(ans.peer_id)
 
