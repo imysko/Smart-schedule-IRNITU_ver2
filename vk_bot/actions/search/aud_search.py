@@ -76,7 +76,6 @@ async def search(bot: Bot, ans: Message, storage):
         aud_list[chat_id] = list_search
         # Выводим результат поиска с клавиатурой (кливиатур формируется по поисковому запросу)
         await ans.answer("Результат поиска", keyboard=keyboard)
-        return
 
     if all_results and aud_list[chat_id] == []:
         all_found_aud = all_results
@@ -164,11 +163,10 @@ async def search(bot: Bot, ans: Message, storage):
         for i in request_aud:
             i['search'] = i.pop('aud')
 
-        await ans.answer(f"Выберите неделю для аудитории {choose}",
-                         keyboard=keyboards.make_keyboard_choose_schedule_for_aud_search())
+        await ans.answer(f"Выберите неделю для аудитории {choose}", keyboard=keyboards.make_keyboard_choose_schedule())
 
         return
-    # Для того, чтобы во время найденного запроса можно было повторить поиск
+    # Общее исключения для разных случаем, которые могу сломать бота. (Практически копия первого IF)
     else:
         if aud_list[ans.from_id] and storage.get_schedule_aud(data):
 
@@ -201,6 +199,6 @@ async def search(bot: Bot, ans: Message, storage):
                     keyboard = keyboards.make_keyboard_search_group(page, all_results)
                     await ans.answer("Результат поиска", keyboard=keyboard)
                 else:
-                    await ans.answer('Поиск не дал результатов 😕',
+                    await ans.answer('Поиск не дал результатов :confused:',
                                      keyboard=keyboards.make_keyboard_main_menu())
                     return
