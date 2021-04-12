@@ -49,6 +49,9 @@ def search_aud(message, bot, storage, tz, last_msg=None):
     prep_list = []
     page = 0
 
+    if data.content_type == 'sticker':
+        message = ''
+
     if last_msg:
         bot.delete_message(data.chat.id, data.message_id - 1)
 
@@ -192,7 +195,7 @@ def handler_buttons_aud(bot, message, storage, tz):
         des = message.data.split(":")[1].replace("}", "").replace('"', '')
         msg = bot.send_message(chat_id=chat_id,
                                text=f'Выберите неделю для аудитории{des}',
-                               reply_markup=keyboards.make_keyboard_choose_schedule())
+                               reply_markup=keyboards.make_keyboard_choose_schedule_for_aud_search())
         bot.register_next_step_handler(msg, choose_week, bot=bot, storage=storage, tz=tz, last_msg=msg)
 
 
