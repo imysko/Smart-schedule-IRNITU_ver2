@@ -37,7 +37,7 @@ def start_search(bot, message, storage, tz):
 
         # Запуск стейта со значением SEARCH
         msg = bot.send_message(chat_id=chat_id, text='Введите название группы или фамилию преподавателя\n'
-                                                     'Например: ИБб-18-1 или Иванов',
+                                                     'Например: ИБб-18-1 или Маринов',
                                reply_markup=keyboards.make_keyboard_main_menu())
 
         bot.register_next_step_handler(msg, search, bot=bot, tz=tz, storage=storage)

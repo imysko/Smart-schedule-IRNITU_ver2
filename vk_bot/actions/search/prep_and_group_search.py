@@ -34,7 +34,7 @@ async def start_search(bot: Bot, ans: Message, state, storage):
         # Запуск стейта со значением SEARCH
         await bot.state_dispenser.set(ans.peer_id, state.SEARCH)
         await ans.answer('Введите название группы или фамилию преподавателя\n'
-                         'Например: ИБб-18-1 или Иванов', keyboard=keyboards.make_keyboard_main_menu())
+                         'Например: ИБб-18-1 или Маринов', keyboard=keyboards.make_keyboard_main_menu())
     else:
         await ans.answer('Привет\n')
         await ans.answer('Для начала пройдите небольшую регистрацию😉\n')
