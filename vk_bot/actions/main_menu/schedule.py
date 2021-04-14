@@ -163,19 +163,16 @@ async def get_schedule(ans: Message, storage, tz):
             group = storage.get_vk_user(chat_id=chat_id)['group']
             schedule = groups_exam(group=group)
 
-
         if not schedule:
             await ans.answer('Расписание экзаменов отсутствует😇\n'
                              'Попробуйте позже⏱', keyboard=keyboards.make_keyboard_start_menu())
             statistics.add(action='Экзамены', storage=storage, tz=tz)
             return
 
-
         if storage.get_vk_user(chat_id=chat_id)['course'] != 'None':
             schedule_exams = schedule_view_exams(schedule=schedule)
         elif storage.get_vk_user(chat_id=chat_id)['course'] == 'None':
             schedule_exams = schedule_view_exams(schedule=schedule)
-
 
         # Проверяем, что расписание сформировалось
         if isinstance(schedule_exams, APIError):
@@ -184,11 +181,6 @@ async def get_schedule(ans: Message, storage, tz):
 
         await schedule_processing.sending_schedule(ans=ans, schedule_str=schedule_exams)
         statistics.add(action='Экзамены', storage=storage, tz=tz)
-
-
-
-
-
 
 
 

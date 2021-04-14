@@ -1,13 +1,26 @@
-from API.functions_api import full_schedule_in_str, full_schedule_in_str_prep, APIError
+from API.functions_api import full_schedule_in_str, full_schedule_in_str_prep, APIError, schedule_view_exams
 from API.functions_api import find_week
 
 from tools import keyboards, schedule_processing, statistics
+from tools.storage import MongodbService
 import json
 
 # Глобальная переменная(словарь), которая хранит в себе 3 состояния
 # (номер страницы; слово, которые находим; список соответствия для выхода по условию в стейте)
 Condition_request = {}
+storage = MongodbService().get_instance()
 
+def groups_exam(group):
+    schedule = storage.get_schedule_exam(group=group)
+    if not schedule:
+        return 0
+    del schedule['_id']
+    clear_list = []
+    for i in range(len(schedule['exams']['exams'])):
+        if schedule['exams']['exams'][i] not in clear_list:
+            clear_list.append(schedule['exams']['exams'][i])
+    schedule['exams']['exams'] = clear_list
+    return schedule
 
 def start_search(bot, message, storage, tz):
     data = message.chat.id
@@ -24,7 +37,7 @@ def start_search(bot, message, storage, tz):
 
         # Запуск стейта со значением SEARCH
         msg = bot.send_message(chat_id=chat_id, text='Введите название группы или фамилию преподавателя\n'
-                                                     'Например: ИБб-18-1 или Иванов',
+                                                     'Например: ИБб-18-1 или Маринов',
                                reply_markup=keyboards.make_keyboard_main_menu())
 
         bot.register_next_step_handler(msg, search, bot=bot, tz=tz, storage=storage)
@@ -46,6 +59,9 @@ def search(message, bot, storage, tz, last_msg=None):
     all_found_groups = []
     all_found_prep = []
     page = 0
+
+    if data.content_type == 'sticker':
+        message = ''
 
     if last_msg:
         bot.delete_message(data.chat.id, data.message_id - 1)
@@ -138,12 +154,44 @@ def search(message, bot, storage, tz, last_msg=None):
         schedule_processing.sending_schedule(bot=bot, chat_id=chat_id, schedule_str=schedule_str)
 
         bot.clear_step_handler_by_chat_id(chat_id=chat_id)
+
+    elif 'Экзамены' == message:
+        request_word = Condition_request[chat_id][1]
+        request_group = storage.get_search_list(request_word)
+        request_prep = storage.get_search_list_prep(request_word)
+
+        # Объявляем переменную с расписанием экзаменов группы или препода
+        if request_group:
+            schedule_str = groups_exam(request_group[0]['name'])
+        elif request_prep:
+            schedule_str = groups_exam(request_prep[0]['prep'])
+
+        # При отсутствии расписания выводится соответствующее предупреждение
+        if not schedule_str:
+            bot.send_message(chat_id=chat_id, text='Расписание экзаменов отсутствует😇\nПопробуйте позже⏱')
+            return
+
+        # Задаем расписанию экзаменов вид для подачи пользователю
+        schedule_exams = schedule_view_exams(schedule=schedule_str)
+
+        # Проверяем, что расписание сформировалось
+        if isinstance(schedule_str, APIError):
+            schedule_processing.sending_schedule_is_not_available(bot=bot, chat_id=chat_id)
+            return
+
+        # Отправка расписания
+        schedule_processing.sending_schedule(bot=bot, chat_id=chat_id, schedule_str=schedule_exams)
+
+        bot.clear_step_handler_by_chat_id(chat_id=chat_id)
+
     else:
         msg = bot.send_message(chat_id=chat_id, text='Проверьте правильность ввода 😞',
                                reply_markup=keyboards.make_keyboard_main_menu())
         bot.register_next_step_handler(msg, search, bot=bot, storage=storage, tz=tz, last_msg=msg)
 
     return
+
+
 
 
 def handler_buttons(bot, message, storage, tz):
