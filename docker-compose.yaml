@@ -1,94 +1,61 @@
 version: "3"
 
-volumes:
-  mongodb_volume:
-
 services:
   tg_bot:
     build: tg_bot/
     restart: always
-    container_name: tg_bot
-    environment:
-      - TOKEN=${TG_TOKEN} # токен telegram бота
-      - HOST_URL=${HOST_URL} # URL сервера (если оставить HOST_URL пустымм, то бот запустится локально)
-      - MONGO_DB_ADDR=mongodb # адрес mongoDB
-      - MONGO_DB_PORT=27017 # порт mongoDB
-      - MONGO_DB_DATABASE=Smart_schedule_IRNITU # название базы данных
-
-
-  vk_bot:
-    build: Bot_vk/
-    restart: always
-    container_name: vk_bot
-    environment:
-      - VK=${VK_TOKEN} # токен telegram бота
-      - MONGO_DB_ADDR=mongodb # адрес mongoDB
-      - MONGO_DB_PORT=27017 # порт mongoDB
-      - MONGO_DB_DATABASE=Smart_schedule_IRNITU # название базы данных
-
-
-  notification_service:
-    build: notification_service/
-    restart: always
-    container_name: notification_service
-    environment:
-      - TOKEN=${TG_TOKEN} # токен telegram бота
-      - VK=${VK_TOKEN} # токен VK бота
-      - MONGO_DB_ADDR=mongodb # адрес mongoDB
-      - MONGO_DB_PORT=27017 # порт mongoDB
-      - MONGO_DB_DATABASE=Smart_schedule_IRNITU # название базы данных
-
-
-  web_manager:
-    build: web_manager/
-    restart: always
-    container_name: web_manager
     environment:
       - TG_TOKEN=${TG_TOKEN} # токен telegram бота
       - MONGO_DB_ADDR=mongodb # адрес mongoDB
       - MONGO_DB_PORT=27017 # порт mongoDB
       - MONGO_DB_DATABASE=Smart_schedule_IRNITU # название базы данных
+      - FUNCTIONS_API_URL=http://functions_api/api/
+      - EXAMS_API=${EXAMS_API}
 
-
-  nginx:
-    build: nginx/
+  vk_bot:
+    build: vk_bot/
     restart: always
-    container_name: nginx
-    ports:
-      - 0.0.0.0:8080:80
+    environment:
+      - VK=${VK_TOKEN} # токен telegram бота
+      - MONGO_DB_ADDR=mongodb # адрес mongoDB
+      - MONGO_DB_PORT=27017 # порт mongoDB
+      - MONGO_DB_DATABASE=Smart_schedule_IRNITU # название базы данных
+      - FUNCTIONS_API_URL=http://functions_api/api/
+      - EXAMS_API=${EXAMS_API}
+
+  notification_service:
+    build: notification_service/
+    restart: always
+    environment:
+      - TG_TOKEN=${TG_TOKEN} # токен telegram бота
+      - VK_TOKEN=${VK_TOKEN} # токен VK бота
+      - MONGO_DB_ADDR=mongodb # адрес mongoDB
+      - MONGO_DB_PORT=27017 # порт mongoDB
+      - MONGO_DB_DATABASE=Smart_schedule_IRNITU # название базы данных
+      - FUNCTIONS_API_URL=http://functions_api/api/
+
+  getting_schedule:
+    build: getting_schedule/
+    restart: always
+    environment:
+      - MONGO_DB_ADDR=mongodb # адрес mongoDB
+      - MONGO_DB_PORT=27017 # порт mongoDB (default: 27017)
+      - MONGO_DB_DATABASE=Smart_schedule_IRNITU # название базы данных MongoDB (default: Smart_schedule_IRNITU)
+      - PG_DB_DATABASE=${PG_DB_DATABASE} # название базы данных PostgreSQL (default: schedule)
+      - PG_DB_USER=${PG_DB_USER} # пользователь PostgreSQL
+      - PG_DB_PASSWORD=${PG_DB_PASSWORD}  # пароль PostgreSQL
+      - PG_DB_HOST=${PG_DB_HOST} # адрес PostgreSQL
+      - PG_DB_PORT=5432 # порт PostgreSQL (default: 5432)
+      - GETTING_SCHEDULE_TIME_HOURS=1 # время задержки (в часах) между обращениями к PostgreSQL для получения расписания (default: 1)
+      - EXAMS_API=${EXAMS_API}
+
+  functions_api:
+    build: functions_api/
+    restart: always
 
 
   mongodb:
     image: mongo:latest
     volumes:
-      - mongodb_volume:/data/db
+      - ./data/db:/data/db
     restart: always
-
-
-  getting_schedule:
-    build: getting_schedule/
-    restart: always
-    container_name: getting_schedule
-    environment:
-      - MONGO_DB_ADDR=mongodb # адрес mongoDB
-      - MONGO_DB_PORT=${MONGO_DB_PORT} # порт mongoDB (default: 27017)
-      - MONGO_DB_DATABASE=${MONGO_DB_DATABASE} # название базы данных MongoDB (default: Smart_schedule_IRNITU)
-      - PG_DB_DATABASE=${PG_DB_DATABASE} # название базы данных PostgreSQL (default: schedule)
-      - PG_DB_USER=${PG_DB_USER} # пользователь PostgreSQL
-      - PG_DB_PASSWORD=${PG_DB_PASSWORD}  # пароль PostgreSQL
-      - PG_DB_HOST=${PG_DB_HOST} # адрес PostgreSQL
-      - PG_DB_PORT=${PG_DB_PORT} # порт PostgreSQL (default: 5432)
-      - GETTING_SCHEDULE_TIME_HOURS=${GETTING_SCHEDULE_TIME_HOURS} # время задержки (в часах) между обращениями к PostgreSQL для получения расписания (default: 1)
-
-
-# НЕ ИСПОЛЬЗУЕТСЯ ЕСЛИ ЕСТЬ ВОЗМОЖНОСТЬ ПОЛУЧАТЬ ДАННЫЕ НАПРЯМУЮ ИЗ БАЗЫ
-#    parser:
-#      build: parser/
-#      restart: always
-#      container_name: parser
-#      environment:
-#        - URL_INSTITUTES=https://www.istu.edu/schedule/ # URL на страницу с выбором института
-#        - MONGO_DB_ADDR=mongodb # адрес mongoDB
-#        - MONGO_DB_PORT=27017 # порт mongoDB
-#        - MONGO_DB_DATABASE=Smart_schedule_IRNITU # название базы данных
-#        - PARSE_TIME_HOURS=1 # задержка между циклами парсинга (в часах)
