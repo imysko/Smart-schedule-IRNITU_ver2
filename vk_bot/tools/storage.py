@@ -136,3 +136,8 @@ class MongodbService(object):
     def get_schedule_exam(self, group):
         """возвращает расписание экзаменов"""
         return self._db.exams_schedule.find_one(filter={'group': group})
+
+    def get_users_for_script(self):
+        """Вытаскиваем всех пользвателей из базы"""
+        return self._db.VK_users.find({})
+
