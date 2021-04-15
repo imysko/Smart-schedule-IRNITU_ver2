@@ -55,6 +55,7 @@ def Script_message():
             pass
             storage.delete_vk_user_or_userdata(chat_id=chat_id)
 
+    list_users = []
 
 if input("Уверен? Напиши Да: ") == 'Да':
     print('Скрипт запущен')
