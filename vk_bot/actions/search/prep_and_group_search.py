@@ -186,6 +186,7 @@ async def search(bot: Bot, ans: Message, storage):
         # Задаем расписанию экзаменов вид для подачи пользователю
         schedule_exams = schedule_view_exams(schedule=schedule_str)
 
+
         # Проверяем, что расписание сформировалось
         if isinstance(schedule_str, APIError):
             await schedule_processing.sending_schedule_is_not_available(ans=ans)

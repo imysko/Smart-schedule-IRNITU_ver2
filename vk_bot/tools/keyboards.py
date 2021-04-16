@@ -17,6 +17,19 @@ def parametres_for_buttons_start_menu_vk(text, color):
     }
 
 
+def start_button():
+    """Кнопка 'Начать'"""
+    keyboard = Keyboard(one_time=False)
+    keyboard.schema(
+        [
+            [
+                {"label": "Начать", "type": "text", "color": "positive", "payload": "1"},
+            ],
+        ]
+    )
+    return keyboard
+
+
 def make_inline_keyboard_notifications():
     """ Кнопка 'Настройка уведомлений' """
     keyboard = Keyboard(one_time=False)
