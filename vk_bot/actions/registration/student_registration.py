@@ -141,6 +141,6 @@ async def start_student_reg(ans: Message, storage, tz):
                                  'Для просмотра списка команд используйте команду [Помощь]\n')
         finally:
             if len(user) != 6:
-                await ans.answer('Пожалуйста, закончите регистрацию 😇')
+                await ans.answer('Пожалуйста, закончите регистрацию 😇', keyboard = keyboards.start_button())
 
         statistics.add(action='bullshit', storage=storage, tz=tz)
