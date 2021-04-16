@@ -10,30 +10,24 @@ TZ_IRKUTSK = pytz.timezone('Asia/Irkutsk')
 locale_name = ('ru_RU.UTF-8' if platform.system() == 'Linux' else 'ru_RU')
 locale.setlocale(locale.LC_TIME, locale_name)
 
-
 def day_creating(day):
+    day = datetime.strptime(day, "%Y-%m-%d")
     months = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября',
               'декабря']
     day_week = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье']
 
-    year = day[:4]
-    if day[5] == '0':
-        int_month = int(day[6])
-        month = months[int(day[6])]
-    else:
-        int_month = int(day[5:6])
-        month = months[int(day[5:6])]
+    year = int(day.year)
+    int_month = int(day.month) - 1
+    int_day = int(day.day)
 
-    if day[8] == '0':
-        int_day = int(day[9:10])
-    else:
-        int_day = int(day[8:10])
+    month = months[int_month]
 
     today = datetime(int(year), int_month, int_day)
 
     int_day_week = today.weekday()
 
     return str(day_week[int_day_week]) + ', ' + str(int_day) + ' ' + str(month) + ' ' + str(year) + ' г.'
+
 
 
 def schedule_view_exams(schedule):
