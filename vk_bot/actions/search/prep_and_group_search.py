@@ -214,7 +214,7 @@ async def search(bot: Bot, ans: Message, storage):
             await ans.answer(f"Выберите неделю для группы {choose}", keyboard=keyboards.make_keyboard_choose_schedule())
         elif request_prep:
             await ans.answer(f"Выберите неделю для преподавателя {request_prep[0]['prep']}",
-                             keyboard=keyboards.make_keyboard_choose_schedule())
+                             keyboard=keyboards.make_keyboard_choose_schedule_for_aud_search())
         else:
             return
     # Общее исключения для разных случаем, которые могу сломать бота. (Практически копия первого IF)
