@@ -158,15 +158,16 @@ def search(message, bot, storage, tz, last_msg=None):
         bot.clear_step_handler_by_chat_id(chat_id=chat_id)
 
     elif 'Экзамены' == message:
+        group = Condition_request[chat_id][1]
         request_word = Condition_request[chat_id][1]
         request_group = storage.get_search_list(request_word)
         request_prep = storage.get_search_list_prep(request_word)
 
         # Объявляем переменную с расписанием экзаменов группы или препода
         if request_group:
-            schedule_str = groups_exam(request_group[0]['name'])
+            schedule_str = groups_exam(group)
         elif request_prep:
-            schedule_str = groups_exam(request_prep[0]['prep'])
+            schedule_str = groups_exam(group)
 
         # При отсутствии расписания выводится соответствующее предупреждение
         if not schedule_str:
@@ -177,7 +178,7 @@ def search(message, bot, storage, tz, last_msg=None):
         schedule_exams = schedule_view_exams(schedule=schedule_str)
 
         # Проверяем, что расписание сформировалось
-        if isinstance(schedule_str, APIError):
+        if isinstance(schedule_exams, APIError):
             schedule_processing.sending_schedule_is_not_available(bot=bot, chat_id=chat_id)
             return
 
