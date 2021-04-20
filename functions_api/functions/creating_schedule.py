@@ -17,10 +17,10 @@ def day_creating(day):
     day_week = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье']
 
     year = int(day.year)
-    int_month = int(day.month) - 1
+    int_month = int(day.month)
     int_day = int(day.day)
 
-    month = months[int_month]
+    month = months[int_month - 1]
 
     today = datetime(int(year), int_month, int_day)
 

@@ -64,7 +64,10 @@ def search(message, bot, storage, tz, last_msg=None):
         message = ''
 
     if last_msg:
-        bot.delete_message(data.chat.id, data.message_id - 1)
+        try:
+            bot.delete_message(last_msg.chat.id, last_msg.message_id)
+        except Exception as e:
+            pass
 
     if storage.get_search_list(message) or storage.get_search_list_prep(message):
         # Результат запроса по группам
@@ -114,15 +117,14 @@ def search(message, bot, storage, tz, last_msg=None):
             bot.register_next_step_handler(msg, search, bot=bot, storage=storage, tz=tz, last_msg=msg)
 
     elif ('На текущую неделю' == message or 'На следующую неделю' == message):
+        group = Condition_request[chat_id][1]
         request_word = Condition_request[chat_id][1]
         request_group = storage.get_search_list(request_word)
         request_prep = storage.get_search_list_prep(request_word)
         # Если есть запрос для группы, то формируем расписание для группы, а если нет, то для препода
         if request_group:
-            group = request_group[0]['name']
             schedule = storage.get_schedule(group=group)
         elif request_prep:
-            group = request_prep[0]['prep']
             schedule = request_prep[0]
         if not schedule:
             bot.send_message(chat_id=chat_id, text='Расписание временно недоступно\nПопробуйте позже⏱')
@@ -156,15 +158,16 @@ def search(message, bot, storage, tz, last_msg=None):
         bot.clear_step_handler_by_chat_id(chat_id=chat_id)
 
     elif 'Экзамены' == message:
+        group = Condition_request[chat_id][1]
         request_word = Condition_request[chat_id][1]
         request_group = storage.get_search_list(request_word)
         request_prep = storage.get_search_list_prep(request_word)
 
         # Объявляем переменную с расписанием экзаменов группы или препода
         if request_group:
-            schedule_str = groups_exam(request_group[0]['name'])
+            schedule_str = groups_exam(group)
         elif request_prep:
-            schedule_str = groups_exam(request_prep[0]['prep'])
+            schedule_str = groups_exam(group)
 
         # При отсутствии расписания выводится соответствующее предупреждение
         if not schedule_str:
@@ -175,7 +178,7 @@ def search(message, bot, storage, tz, last_msg=None):
         schedule_exams = schedule_view_exams(schedule=schedule_str)
 
         # Проверяем, что расписание сформировалось
-        if isinstance(schedule_str, APIError):
+        if isinstance(schedule_exams, APIError):
             schedule_processing.sending_schedule_is_not_available(bot=bot, chat_id=chat_id)
             return
 
@@ -183,6 +186,14 @@ def search(message, bot, storage, tz, last_msg=None):
         schedule_processing.sending_schedule(bot=bot, chat_id=chat_id, schedule_str=schedule_exams)
 
         bot.clear_step_handler_by_chat_id(chat_id=chat_id)
+
+    elif 'Основное меню' == message:
+        bot.send_message(chat_id=chat_id, text='Основное меню',
+                         reply_markup=keyboards.make_keyboard_start_menu())
+
+        bot.clear_step_handler_by_chat_id(chat_id=chat_id)
+
+        return
 
     else:
         msg = bot.send_message(chat_id=chat_id, text='Проверьте правильность ввода 😞',
@@ -204,14 +215,22 @@ def handler_buttons(bot, message, storage, tz):
     if data['prep_list'] == 'main':
         bot.send_message(chat_id=chat_id, text='Основное меню',
                          reply_markup=keyboards.make_keyboard_start_menu())
-        bot.delete_message(message_id=message_id, chat_id=chat_id)
+        try:
+            bot.delete_message(message_id=message_id, chat_id=chat_id)
+        except Exception as e:
+            pass
+
 
         bot.clear_step_handler_by_chat_id(chat_id=chat_id)
 
         return
 
-    if not Condition_request[chat_id] and len(Condition_request[chat_id]) != 0:
-        Condition_request[chat_id][1] = ''
+    # TODO: Если разберетесь для чего эта строка - удалите её
+    try:
+        if not Condition_request.get(chat_id) and len(Condition_request.get(chat_id)) != 0:
+            Condition_request[chat_id][1] = ''
+    except Exception as e:
+        pass
 
     page = Condition_request[chat_id][0]
     request_word = Condition_request[chat_id][1]
@@ -234,11 +253,18 @@ def handler_buttons(bot, message, storage, tz):
     last_request = request[-1]
 
     if data['prep_list'].lower() in Condition_request[chat_id][2]:
-        bot.delete_message(message_id=message_id, chat_id=chat_id)
-        Condition_request[chat_id][1] = data['prep_list'].lower()
+        try:
+            bot.delete_message(message_id=message_id, chat_id=chat_id)
+        except Exception as e:
+            pass
+        Condition_request[chat_id][1] = data['prep_list']
         des = message.data.split(":")[1].replace("}", "").replace('"', '')
-        msg = bot.send_message(chat_id=chat_id, text=f'Выберите неделю для {des}',
-                               reply_markup=keyboards.make_keyboard_choose_schedule())
+        if "-" in data['prep_list'].lower():
+            msg = bot.send_message(chat_id=chat_id, text=f'Выберите неделю для {des}',
+                                   reply_markup=keyboards.make_keyboard_choose_schedule())
+        else:
+            msg = bot.send_message(chat_id=chat_id, text=f'Выберите неделю для {des}',
+                                   reply_markup=keyboards.make_keyboard_choose_schedule_for_aud_search())
         bot.register_next_step_handler(msg, search, bot=bot, storage=storage, tz=tz, last_msg=msg)
 
 
@@ -249,7 +275,10 @@ def handler_buttons(bot, message, storage, tz):
             more_than_10 = True
 
         if Condition_request[chat_id][0] - 1 == 0:
-            bot.delete_message(message_id=message_id, chat_id=chat_id)
+            try:
+                bot.delete_message(message_id=message_id, chat_id=chat_id)
+            except Exception as e:
+                pass
             bot.send_message(chat_id=chat_id, text=f'Первая страница поиска:',
                              reply_markup=keyboards.make_keyboard_search_group(last_request=last_request,
                                                                                page=page - 1,
@@ -265,7 +294,10 @@ def handler_buttons(bot, message, storage, tz):
         Condition_request[chat_id][0] -= 1
 
     elif data['prep_list'] == 'next':
-        bot.delete_message(message_id=message_id, chat_id=chat_id)
+        try:
+            bot.delete_message(message_id=message_id, chat_id=chat_id)
+        except Exception as e:
+            pass
         more_than_10 = False
         if len(request) > 10:
             requests = request[10 * (page + 1):10 * (page + 2)]
