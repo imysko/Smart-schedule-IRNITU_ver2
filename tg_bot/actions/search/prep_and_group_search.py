@@ -98,15 +98,14 @@ def search(message, bot, storage, tz, last_msg=None):
             bot.register_next_step_handler(msg, search, bot=bot, storage=storage, tz=tz, last_msg=msg)
 
     elif ('На текущую неделю' == message or 'На следующую неделю' == message):
+        group = Condition_request[chat_id][1]
         request_word = Condition_request[chat_id][1]
         request_group = storage.get_search_list(request_word)
         request_prep = storage.get_search_list_prep(request_word)
         # Если есть запрос для группы, то формируем расписание для группы, а если нет, то для препода
         if request_group:
-            group = request_group[0]['name']
             schedule = storage.get_schedule(group=group)
         elif request_prep:
-            group = request_prep[0]['prep']
             schedule = request_prep[0]
         if not schedule:
             bot.send_message(chat_id=chat_id, text='Расписание временно недоступно\nПопробуйте позже⏱')
@@ -187,10 +186,14 @@ def handler_buttons(bot, message, storage, tz):
 
     if data['prep_list'].lower() in Condition_request[chat_id][2]:
         bot.delete_message(message_id=message_id, chat_id=chat_id)
-        Condition_request[chat_id][1] = data['prep_list'].lower()
+        Condition_request[chat_id][1] = data['prep_list']
         des = message.data.split(":")[1].replace("}", "").replace('"', '')
-        msg = bot.send_message(chat_id=chat_id, text=f'Выберите неделю для {des}',
-                               reply_markup=keyboards.make_keyboard_choose_schedule())
+        if "-" in data['prep_list'].lower():
+            msg = bot.send_message(chat_id=chat_id, text=f'Выберите неделю для {des}',
+                                   reply_markup=keyboards.make_keyboard_choose_schedule())
+        else:
+            msg = bot.send_message(chat_id=chat_id, text=f'Выберите неделю для {des}',
+                                   reply_markup=keyboards.make_keyboard_choose_schedule_for_aud_search())
         bot.register_next_step_handler(msg, search, bot=bot, storage=storage, tz=tz, last_msg=msg)
 
 
