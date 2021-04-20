@@ -2,13 +2,13 @@ import time
 
 from API.functions_api import calculating_reminder_times
 from tools.logger import logger
+from tools.storage import MongodbService
 
 
 class ReminderUpdater:
-
-    def __init__(self, storage):
+    def __init__(self):
         self.users = []
-        self.storage = storage
+        self.storage = MongodbService()
 
     def start(self):
         self.print_status_info()
@@ -24,11 +24,16 @@ class ReminderUpdater:
 
     def calculation(self):
         self.users = self.get_users()
+
         for user in self.users:
 
-            group = user['group']
+            group = user.get('group')
+            if not group:
+                continue
 
-            schedule = self.storage.get_schedule(group=group)['schedule']
+            schedule = self.storage.get_schedule(group=group).get('schedule')
+            if not schedule:
+                continue
 
             try:
                 reminders = calculating_reminder_times(schedule=schedule, time=int(user['notifications']))

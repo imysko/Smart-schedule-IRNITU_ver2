@@ -6,7 +6,7 @@ from tools import keyboards
 async def sending_schedule(ans: Message, schedule_str: str):
     """Отправка расписания пользователю"""
     for schedule in schedule_str:
-        await ans.answer(f'{schedule}')
+        await ans.answer(f'{schedule}', keyboard=keyboards.make_keyboard_start_menu())
 
 
 async def sending_schedule_is_not_available(ans: Message):

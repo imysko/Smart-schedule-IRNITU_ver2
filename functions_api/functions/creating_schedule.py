@@ -1,13 +1,62 @@
 import locale
 import platform
+import time
 from datetime import datetime, timedelta
-
 import pytz
+from time import strptime
 
 TZ_IRKUTSK = pytz.timezone('Asia/Irkutsk')
 # определяем на Linux или на Windows мы запускаемся
 locale_name = ('ru_RU.UTF-8' if platform.system() == 'Linux' else 'ru_RU')
 locale.setlocale(locale.LC_TIME, locale_name)
+
+def day_creating(day):
+    day = datetime.strptime(day, "%Y-%m-%d")
+    months = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября',
+              'декабря']
+    day_week = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье']
+
+    year = int(day.year)
+    int_month = int(day.month) - 1
+    int_day = int(day.day)
+
+    month = months[int_month]
+
+    today = datetime(int(year), int_month, int_day)
+
+    int_day_week = today.weekday()
+
+    return str(day_week[int_day_week]) + ', ' + str(int_day) + ' ' + str(month) + ' ' + str(year) + ' г.'
+
+
+
+def schedule_view_exams(schedule):
+    schedule_str = []
+
+    for exam in schedule:
+        lessons_str = '-------------------------------------\n'
+        day = day_creating(exam['time'].split(' ')[0])
+        name = exam['name']
+        time = exam['time'].split(' ')[1][:5]
+        prep = exam['prep']
+        aud = f'Аудитория: {exam["aud"]}\n' if exam["aud"] and exam["aud"][0] else ''
+
+        if time == '00:00':
+            lessons_str += f'{aud}' \
+                           f'👉{name}\n' \
+                           f'{prep}'
+        else:
+            lessons_str += f'{time}\n' \
+                           f'{aud}' \
+                           f'👉{name}\n' \
+                           f'{prep}'
+
+        lessons_str += '\n-------------------------------------\n'
+
+        # Проверка, что день не пустой
+        schedule_str.append(f'\n🍏{day}🍏\n'
+                            f'{lessons_str}')
+    return schedule_str
 
 
 def full_schedule_in_str(schedule: list, week: str) -> list:

@@ -24,6 +24,21 @@ def find_week():
 
     return week
 
+# def get_exams(schedule: list) -> str:
+#     url = 'creating_schedule/get_exams/'
+#     data = {
+#         'schedule': schedule
+#     }
+#     exams_str = get_api_data(url=url, data=data)
+#     return exams_str
+
+def schedule_view_exams(schedule: list) -> list:
+    url = 'creating_schedule/schedule_view_exams/'
+    data = {
+        'schedule': schedule['exams']['exams']
+    }
+    schedule_str = get_api_data(url=url, data=data)
+    return schedule_str
 
 def full_schedule_in_str(schedule: list, week: str) -> list:
     url = 'creating_schedule/full_schedule_in_str/'

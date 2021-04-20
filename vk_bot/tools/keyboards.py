@@ -17,6 +17,19 @@ def parametres_for_buttons_start_menu_vk(text, color):
     }
 
 
+def start_button():
+    """Кнопка 'Начать'"""
+    keyboard = Keyboard(one_time=False)
+    keyboard.schema(
+        [
+            [
+                {"label": "Начать", "type": "text", "color": "positive", "payload": "1"},
+            ],
+        ]
+    )
+    return keyboard
+
+
 def make_inline_keyboard_notifications():
     """ Кнопка 'Настройка уведомлений' """
     keyboard = Keyboard(one_time=False)
@@ -284,11 +297,27 @@ def make_keyboard_choose_schedule():
     """ Клавиатура для выбора недели """
 
     keyboard = Keyboard(one_time=False)
-    # keyboard.row()
-    # keyboard.add(Text(label="На текущую неделю"), color=KeyboardButtonColor.PRIMARY)
-    # keyboard.add(Text(label="На следующую неделю"), color=KeyboardButtonColor.PRIMARY)
-    # keyboard.row()
-    # keyboard.add(Text(label="Основное меню"), color=KeyboardButtonColor.PRIMARY)
+    keyboard.schema(
+        [
+            [
+                {"label": "На текущую неделю", "type": "text", "color": "primary", "payload": "1"},
+                {"label": "На следующую неделю", "type": "text", "color": "primary", "payload": "1"},
+            ],
+            [
+                {"label": "Экзамены", "type": "text", "color": "primary", "payload": "1"},
+            ],
+            [
+                {"label": "Основное меню", "type": "text", "color": "secondary", "payload": "1"},
+            ]
+        ]
+    )
+
+    return keyboard
+
+def make_keyboard_choose_schedule_for_aud_search():
+    """ Клавиатура для выбора недели """
+
+    keyboard = Keyboard(one_time=False)
     keyboard.schema(
         [
             [
@@ -302,7 +331,6 @@ def make_keyboard_choose_schedule():
     )
 
     return keyboard
-
 
 def make_keyboard_search_group(page, search_result=[]):
     """ Клавиатура поиска по группе """

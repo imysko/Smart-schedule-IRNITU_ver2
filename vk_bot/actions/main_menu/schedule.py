@@ -1,12 +1,28 @@
 from datetime import datetime
-
+from tools.storage import MongodbService
 from vkbottle.bot import Message
 
 from API.functions_api import find_week, full_schedule_in_str, full_schedule_in_str_prep, \
     get_one_day_schedule_in_str_prep, get_one_day_schedule_in_str, get_next_day_schedule_in_str, \
-    get_next_day_schedule_in_str_prep, APIError, get_now_lesson_in_str_stud, get_now_lesson_in_str_prep
+    get_next_day_schedule_in_str_prep, APIError, get_now_lesson_in_str_stud, get_now_lesson_in_str_prep,\
+    schedule_view_exams
 from API.functions_api import get_near_lesson, get_now_lesson
 from tools import keyboards, statistics, schedule_processing
+
+storage = MongodbService().get_instance()
+
+
+def groups_exam(group):
+    schedule = storage.get_schedule_exam(group=group)
+    if not schedule:
+        return 0
+    del schedule['_id']
+    clear_list = []
+    for i in range(len(schedule['exams']['exams'])):
+        if schedule['exams']['exams'][i] not in clear_list:
+            clear_list.append(schedule['exams']['exams'][i])
+    schedule['exams']['exams'] = clear_list
+    return schedule
 
 
 async def get_schedule(ans: Message, storage, tz):
@@ -69,8 +85,9 @@ async def get_schedule(ans: Message, storage, tz):
             group = storage.get_vk_user(chat_id=chat_id)['group']
             schedule = storage.get_schedule_prep(group=group)
         if not schedule:
-            schedule_processing.sending_schedule_is_not_available(ans=ans)
-            statistics.add(action='Расписание на сегодня', storage=storage, tz=tz)
+            await ans.answer('Расписание временно недоступно🚫😣\n'
+                             'Попробуйте позже⏱', keyboard=keyboards.make_keyboard_start_menu())
+            statistics.add(action='Расписание на завтра', storage=storage, tz=tz)
             return
         schedule = schedule['schedule']
         week = find_week()
@@ -134,6 +151,38 @@ async def get_schedule(ans: Message, storage, tz):
         await ans.answer('Ближайшая пара', keyboard=keyboards.make_keyboard_nearlesson())
         statistics.add(action='Ближайшая пара', storage=storage, tz=tz)
         return
+
+
+
+    elif 'Экзамены' in data and user.get('group'):
+        # Если курс нуль, тогда это преподаватель
+        if storage.get_vk_user(chat_id=chat_id)['course'] != 'None':
+            group = storage.get_vk_user(chat_id=chat_id)['group']
+            schedule = groups_exam(group=group)
+        elif storage.get_vk_user(chat_id=chat_id)['course'] == 'None':
+            group = storage.get_vk_user(chat_id=chat_id)['group']
+            schedule = groups_exam(group=group)
+
+        if not schedule:
+            await ans.answer('Расписание экзаменов отсутствует😇\n'
+                             'Попробуйте позже⏱', keyboard=keyboards.make_keyboard_start_menu())
+            statistics.add(action='Экзамены', storage=storage, tz=tz)
+            return
+
+        if storage.get_vk_user(chat_id=chat_id)['course'] != 'None':
+            schedule_exams = schedule_view_exams(schedule=schedule)
+        elif storage.get_vk_user(chat_id=chat_id)['course'] == 'None':
+            schedule_exams = schedule_view_exams(schedule=schedule)
+
+        # Проверяем, что расписание сформировалось
+        if isinstance(schedule_exams, APIError):
+            await schedule_processing.sending_schedule_is_not_available(ans=ans)
+            return
+
+        await schedule_processing.sending_schedule(ans=ans, schedule_str=schedule_exams)
+        statistics.add(action='Экзамены', storage=storage, tz=tz)
+
+
 
 
     elif 'Текущая' in data and user.get('group'):

@@ -7,21 +7,18 @@ import vk_api
 
 from reminder import Reminder
 from tools.reminder_updater import VKReminderUpdater, TGReminderUpdater
-from tools.storage import MongodbService
 
 TG_TOKEN = os.environ.get('TG_TOKEN')
 VK_TOKEN = os.environ.get('VK_TOKEN')
 
-storage = MongodbService().get_instance()
-
 tg_bot = telebot.TeleBot(TG_TOKEN)
-tg_reminder = Reminder(bot_platform='tg', bot=tg_bot, storage=storage)
+tg_reminder = Reminder(bot_platform='tg', bot=tg_bot)
 
 vk_bot = vk_api.VkApi(token=VK_TOKEN)
-vk_reminder = Reminder(bot_platform='vk', bot=vk_bot, storage=storage)
+vk_reminder = Reminder(bot_platform='vk', bot=vk_bot)
 
-reminder_updater_vk = VKReminderUpdater(storage=storage)
-reminder_updater_tg = TGReminderUpdater(storage=storage)
+reminder_updater_vk = VKReminderUpdater()
+reminder_updater_tg = TGReminderUpdater()
 
 
 def main():

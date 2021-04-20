@@ -52,10 +52,18 @@ class MongodbService(object):
 
     def get_search_list(self, search_words: str) -> list:
         """возвращает список групп по слову из поиска"""
+        search_words = "".join(
+            x for x in search_words if x.isalpha() or x.isdigit() or x.isspace() or x == '.' or x == '-')
+        if not search_words:
+            return None
         return list(self._db.groups.find(filter={'name': {'$regex': f'.*{search_words}.*', "$options": '/i'}}))
 
     def get_search_list_prep(self, search_words: str) -> list:
         """возвращает список преподавателей по слову из поиска"""
+        search_words = "".join(
+            x for x in search_words if x.isalpha() or x.isdigit() or x.isspace() or x == '.' or x == '-')
+        if not search_words:
+            return None
         return list(self._db.prepods_schedule.find(
             filter={'prep_short_name': {'$regex': f'.*{search_words}.*', "$options": '/i'}}))
 
@@ -84,6 +92,9 @@ class MongodbService(object):
 
     def get_schedule_aud(self, aud: str) -> list:
         """возвращает расписание преподавателя"""
+        aud = "".join(x for x in aud if x.isalpha() or x.isdigit() or x.isspace() or x == '.' or x == '-')
+        if not aud:
+            return []
         return list(self._db.auditories_schedule.find(filter={'aud': {'$regex': f'.*{aud}.*', "$options": '/i'}}))
 
     # ======================================== VK ======================================== #
@@ -121,3 +132,12 @@ class MongodbService(object):
             'time': time
         }
         return self._db.vk_statistics.insert_one(statistics)
+
+    def get_schedule_exam(self, group):
+        """возвращает расписание экзаменов"""
+        return self._db.exams_schedule.find_one(filter={'group': group})
+
+    def get_users_for_script(self):
+        """Вытаскиваем всех пользвателей из базы"""
+        return self._db.VK_users.find({})
+

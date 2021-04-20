@@ -1,11 +1,30 @@
 from datetime import datetime
+from tools.storage import MongodbService
 
 from API.functions_api import find_week, APIError
 from API.functions_api import full_schedule_in_str, full_schedule_in_str_prep, \
     get_one_day_schedule_in_str_prep, get_one_day_schedule_in_str, get_next_day_schedule_in_str, \
-    get_next_day_schedule_in_str_prep
+    get_next_day_schedule_in_str_prep, schedule_view_exams
 from API.functions_api import get_near_lesson, get_now_lesson, get_now_lesson_in_str_stud, get_now_lesson_in_str_prep
 from tools import keyboards, statistics, schedule_processing
+
+
+
+storage = MongodbService().get_instance()
+
+
+def groups_exam(group):
+    schedule = storage.get_schedule_exam(group=group)
+    if not schedule:
+        return 0
+    del schedule['_id']
+    clear_list = []
+    for i in range(len(schedule['exams']['exams'])):
+        if schedule['exams']['exams'][i] not in clear_list:
+            clear_list.append(schedule['exams']['exams'][i])
+    schedule['exams']['exams'] = clear_list
+    return schedule
+
 
 
 def get_schedule(bot, message, storage, tz):
@@ -92,6 +111,45 @@ def get_schedule(bot, message, storage, tz):
             return
         bot.send_message(chat_id=chat_id, text=f'{schedule_one_day}')
         statistics.add(action='Расписание на сегодня', storage=storage, tz=tz)
+
+
+
+
+    elif 'Экзамены' in data and user.get('group'):
+        # Если курс нуль, тогда это преподаватель
+
+        if storage.get_user(chat_id=chat_id)['course'] != 'None':
+            group = storage.get_user(chat_id=chat_id)['group']
+            schedule = groups_exam(group=group)
+        elif storage.get_user(chat_id=chat_id)['course'] == 'None':
+            group = storage.get_user(chat_id=chat_id)['group']
+            schedule = groups_exam(group=group)
+
+        if not schedule:
+            bot.send_message(chat_id=chat_id, text='Расписание экзаменов отсутствует😇\n'
+                             'Попробуйте позже⏱', reply_markup=keyboards.make_keyboard_start_menu())
+            statistics.add(action='Экзамены', storage=storage, tz=tz)
+            return
+
+        # schedule = schedule['schedule']
+
+        if storage.get_user(chat_id=chat_id)['course'] != 'None':
+            schedule_exams = schedule_view_exams(schedule=schedule)
+        elif storage.get_user(chat_id=chat_id)['course'] == 'None':
+            schedule_exams = schedule_view_exams(schedule=schedule)
+
+        # Проверяем, что расписание сформировалось
+        if isinstance(schedule_exams, APIError):
+            schedule_processing.sending_schedule_is_not_available(bot=bot, chat_id=chat_id)
+
+            return
+
+        schedule_processing.sending_schedule(bot=bot, chat_id=chat_id, schedule_str=schedule_exams)
+
+        statistics.add(action='Экзамены', storage=storage, tz=tz)
+
+
+
 
     elif 'Расписание на завтра 🍎' == data and user.get('group'):
         # Если курс нуль, тогда это преподаватель
@@ -182,7 +240,6 @@ def get_schedule(bot, message, storage, tz):
         if isinstance(now_lessons_str, APIError):
             schedule_processing.sending_schedule_is_not_available(bot=bot, chat_id=chat_id)
             return
-
 
         bot.send_message(chat_id=chat_id, text=f'🧠Текущая пара🧠\n'f'{now_lessons_str}',
                          reply_markup=keyboards.make_keyboard_start_menu())
