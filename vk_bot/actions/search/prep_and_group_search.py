@@ -168,15 +168,16 @@ async def search(bot: Bot, ans: Message, storage):
         await bot.state_dispenser.delete(ans.peer_id)
 
     elif 'Экзамены' == data:
+        group = Condition_request[ans.from_id][1]
         request_word = Condition_request[ans.from_id][1]
         request_group = storage.get_search_list(request_word)
         request_prep = storage.get_search_list_prep(request_word)
 
         # Объявляем переменную с расписанием экзаменов группы или препода
         if request_group:
-            schedule_str = groups_exam(request_group[0]['name'])
+            schedule_str = groups_exam(group)
         elif request_prep:
-            schedule_str = groups_exam(request_prep[0]['prep'])
+            schedule_str = groups_exam(group)
 
         # При отсутствии расписания выводится соответствующее предупреждение
         if schedule_str == 0:
