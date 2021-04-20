@@ -64,7 +64,10 @@ def search(message, bot, storage, tz, last_msg=None):
         message = ''
 
     if last_msg:
-        bot.delete_message(data.chat.id, data.message_id - 1)
+        try:
+            bot.delete_message(last_msg.chat.id, last_msg.message_id)
+        except Exception as e:
+            pass
 
     if storage.get_search_list(message) or storage.get_search_list_prep(message):
         # Результат запроса по группам
@@ -183,6 +186,14 @@ def search(message, bot, storage, tz, last_msg=None):
 
         bot.clear_step_handler_by_chat_id(chat_id=chat_id)
 
+    elif 'Основное меню' == message:
+        bot.send_message(chat_id=chat_id, text='Основное меню',
+                         reply_markup=keyboards.make_keyboard_start_menu())
+
+        bot.clear_step_handler_by_chat_id(chat_id=chat_id)
+
+        return
+
     else:
         msg = bot.send_message(chat_id=chat_id, text='Проверьте правильность ввода 😞',
                                reply_markup=keyboards.make_keyboard_main_menu())
@@ -203,14 +214,22 @@ def handler_buttons(bot, message, storage, tz):
     if data['prep_list'] == 'main':
         bot.send_message(chat_id=chat_id, text='Основное меню',
                          reply_markup=keyboards.make_keyboard_start_menu())
-        bot.delete_message(message_id=message_id, chat_id=chat_id)
+        try:
+            bot.delete_message(message_id=message_id, chat_id=chat_id)
+        except Exception as e:
+            pass
+
 
         bot.clear_step_handler_by_chat_id(chat_id=chat_id)
 
         return
 
-    if not Condition_request[chat_id] and len(Condition_request[chat_id]) != 0:
-        Condition_request[chat_id][1] = ''
+    # TODO: Если разберетесь для чего эта строка - удалите её
+    try:
+        if not Condition_request.get(chat_id) and len(Condition_request.get(chat_id)) != 0:
+            Condition_request[chat_id][1] = ''
+    except Exception as e:
+        pass
 
     page = Condition_request[chat_id][0]
     request_word = Condition_request[chat_id][1]
@@ -233,7 +252,10 @@ def handler_buttons(bot, message, storage, tz):
     last_request = request[-1]
 
     if data['prep_list'].lower() in Condition_request[chat_id][2]:
-        bot.delete_message(message_id=message_id, chat_id=chat_id)
+        try:
+            bot.delete_message(message_id=message_id, chat_id=chat_id)
+        except Exception as e:
+            pass
         Condition_request[chat_id][1] = data['prep_list']
         des = message.data.split(":")[1].replace("}", "").replace('"', '')
         if "-" in data['prep_list'].lower():
@@ -252,7 +274,10 @@ def handler_buttons(bot, message, storage, tz):
             more_than_10 = True
 
         if Condition_request[chat_id][0] - 1 == 0:
-            bot.delete_message(message_id=message_id, chat_id=chat_id)
+            try:
+                bot.delete_message(message_id=message_id, chat_id=chat_id)
+            except Exception as e:
+                pass
             bot.send_message(chat_id=chat_id, text=f'Первая страница поиска:',
                              reply_markup=keyboards.make_keyboard_search_group(last_request=last_request,
                                                                                page=page - 1,
@@ -268,7 +293,10 @@ def handler_buttons(bot, message, storage, tz):
         Condition_request[chat_id][0] -= 1
 
     elif data['prep_list'] == 'next':
-        bot.delete_message(message_id=message_id, chat_id=chat_id)
+        try:
+            bot.delete_message(message_id=message_id, chat_id=chat_id)
+        except Exception as e:
+            pass
         more_than_10 = False
         if len(request) > 10:
             requests = request[10 * (page + 1):10 * (page + 2)]
