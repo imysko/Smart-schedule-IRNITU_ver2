@@ -1,4 +1,5 @@
 import os
+import time
 
 import pytz
 import telebot
@@ -197,6 +198,11 @@ def text(message):
 if __name__ == '__main__':
     bot.remove_webhook()
     logger.info('Бот запущен...')
-    bot.infinity_polling(none_stop=True)
+    while True:
+        try:
+            bot.infinity_polling(none_stop=True)
+        except Exception as e:
+            logger.error(e)
+            time.sleep(3)
 
 
