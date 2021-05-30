@@ -3,6 +3,10 @@ version: "3"
 services:
   tg_bot:
     build: tg_bot/
+    logging:
+      options:
+        max-size: "200M"
+        max-file: "4"
     restart: always
     environment:
       - TG_TOKEN=${TG_TOKEN} # токен telegram бота
@@ -14,6 +18,10 @@ services:
 
   vk_bot:
     build: vk_bot/
+    logging:
+      options:
+        max-size: "200M"
+        max-file: "4"
     restart: always
     environment:
       - VK=${VK_TOKEN} # токен telegram бота
@@ -25,6 +33,10 @@ services:
 
   notification_service:
     build: notification_service/
+    logging:
+      options:
+        max-size: "200M"
+        max-file: "4"
     restart: always
     environment:
       - TG_TOKEN=${TG_TOKEN} # токен telegram бота
@@ -36,6 +48,10 @@ services:
 
   getting_schedule:
     build: getting_schedule/
+    logging:
+      options:
+        max-size: "200M"
+        max-file: "4"
     restart: always
     environment:
       - MONGO_DB_ADDR=mongodb # адрес mongoDB
@@ -51,11 +67,19 @@ services:
 
   functions_api:
     build: functions_api/
+    logging:
+      options:
+        max-size: "200M"
+        max-file: "4"
     restart: always
 
 
   mongodb:
     image: mongo:latest
+    logging:
+      options:
+        max-size: "200M"
+        max-file: "4"
     volumes:
       - ./data/db:/data/db
     restart: always
