@@ -40,7 +40,7 @@ typing-extensions==3.7.4.3
 urllib3==1.26.4
 vbml==1.1
 virtualenv==20.4.0
-vkbottle @ https://github.com/timoniq/vkbottle/archive/master.zip
+vkbottle==2.7.5
 vkbottle-types==0.1.24
 watchgod==0.7
 webencodings==0.5.1
