@@ -2,6 +2,7 @@ from pprint import pprint
 
 from vkbottle.bot import Message
 from tools import keyboards
+from tools.logger import logger
 
 
 async def start(ans: Message, chat_id: int, storage):
@@ -22,7 +23,7 @@ async def registration(ans: Message, chat_id: int, storage):
     await ans.answer('Повторная регистрация😉\n')
 
     keyboard = keyboards.make_keyboard_institutes(storage.get_institutes())
-    pprint(keyboard)
+    logger.exception(keyboard)
 
     await ans.answer('Выберите институт.', keyboard=keyboard)
 
