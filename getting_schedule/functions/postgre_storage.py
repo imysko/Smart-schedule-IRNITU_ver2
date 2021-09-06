@@ -1,4 +1,5 @@
 import os
+import re
 from contextlib import closing
 
 import psycopg2
@@ -92,4 +93,8 @@ LEFT JOIN groups g ON t.group_id = g.id_7
 
             rows = cursor.fetchall()
             groups = [dict(group) for group in rows]
+
+            for group in groups:
+                group.title = re.sub('<[^<]+?>', '', group.title)
+
             return groups
