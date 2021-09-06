@@ -1,3 +1,5 @@
+from pprint import pprint
+
 from vkbottle.bot import Message
 from tools import keyboards
 
@@ -18,7 +20,11 @@ async def registration(ans: Message, chat_id: int, storage):
     if storage.get_vk_user(chat_id):
         storage.delete_vk_user_or_userdata(chat_id)  # Удаляем пользвателя из базы данных
     await ans.answer('Повторная регистрация😉\n')
-    await ans.answer('Выберите институт.', keyboard=keyboards.make_keyboard_institutes(storage.get_institutes()))
+
+    keyboard = keyboards.make_keyboard_institutes(storage.get_institutes())
+    pprint(keyboard)
+
+    await ans.answer('Выберите институт.', keyboard=keyboard)
 
 
 async def show_map(ans: Message, photo_vk_name: str):
