@@ -192,6 +192,10 @@ def make_keyboard_institutes(institutes=[]):
             name = sep_space(institute['name']) + ' ...'
         else:
             name = institute['name']
+
+        if name == 'Байкальский институт БРИКС':
+            continue
+
         list_keyboard = []
         list_keyboard.append(parametres_for_buttons_start_menu_vk(f'{name}', 'primary'))
         list_keyboard_main.append(list_keyboard)
