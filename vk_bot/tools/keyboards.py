@@ -7,6 +7,7 @@ MAX_CALLBACK_RANGE = 41
 
 def parametres_for_buttons_start_menu_vk(text, color):
     '''Возвращает параметры кнопок'''
+    text = text.replace('\n', " ")
     return {
         "action": {
             "type": "text",
