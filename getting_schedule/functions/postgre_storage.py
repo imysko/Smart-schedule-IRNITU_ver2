@@ -62,7 +62,7 @@ def get_schedule() -> list:
     with closing(psycopg2.connect(**db_params)) as conn:
         with conn.cursor(cursor_factory=DictCursor) as cursor:
             cursor.execute("""
-SELECT g.obozn, dbeg, dend, begtime, everyweek, preps, prep_short_name, prep_id, auditories_verbose, day, nt, title, ngroup
+SELECT coalesce(g.obozn, ''), dbeg, dend, begtime, everyweek, preps, prep_short_name, prep_id, auditories_verbose, day, nt, title, ngroup
 FROM (
            SELECT unnest(groups)   group_id,
                   dbeg,
@@ -79,12 +79,12 @@ FROM (
                                 as auditories_verbose,
                   day,
                   nt,
-                  disciplines.title,
+                  coalesce(disciplines.title, discipline_verbose) as title,
                   ngroup
            from schedule_v2 s
                     join vacpara on s.para = vacpara.id_66
                     left join prepods on prepods.id_61 = any (s.teachers)
-                    join disciplines on s.discipline = disciplines.id
+                    left join disciplines on s.discipline = disciplines.id
                     left join auditories on auditories.id_60 = any (s.auditories)
 ) t
 LEFT JOIN groups g ON t.group_id = g.id_7
