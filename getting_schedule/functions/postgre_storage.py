@@ -61,32 +61,34 @@ def get_schedule() -> list:
     """Получение расписания групп из PostgreSQL"""
     with closing(psycopg2.connect(**db_params)) as conn:
         with conn.cursor(cursor_factory=DictCursor) as cursor:
-            cursor.execute("SELECT "
-                           "groups.obozn, "
-                           "dbeg, "
-                           "dend,"
-                           "vacpara.begtime, "
-                           "everyweek, "
-                           "prepods.preps, "
-                           "prepods.prep as prep_short_name, "
-                           "prepods.id_61 as prep_id, "
-
-                           "CASE "
-                           "when -1 = any(schedule.auditories) then 'онлайн' "
-                           "else auditories.obozn "
-                           "end "
-                           "as auditories_verbose, "
-
-                           "day, "
-                           "nt, "
-                           "disciplines.title, "
-                           "ngroup "
-                           "from schedule "
-                           "join groups on schedule.group_id = groups.id_7 "
-                           "join vacpara on schedule.para = vacpara.id_66 "
-                           "left join prepods on prepods.id_61 = any(schedule.teachers) "
-                           "join disciplines on schedule.discipline = disciplines.id "
-                           "left join auditories on auditories.id_60 = any(schedule.auditories)")
+            cursor.execute("""
+SELECT g.obozn, dbeg, dend, begtime, everyweek, preps, prep_short_name, prep_id, auditories_verbose, day, nt, title, ngroup
+FROM (
+           SELECT unnest(groups)   group_id,
+                  dbeg,
+                  dend,
+                  vacpara.begtime,
+                  everyweek,
+                  prepods.preps,
+                  prepods.prep  as prep_short_name,
+                  prepods.id_61 as prep_id,
+                  CASE
+                      when -1 = any (s.auditories) then 'онлайн'
+                      else auditories.obozn
+                      end
+                                as auditories_verbose,
+                  day,
+                  nt,
+                  disciplines.title,
+                  ngroup
+           from schedule_v2 s
+                    join vacpara on s.para = vacpara.id_66
+                    left join prepods on prepods.id_61 = any (s.teachers)
+                    join disciplines on s.discipline = disciplines.id
+                    left join auditories on auditories.id_60 = any (s.auditories)
+) t
+LEFT JOIN groups g ON t.group_id = g.id_7
+""")
 
             rows = cursor.fetchall()
             groups = [dict(group) for group in rows]
