@@ -95,6 +95,6 @@ LEFT JOIN groups g ON t.group_id = g.id_7
             groups = [dict(group) for group in rows]
 
             for group in groups:
-                group.title = re.sub('<[^<]+?>', '', group.title)
+                group.title = re.sub('<[^<]+?>', '', group['title'])
 
             return groups
