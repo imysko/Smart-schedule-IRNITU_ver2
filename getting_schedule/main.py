@@ -1,3 +1,5 @@
+import traceback
+
 from functions import postgre_storage
 import data_conversion
 from functions.mongo_storage import MongodbService
@@ -205,7 +207,10 @@ def main():
         processing_schedule()
 
         # Обновление базы экзаменов
-        exam_update()
+        try:
+            exam_update()
+        except:
+            traceback.print_exc()
 
         # Время окончания работы цикла.
         end_time = time.time()
