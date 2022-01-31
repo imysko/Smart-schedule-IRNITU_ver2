@@ -38,7 +38,7 @@ def main():
     except:
         pass
 
-    test = True
+    test = False
 
     with open("sent.txt", "a") as f:
         for i in data:
@@ -54,12 +54,23 @@ def main():
             f.flush()
 
             try:
-                tg_bot.send_message(chat_id, """В связи с возвращением части преподавателей из дистанционки, со следующей недели обновляется расписание. Будьте внимательны.""".strip())
+                tg_bot.send_message(chat_id,
+                                  # open("C:\_SRP\_soft\Smart-schedule-IRNITU2\itacademy220126.jpg", 'rb'),
+                                  """
+ИРНИТУ и En+ Group реализуют уникальный образовательный проект [Академия IT](http://itenergy.academy/), благодаря которому будущие специалисты в сфере Digital получат не только практические знания, но и высокооплачиваемую и интересную работу в известной компании. 
 
+Чтобы сделать учебный процесс более эффективным, нам важно знать ваше мнение по нижеприведенным вопросам.  Просим вас заполнить небольшую анкету [https://docs.google.com/forms/d/e/1FAIpQLSdQeGlxb5-BE1_nUZvaEAMT-YHQ5adVwULIV3Qc8SM3-E1mdQ/viewform?vc=0&c=0&w=1&flr=0](https://docs.google.com/forms/d/e/1FAIpQLSdQeGlxb5-BE1_nUZvaEAMT-YHQ5adVwULIV3Qc8SM3-E1mdQ/viewform?vc=0&c=0&w=1&flr=0)
+ 
+Полученные ответы помогут выявить и оценить сильные и слабые стороны проекта, а также максимально адаптировать его с учетом ваших запросов и ожиданий.  
+                                """.strip(), parse_mode="Markdown")
                 # tg_bot.send_photo(
                 #     chat_id,
-                #     open("C:\_SRP\_soft\Smart-schedule-IRNITU2\d95b17f8-ceab-4eae-8153-2fbd25118024.jpg", 'rb'),
-                #     caption="🕺🕺🕺 минутка рекламы 💃💃💃",
+                #     open(r"C:\_SRP\_soft\Smart-schedule-IRNITU2\vac122021_1.jpg", 'rb'),
+                # )
+                # tg_bot.send_photo(
+                #     chat_id,
+                #     open(r"C:\_SRP\_soft\Smart-schedule-IRNITU2\vac122021_2.jpg", 'rb'),
+                #     caption="ИРНИТУ - COVID-19. Важное - https://www.istu.edu/deyatelnost/bezopasnost/covid/"
                 # )
             except ApiTelegramException as ex:
                 print(str(ex))

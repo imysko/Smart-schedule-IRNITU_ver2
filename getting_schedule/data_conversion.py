@@ -1,4 +1,6 @@
 from datetime import datetime, date
+
+import pendulum
 import pytz
 
 from functions import schedule_tools
@@ -6,6 +8,26 @@ from functions import schedule_tools
 TIME_ZONE = pytz.timezone('Asia/Irkutsk')
 
 DAYS = schedule_tools.DAYS
+
+
+def get_week_even(dt):
+    """
+    Возвращает 0 если неделя нечетная, и 1 если неделя четная
+    """
+    september_1st = datetime(dt.year, 9, 1)
+
+    if dt.month >= 9 or dt.isocalendar()[1] == september_1st.isocalendar()[1]:
+        september_1st = datetime(dt.year, 9, 1)
+    else:
+        september_1st = datetime(dt.year - 1, 9, 1)
+
+    if isinstance(dt, date):
+        dt = datetime.combine(dt, datetime.min.time())
+    dt = pendulum.instance(dt)
+    study_year_start = pendulum.instance(september_1st).start_of("week")
+    weeks = (dt - study_year_start).days // 7
+
+    return weeks % 2
 
 
 def convert_institutes(pg_institutes: list) -> list:

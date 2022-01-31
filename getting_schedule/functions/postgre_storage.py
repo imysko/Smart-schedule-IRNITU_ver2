@@ -1,9 +1,13 @@
 import os
 import re
 from contextlib import closing
+from datetime import datetime
 
+import pendulum as pendulum
 import psycopg2
 from psycopg2.extras import DictCursor
+
+from data_conversion import TIME_ZONE, get_week_even
 
 PG_DB_DATABASE = os.environ.get('PG_DB_DATABASE', default='schedule')
 PG_DB_USER = os.environ.get('PG_DB_USER')
@@ -60,10 +64,29 @@ def get_teachers() -> list:
 
 def get_schedule() -> list:
     """Получение расписания групп из PostgreSQL"""
-    with closing(psycopg2.connect(**db_params)) as conn:
-        with conn.cursor(cursor_factory=DictCursor) as cursor:
-            cursor.execute("""
-SELECT coalesce(g.obozn, '') as obozn, dbeg, dend, begtime, everyweek, preps, prep_short_name, prep_id, auditories_verbose, day, nt, title, ngroup
+    date_now = datetime.now(TIME_ZONE)
+    start_of_first_week = pendulum.instance(date_now).start_of("week")
+    start_of_second_week = pendulum.instance(start_of_first_week).add(weeks=1)
+
+    is_even = get_week_even(date_now)
+    if is_even == 1:
+        odd_week = start_of_second_week
+        even_week = start_of_first_week
+    else:
+        even_week = start_of_second_week
+        odd_week = start_of_first_week
+
+    query = """
+SELECT coalesce(g.obozn, '') as obozn,
+       dbeg,
+       dend,
+       begtime,
+       case when dbeg = '{odd_week:%Y-%m-%d}' then 1 when  dbeg = '{even_week:%Y-%m-%d}' then 2 end as everyweek,
+       preps, prep_short_name,
+       prep_id, auditories_verbose,
+       case when dbeg = '{odd_week:%Y-%m-%d}' then (day - 1) % 7 + 1 when  dbeg = '{even_week:%Y-%m-%d}' then (day - 1) % 7 + 8 end as day,
+       nt,
+       title, ngroup
 FROM (
            SELECT unnest(groups)   group_id,
                   dbeg,
@@ -89,7 +112,14 @@ FROM (
                     left join auditories on auditories.id_60 = any (s.auditories)
 ) t
 LEFT JOIN groups g ON t.group_id = g.id_7
-""")
+WHERE ((dbeg = '{odd_week:%Y-%m-%d}' and (everyweek = 2 or everyweek = 1 and day <= 7)) -- нечетная
+    or (dbeg = '{even_week:%Y-%m-%d}' and (everyweek = 2 or everyweek = 1 and day > 7))) -- четная
+ORDER BY group_id
+            """.format(odd_week=odd_week, even_week=even_week)
+
+    with closing(psycopg2.connect(**db_params)) as conn:
+        with conn.cursor(cursor_factory=DictCursor) as cursor:
+            cursor.execute(query)
 
             rows = cursor.fetchall()
             groups = [dict(group) for group in rows]

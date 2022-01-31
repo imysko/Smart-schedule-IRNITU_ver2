@@ -12,16 +12,14 @@ DAYS = {
 def getting_week_and_day_of_week(pg_lesson: dict) -> tuple:
     """Определение четности недели и дня недели"""
 
+    day = (pg_lesson['day'] - 1) % 7 + 1
     if pg_lesson['everyweek'] == 2:
         week = 'all'
-        day = DAYS[pg_lesson['day']]
     else:
         if pg_lesson['day'] <= 7:
             week = 'even'
-            day = DAYS[pg_lesson['day']]
         else:
             week = 'odd'
-            day = DAYS[pg_lesson['day'] - 7]
 
     return week, day
 
