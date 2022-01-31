@@ -103,53 +103,51 @@ def convert_schedule(pg_schedule: list) -> list:
     for item in pg_schedule:
 
         # Проверяем, что расписание действует
-        if item['dbeg'] <= date_now <= item['dend']:
+        week, day = schedule_tools.getting_week_and_day_of_week(item)
 
-            week, day = schedule_tools.getting_week_and_day_of_week(item)
+        # Определяем вид пары и подгруппу.
+        info = schedule_tools.forming_info_data(nt=item['nt'], ngroup=item["ngroup"])
 
-            # Определяем вид пары и подгруппу.
-            info = schedule_tools.forming_info_data(nt=item['nt'], ngroup=item["ngroup"])
+        lesson = {
+            'time': item['begtime'],
+            'week': week,
+            'name': item['title'],
+            'aud': [item['auditories_verbose'] if item['auditories_verbose'] else ''],
+            'info': info,
+            'prep': [item['preps'].strip().strip('.') if item['preps'] else ''],
+        }
 
-            lesson = {
-                'time': item['begtime'],
-                'week': week,
-                'name': item['title'],
-                'aud': [item['auditories_verbose'] if item['auditories_verbose'] else ''],
-                'info': info,
-                'prep': [item['preps'].strip().strip('.') if item['preps'] else ''],
-            }
+        # Смотрим, создал ли уже нужный день в расписании.
+        if not schedule_tools.is_there_dict_with_value_in_list(schedule, day):
+            schedule.append(
+                {
+                    'day': day,
+                    'lessons': []
+                }
+            )
 
-            # Смотрим, создал ли уже нужный день в расписании.
-            if not schedule_tools.is_there_dict_with_value_in_list(schedule, day):
-                schedule.append(
-                    {
-                        'day': day,
-                        'lessons': []
-                    }
-                )
-
-            # Добавляем пары в нужный день.
-            for sch in schedule:
-                if sch['day'] == day:
-                    if lesson in sch['lessons']:
-                        break
-
-                    # Проверяем есть ли уже занятие в расписании
-                    for day_lesson in sch['lessons']:
-                        # Если есть, добавляем только преподавателя
-                        if lesson['time'] == day_lesson['time'] \
-                                and lesson['week'] == day_lesson['week'] \
-                                and lesson['name'] == day_lesson['name'] \
-                                and lesson['info'] == day_lesson['info']:
-                            if lesson['aud'] == day_lesson['aud']:
-                                if item['preps']:
-                                    day_lesson['prep'].append(item['preps'].strip().strip('.'))
-                            elif lesson['prep'] == day_lesson['prep']:
-                                day_lesson['aud'].append(item['auditories_verbose'])
-                            break
-                    else:  # Если нет, добавляем полностью пару.
-                        sch['lessons'].append(lesson)
+        # Добавляем пары в нужный день.
+        for sch in schedule:
+            if sch['day'] == day:
+                if lesson in sch['lessons']:
                     break
+
+                # Проверяем есть ли уже занятие в расписании
+                for day_lesson in sch['lessons']:
+                    # Если есть, добавляем только преподавателя
+                    if lesson['time'] == day_lesson['time'] \
+                            and lesson['week'] == day_lesson['week'] \
+                            and lesson['name'] == day_lesson['name'] \
+                            and lesson['info'] == day_lesson['info']:
+                        if lesson['aud'] == day_lesson['aud']:
+                            if item['preps']:
+                                day_lesson['prep'].append(item['preps'].strip().strip('.'))
+                        elif lesson['prep'] == day_lesson['prep']:
+                            day_lesson['aud'].append(item['auditories_verbose'])
+                        break
+                else:  # Если нет, добавляем полностью пару.
+                    sch['lessons'].append(lesson)
+                break
 
         # Если нашлась другая группа или это последний элемент списка, сохраняем предыдущую.
         current_group = item['obozn']
@@ -192,54 +190,50 @@ def convert_teachers_schedule(pg_schedule: list) -> list:
 
     item_index = 0  # Счетчик индекса.
     for item in pg_schedule:
+        week, day = schedule_tools.getting_week_and_day_of_week(item)
 
-        # Проверяем, что расписание действует
-        if item['dbeg'] <= date_now <= item['dend']:
+        # Определяем вид пары и подгруппу.
+        info = schedule_tools.forming_info_data(nt=item['nt'], ngroup=item["ngroup"])
 
-            week, day = schedule_tools.getting_week_and_day_of_week(item)
+        lesson = {
+            'time': item['begtime'],
+            'week': week,
+            'name': item['title'],
+            'aud': [item['auditories_verbose'] if item['auditories_verbose'] else ''],
+            'info': info,
+            'groups': [item['obozn']],
+        }
 
-            # Определяем вид пары и подгруппу.
-            info = schedule_tools.forming_info_data(nt=item['nt'], ngroup=item["ngroup"])
+        # Смотрим, создал ли уже нужный день в расписании.
+        if not schedule_tools.is_there_dict_with_value_in_list(schedule, day):
+            schedule.append(
+                {
+                    'day': day,
+                    'lessons': []
+                }
+            )
 
-            lesson = {
-                'time': item['begtime'],
-                'week': week,
-                'name': item['title'],
-                'aud': [item['auditories_verbose'] if item['auditories_verbose'] else ''],
-                'info': info,
-                'groups': [item['obozn']],
-            }
-
-            # Смотрим, создал ли уже нужный день в расписании.
-            if not schedule_tools.is_there_dict_with_value_in_list(schedule, day):
-                schedule.append(
-                    {
-                        'day': day,
-                        'lessons': []
-                    }
-                )
-
-            # Добавляем пары в нужный день.
-            for sch in schedule:
-                if sch['day'] == day:
-                    if lesson in sch['lessons']:
-                        break
-
-                    # Проверяем есть ли уже занятие в расписании
-                    for day_lesson in sch['lessons']:
-                        # Если есть, добавляем только группу
-                        if lesson['time'] == day_lesson['time'] \
-                                and lesson['week'] == day_lesson['week'] \
-                                and lesson['name'] == day_lesson['name'] \
-                                and lesson['info'] == day_lesson['info']:
-                            if lesson['aud'] == day_lesson['aud']:
-                                day_lesson['groups'].append(item['obozn'])
-                            elif lesson['groups'] == day_lesson['groups']:
-                                day_lesson['aud'].append(item['auditories_verbose'])
-                            break
-                    else:  # Если нет, добавляем полностью пару.
-                        sch['lessons'].append(lesson)
+        # Добавляем пары в нужный день.
+        for sch in schedule:
+            if sch['day'] == day:
+                if lesson in sch['lessons']:
                     break
+
+                # Проверяем есть ли уже занятие в расписании
+                for day_lesson in sch['lessons']:
+                    # Если есть, добавляем только группу
+                    if lesson['time'] == day_lesson['time'] \
+                            and lesson['week'] == day_lesson['week'] \
+                            and lesson['name'] == day_lesson['name'] \
+                            and lesson['info'] == day_lesson['info']:
+                        if lesson['aud'] == day_lesson['aud']:
+                            day_lesson['groups'].append(item['obozn'])
+                        elif lesson['groups'] == day_lesson['groups']:
+                            day_lesson['aud'].append(item['auditories_verbose'])
+                        break
+                else:  # Если нет, добавляем полностью пару.
+                    sch['lessons'].append(lesson)
+                break
 
         # Если нашелся другой преподаватель или это последний элемент списка, сохраняем.
         current_prep_id = item['prep_id']
@@ -286,7 +280,7 @@ def convert_auditories_schedule(pg_schedule: list) -> list:
     for item in pg_schedule:
 
         # Проверяем, что расписание действует и указано название аудитории.
-        if item['dbeg'] <= date_now <= item['dend'] and item['auditories_verbose']:
+        if item['auditories_verbose']:
 
             week, day = schedule_tools.getting_week_and_day_of_week(item)
 
