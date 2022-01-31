@@ -21,7 +21,7 @@ def getting_week_and_day_of_week(pg_lesson: dict) -> tuple:
         else:
             week = 'odd'
 
-    return week, day
+    return week, DAYS[day]
 
 
 def is_there_dict_with_value_in_list(input_list_with_dict: list, value: str) -> bool:
