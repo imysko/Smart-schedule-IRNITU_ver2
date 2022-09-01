@@ -28,7 +28,7 @@ def get_institutes() -> list:
     """Получение институтов из PostgreSQL"""
     with closing(psycopg2.connect(**db_params)) as conn:
         with conn.cursor(cursor_factory=DictCursor) as cursor:
-            cursor.execute("SELECT fac from vacfac")
+            cursor.execute("SELECT DISTINCT faculty_title from real_groups WHERE coalesce(faculty_title, '') != ''")
             rows = cursor.fetchall()
             institutes = [dict(institute) for institute in rows]
             return institutes
