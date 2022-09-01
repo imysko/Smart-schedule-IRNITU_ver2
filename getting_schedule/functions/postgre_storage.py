@@ -39,9 +39,7 @@ def get_groups() -> list:
     with closing(psycopg2.connect(**db_params)) as conn:
         with conn.cursor(cursor_factory=DictCursor) as cursor:
             # Вместо id института подставляется сразу название.
-            cursor.execute("SELECT groups.obozn, groups.kurs, vacfac.fac "
-                           "from groups join vacfac "
-                           "on groups.fac = vacfac.id_5")
+            cursor.execute("SELECT obozn, kurs, faculty_title as fac FROM real_groups")
             rows = cursor.fetchall()
             groups = [dict(group) for group in rows]
             return groups
@@ -111,7 +109,7 @@ FROM (
                     left join disciplines on s.discipline = disciplines.id
                     left join auditories on auditories.id_60 = any (s.auditories)
 ) t
-LEFT JOIN groups g ON t.group_id = g.id_7
+LEFT JOIN real_groups g ON t.group_id = g.id_7 and g.is_active=TRUE
 WHERE ((dbeg = '{odd_week:%Y-%m-%d}' and (everyweek = 2 or everyweek = 1 and day <= 7)) -- нечетная
     or (dbeg = '{even_week:%Y-%m-%d}' and (everyweek = 2 or everyweek = 1 and day > 7))) -- четная
 ORDER BY group_id
