@@ -11,9 +11,7 @@ DAYS = schedule_tools.DAYS
 
 
 def get_week_even(dt):
-    """
-    Возвращает 0 если неделя нечетная, и 1 если неделя четная
-    """
+    """Возвращает 0 если неделя нечетная, и 1 если неделя четная"""
     september_1st = datetime(dt.year, 9, 1)
 
     if dt.month >= 9 or dt.isocalendar()[1] == september_1st.isocalendar()[1]:

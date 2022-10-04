@@ -1,20 +1,20 @@
 import locale
 import platform
-import time
 from datetime import datetime, timedelta
 import pytz
-from time import strptime
 
 TZ_IRKUTSK = pytz.timezone('Asia/Irkutsk')
 # определяем на Linux или на Windows мы запускаемся
 locale_name = ('ru_RU.UTF-8' if platform.system() == 'Linux' else 'ru_RU')
 locale.setlocale(locale.LC_TIME, locale_name)
 
+
 def day_creating(day):
     day = datetime.strptime(day, "%Y-%m-%d")
     months = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября',
               'декабря']
-    day_week = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье']
+    day_week = ['Понедельник', 'Вторник', 'Среда',
+                'Четверг', 'Пятница', 'Суббота', 'Воскресенье']
 
     year = int(day.year)
     int_month = int(day.month)
@@ -27,7 +27,6 @@ def day_creating(day):
     int_day_week = today.weekday()
 
     return str(day_week[int_day_week]) + ', ' + str(int_day) + ' ' + str(month) + ' ' + str(year) + ' г.'
-
 
 
 def schedule_view_exams(schedule):
@@ -150,7 +149,8 @@ def get_one_day_schedule_in_str(schedule: list, week: str) -> str:
 
 
 def get_next_day_schedule_in_str(schedule: list, week: str) -> str:
-    day_tomorrow = (datetime.now(TZ_IRKUTSK) + timedelta(days=1)).strftime('%A')
+    day_tomorrow = (datetime.now(TZ_IRKUTSK) +
+                    timedelta(days=1)).strftime('%A')
     for one_day in schedule:
         day = one_day['day'].upper()
         if day.lower() == day_tomorrow.lower():
@@ -235,7 +235,8 @@ def get_one_day_schedule_in_str_prep(schedule: list, week: str) -> str:
 
 
 def get_next_day_schedule_in_str_prep(schedule: list, week: str) -> str:
-    day_tomorrow = (datetime.now(TZ_IRKUTSK) + timedelta(days=1)).strftime('%A')
+    day_tomorrow = (datetime.now(TZ_IRKUTSK) +
+                    timedelta(days=1)).strftime('%A')
     for one_day in schedule:
         day = one_day['day'].upper()
         if day.lower() == day_tomorrow.lower():
@@ -307,7 +308,8 @@ def full_schedule_in_str_prep(schedule: list, week: str, aud=None) -> list:
                 if aud:
                     aud_info = ''
                 else:
-                    aud_info = f'Аудитория: {", ".join(lesson["aud"])}\n' if lesson["aud"] and lesson["aud"][0] else ''
+                    aud_info = f'Аудитория: {", ".join(lesson["aud"])}\n' if lesson[
+                        "aud"] and lesson["aud"][0] else ''
 
                 lessons_str += f'{time}\n' \
                                f'{aud_info}' \
@@ -338,7 +340,8 @@ def get_now_lesson_in_str_stud(now_lessons: list):
         name = near_lesson['name']
 
         now_lessons_str += '-------------------------------------------\n'
-        aud = f'Аудитория: {", ".join(near_lesson["aud"])}\n' if near_lesson["aud"] and near_lesson["aud"][0] else ''
+        aud = f'Аудитория: {", ".join(near_lesson["aud"])}\n' if near_lesson[
+            "aud"] and near_lesson["aud"][0] else ''
 
         time = near_lesson['time']
         info = near_lesson['info'].replace(",", "")
@@ -358,7 +361,8 @@ def get_now_lesson_in_str_prep(now_lessons: list):
         name = near_lesson['name']
         now_lessons_str += '-------------------------------------------\n'
 
-        aud = f'Аудитория: {", ".join(near_lesson["aud"])}\n' if near_lesson["aud"] and near_lesson["aud"][0] else ''
+        aud = f'Аудитория: {", ".join(near_lesson["aud"])}\n' if near_lesson[
+            "aud"] and near_lesson["aud"][0] else ''
 
         time = near_lesson['time']
         info = near_lesson['info'].replace(",", "")

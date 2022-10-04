@@ -25,13 +25,14 @@ def getting_week_and_day_of_week(pg_lesson: dict) -> tuple:
 
 
 def is_there_dict_with_value_in_list(input_list_with_dict: list, value: str) -> bool:
-    if not input_list_with_dict:
-        return False
+    result = False
 
-    for dict_item in input_list_with_dict:
-        if value in dict_item.values():
-            return True
-    return False
+    if input_list_with_dict:
+        for dict_item in input_list_with_dict:
+            if value in dict_item.values():
+                result = True
+
+    return result
 
 
 def get_dict_key(d, value):
@@ -64,7 +65,8 @@ def sorting_lessons_in_a_day_by_time_and_ngroup(schedule: list):
         # Сортируем подгруппы
         sch['lessons'] = sorted(sch['lessons'], key=lambda x: x['info'])
         # Сортируем по времени
-        sch['lessons'] = sorted(sch['lessons'], key=lambda x: int(x['time'].replace(':', '')))
+        sch['lessons'] = sorted(
+            sch['lessons'], key=lambda x: int(x['time'].replace(':', '')))
 
     return schedule
 

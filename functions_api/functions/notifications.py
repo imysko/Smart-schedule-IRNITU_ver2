@@ -2,7 +2,7 @@ from datetime import timedelta, datetime
 
 
 def calculating_reminder_times(schedule, time: int) -> list:
-    """прощитывает время уведомления перед кадой парой"""
+    """Прощитывает время уведомления перед кадой парой"""
     reminders = []
     even = {}
     odd = {}
@@ -34,7 +34,7 @@ def calculating_reminder_times(schedule, time: int) -> list:
     return reminders
 
 
-def get_notifications_status(time):
+def get_notifications_status(time) -> str:
     """Статус напоминаний"""
     if not time or time == 0:
         notifications_status = 'Напоминания выключены ❌\n' \

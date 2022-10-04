@@ -9,7 +9,6 @@ from API.functions_api import get_near_lesson, get_now_lesson, get_now_lesson_in
 from tools import keyboards, statistics, schedule_processing
 
 
-
 storage = MongodbService().get_instance()
 
 
@@ -24,7 +23,6 @@ def groups_exam(group):
             clear_list.append(schedule['exams']['exams'][i])
     schedule['exams']['exams'] = clear_list
     return schedule
-
 
 
 def get_schedule(bot, message, storage, tz):
@@ -46,7 +44,8 @@ def get_schedule(bot, message, storage, tz):
             group = storage.get_user(chat_id=chat_id)['group']
             schedule = storage.get_schedule_prep(group=group)
         if not schedule or schedule['schedule'] == []:
-            bot.send_message(chat_id=chat_id, text='Расписание временно недоступно\nПопробуйте позже⏱')
+            bot.send_message(
+                chat_id=chat_id, text='Расписание временно недоступно\nПопробуйте позже⏱')
             statistics.add(action=data, storage=storage, tz=tz)
             return
 
@@ -66,18 +65,18 @@ def get_schedule(bot, message, storage, tz):
 
         # Проверяем, что расписание сформировалось
         if isinstance(schedule_str, APIError):
-            schedule_processing.sending_schedule_is_not_available(bot=bot, chat_id=chat_id)
+            schedule_processing.sending_schedule_is_not_available(
+                bot=bot, chat_id=chat_id)
             return
 
         bot.send_message(chat_id=chat_id, text=f'Расписание {group}\n'
                                                f'Неделя: {week_name}',
                          reply_markup=keyboards.make_keyboard_start_menu())
         # Отправка расписания
-        schedule_processing.sending_schedule(bot=bot, chat_id=chat_id, schedule_str=schedule_str)
+        schedule_processing.sending_schedule(
+            bot=bot, chat_id=chat_id, schedule_str=schedule_str)
 
         statistics.add(action=data, storage=storage, tz=tz)
-
-
 
     elif 'Расписание на сегодня 🍏' == data and user.get('group'):
         # Если курс нуль, тогда это преподаватель
@@ -91,19 +90,23 @@ def get_schedule(bot, message, storage, tz):
             bot.send_message(chat_id=chat_id, text='Расписание временно недоступно🚫😣\n'
                                                    'Попробуйте позже⏱',
                              reply_markup=keyboards.make_keyboard_start_menu())
-            statistics.add(action='Расписание на сегодня', storage=storage, tz=tz)
+            statistics.add(action='Расписание на сегодня',
+                           storage=storage, tz=tz)
             return
         schedule = schedule['schedule']
         week = find_week()
         # Если курс нуль, тогда это преподаватель
         if storage.get_user(chat_id=chat_id)['course'] != 'None':
-            schedule_one_day = get_one_day_schedule_in_str(schedule=schedule, week=week)
+            schedule_one_day = get_one_day_schedule_in_str(
+                schedule=schedule, week=week)
         elif storage.get_user(chat_id=chat_id)['course'] == 'None':
-            schedule_one_day = get_one_day_schedule_in_str_prep(schedule=schedule, week=week)
+            schedule_one_day = get_one_day_schedule_in_str_prep(
+                schedule=schedule, week=week)
 
         # Проверяем, что расписание сформировалось
         if isinstance(schedule_one_day, APIError):
-            schedule_processing.sending_schedule_is_not_available(bot=bot, chat_id=chat_id)
+            schedule_processing.sending_schedule_is_not_available(
+                bot=bot, chat_id=chat_id)
             return
 
         if not schedule_one_day:
@@ -111,9 +114,6 @@ def get_schedule(bot, message, storage, tz):
             return
         bot.send_message(chat_id=chat_id, text=f'{schedule_one_day}')
         statistics.add(action='Расписание на сегодня', storage=storage, tz=tz)
-
-
-
 
     elif 'Экзамены' in data and user.get('group'):
         # Если курс нуль, тогда это преподаватель
@@ -140,16 +140,15 @@ def get_schedule(bot, message, storage, tz):
 
         # Проверяем, что расписание сформировалось
         if isinstance(schedule_exams, APIError):
-            schedule_processing.sending_schedule_is_not_available(bot=bot, chat_id=chat_id)
+            schedule_processing.sending_schedule_is_not_available(
+                bot=bot, chat_id=chat_id)
 
             return
 
-        schedule_processing.sending_schedule(bot=bot, chat_id=chat_id, schedule_str=schedule_exams)
+        schedule_processing.sending_schedule(
+            bot=bot, chat_id=chat_id, schedule_str=schedule_exams)
 
         statistics.add(action='Экзамены', storage=storage, tz=tz)
-
-
-
 
     elif 'Расписание на завтра 🍎' == data and user.get('group'):
         # Если курс нуль, тогда это преподаватель
@@ -163,7 +162,8 @@ def get_schedule(bot, message, storage, tz):
             bot.send_message(chat_id=chat_id, text='Расписание временно недоступно🚫😣\n'
                                                    'Попробуйте позже⏱',
                              reply_markup=keyboards.make_keyboard_start_menu())
-            statistics.add(action='Расписание на завтра', storage=storage, tz=tz)
+            statistics.add(action='Расписание на завтра',
+                           storage=storage, tz=tz)
             return
         schedule = schedule['schedule']
         week = find_week()
@@ -176,13 +176,16 @@ def get_schedule(bot, message, storage, tz):
                 week = 'all'
 
         if storage.get_user(chat_id=chat_id)['course'] != 'None':
-            schedule_next_day = get_next_day_schedule_in_str(schedule=schedule, week=week)
+            schedule_next_day = get_next_day_schedule_in_str(
+                schedule=schedule, week=week)
         elif storage.get_user(chat_id=chat_id)['course'] == 'None':
-            schedule_next_day = get_next_day_schedule_in_str_prep(schedule=schedule, week=week)
+            schedule_next_day = get_next_day_schedule_in_str_prep(
+                schedule=schedule, week=week)
 
         # Проверяем, что расписание сформировалось
         if isinstance(schedule_next_day, APIError):
-            schedule_processing.sending_schedule_is_not_available(bot=bot, chat_id=chat_id)
+            schedule_processing.sending_schedule_is_not_available(
+                bot=bot, chat_id=chat_id)
             return
 
         if not schedule_next_day:
@@ -196,7 +199,6 @@ def get_schedule(bot, message, storage, tz):
                          reply_markup=keyboards.make_keyboard_nearlesson())
         statistics.add(action='Ближайшая пара', storage=storage, tz=tz)
         return
-
 
     elif 'Текущая' in data and user.get('group'):
         if storage.get_user(chat_id=chat_id)['course'] != 'None':
@@ -218,7 +220,8 @@ def get_schedule(bot, message, storage, tz):
 
         # Проверяем, что расписание сформировалось
         if isinstance(now_lessons, APIError):
-            schedule_processing.sending_schedule_is_not_available(bot=bot, chat_id=chat_id)
+            schedule_processing.sending_schedule_is_not_available(
+                bot=bot, chat_id=chat_id)
             return
 
         # если пар нет
@@ -238,7 +241,8 @@ def get_schedule(bot, message, storage, tz):
 
         # Проверяем, что расписание сформировалось
         if isinstance(now_lessons_str, APIError):
-            schedule_processing.sending_schedule_is_not_available(bot=bot, chat_id=chat_id)
+            schedule_processing.sending_schedule_is_not_available(
+                bot=bot, chat_id=chat_id)
             return
 
         bot.send_message(chat_id=chat_id, text=f'🧠Текущая пара🧠\n'f'{now_lessons_str}',
@@ -266,7 +270,8 @@ def get_schedule(bot, message, storage, tz):
 
         # Проверяем, что расписание сформировалось
         if isinstance(near_lessons, APIError):
-            schedule_processing.sending_schedule_is_not_available(bot=bot, chat_id=chat_id)
+            schedule_processing.sending_schedule_is_not_available(
+                bot=bot, chat_id=chat_id)
             return
 
         # если пар нет
@@ -286,7 +291,8 @@ def get_schedule(bot, message, storage, tz):
 
         # Проверяем, что расписание сформировалось
         if isinstance(near_lessons_str, APIError):
-            schedule_processing.sending_schedule_is_not_available(bot=bot, chat_id=chat_id)
+            schedule_processing.sending_schedule_is_not_available(
+                bot=bot, chat_id=chat_id)
             return
 
         bot.send_message(chat_id=chat_id, text=f'🧠Ближайшая пара🧠\n'f'{near_lessons_str}',
