@@ -33,7 +33,7 @@
 ## Инструкция по запуску проекта
 1. Прописать переменные окружения в файл .env (пример находися в файле .env.example):
     - `TG_TOKEN` - токен Telegram бота
-    - `VK_TOKEN` - токен Вк бота
+    - `VK_TOKEN` - токен VK бота
     - `PG_DB_HOST` - хост базы данных PostgreSQL
     - `PG_DB_DATABASE` - название базы данных PostgreSQL
     - `PG_DB_USER` - пользователь базы данных PostgreSQL

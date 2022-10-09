@@ -1,4 +1,5 @@
-from tools import keyboards, statistics
+from tools.tg_tools import keyboards
+from tools import statistics
 
 
 def processing_main_buttons(bot, message, storage, tz):

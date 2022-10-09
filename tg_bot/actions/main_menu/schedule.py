@@ -1,12 +1,9 @@
 from datetime import datetime
-from tools.storage import MongodbService
 
-from API.functions_api import find_week, APIError
-from API.functions_api import full_schedule_in_str, full_schedule_in_str_prep, \
-    get_one_day_schedule_in_str_prep, get_one_day_schedule_in_str, get_next_day_schedule_in_str, \
-    get_next_day_schedule_in_str_prep, schedule_view_exams
-from API.functions_api import get_near_lesson, get_now_lesson, get_now_lesson_in_str_stud, get_now_lesson_in_str_prep
-from tools import keyboards, statistics, schedule_processing
+from db.mongo_storage import MongodbService
+from tools.schedule_tools import find_week, near_lesson, creating_schedule
+from tools.tg_tools import keyboards, schedule_processing
+from tools import statistics
 
 
 storage = MongodbService().get_instance()
@@ -50,7 +47,7 @@ def get_schedule(bot, message, storage, tz):
             return
 
         schedule = schedule['schedule']
-        week = find_week()
+        week = find_week.find_week()
 
         # меняем неделю
         if data == 'На следующую неделю':
@@ -59,12 +56,12 @@ def get_schedule(bot, message, storage, tz):
         week_name = 'четная' if week == 'odd' else 'нечетная'
 
         if storage.get_user(chat_id=chat_id)['course'] != 'None':
-            schedule_str = full_schedule_in_str(schedule, week=week)
+            schedule_str = creating_schedule.full_schedule_in_str(schedule, week=week)
         elif storage.get_user(chat_id=chat_id)['course'] == 'None':
-            schedule_str = full_schedule_in_str_prep(schedule, week=week)
+            schedule_str = creating_schedule.full_schedule_in_str_prep(schedule, week=week)
 
         # Проверяем, что расписание сформировалось
-        if isinstance(schedule_str, APIError):
+        if isinstance(schedule_str, None):
             schedule_processing.sending_schedule_is_not_available(
                 bot=bot, chat_id=chat_id)
             return
@@ -97,14 +94,14 @@ def get_schedule(bot, message, storage, tz):
         week = find_week()
         # Если курс нуль, тогда это преподаватель
         if storage.get_user(chat_id=chat_id)['course'] != 'None':
-            schedule_one_day = get_one_day_schedule_in_str(
+            schedule_one_day = creating_schedule.get_one_day_schedule_in_str(
                 schedule=schedule, week=week)
         elif storage.get_user(chat_id=chat_id)['course'] == 'None':
-            schedule_one_day = get_one_day_schedule_in_str_prep(
+            schedule_one_day = creating_schedule.get_one_day_schedule_in_str_prep(
                 schedule=schedule, week=week)
 
         # Проверяем, что расписание сформировалось
-        if isinstance(schedule_one_day, APIError):
+        if isinstance(schedule_one_day, None):
             schedule_processing.sending_schedule_is_not_available(
                 bot=bot, chat_id=chat_id)
             return
@@ -134,12 +131,12 @@ def get_schedule(bot, message, storage, tz):
         # schedule = schedule['schedule']
 
         if storage.get_user(chat_id=chat_id)['course'] != 'None':
-            schedule_exams = schedule_view_exams(schedule=schedule)
+            schedule_exams = creating_schedule.schedule_view_exams(schedule=schedule)
         elif storage.get_user(chat_id=chat_id)['course'] == 'None':
-            schedule_exams = schedule_view_exams(schedule=schedule)
+            schedule_exams = creating_schedule.schedule_view_exams(schedule=schedule)
 
         # Проверяем, что расписание сформировалось
-        if isinstance(schedule_exams, APIError):
+        if isinstance(schedule_exams, None):
             schedule_processing.sending_schedule_is_not_available(
                 bot=bot, chat_id=chat_id)
 
@@ -176,14 +173,14 @@ def get_schedule(bot, message, storage, tz):
                 week = 'all'
 
         if storage.get_user(chat_id=chat_id)['course'] != 'None':
-            schedule_next_day = get_next_day_schedule_in_str(
+            schedule_next_day = creating_schedule.get_next_day_schedule_in_str(
                 schedule=schedule, week=week)
         elif storage.get_user(chat_id=chat_id)['course'] == 'None':
-            schedule_next_day = get_next_day_schedule_in_str_prep(
+            schedule_next_day = creating_schedule.get_next_day_schedule_in_str_prep(
                 schedule=schedule, week=week)
 
         # Проверяем, что расписание сформировалось
-        if isinstance(schedule_next_day, APIError):
+        if isinstance(schedule_next_day, None):
             schedule_processing.sending_schedule_is_not_available(
                 bot=bot, chat_id=chat_id)
             return
@@ -216,10 +213,10 @@ def get_schedule(bot, message, storage, tz):
         schedule = schedule['schedule']
         week = find_week()
 
-        now_lessons = get_now_lesson(schedule=schedule, week=week)
+        now_lessons = near_lesson.get_now_lesson(schedule=schedule, week=week)
 
         # Проверяем, что расписание сформировалось
-        if isinstance(now_lessons, APIError):
+        if isinstance(now_lessons, None):
             schedule_processing.sending_schedule_is_not_available(
                 bot=bot, chat_id=chat_id)
             return
@@ -233,14 +230,14 @@ def get_schedule(bot, message, storage, tz):
 
         # Студент
         if storage.get_user(chat_id=chat_id)['course'] != 'None':
-            now_lessons_str = get_now_lesson_in_str_stud(now_lessons)
+            now_lessons_str = creating_schedule.get_now_lesson_in_str_stud(now_lessons)
 
         # Преподаватель
         elif storage.get_user(chat_id=chat_id)['course'] == 'None':
-            now_lessons_str = get_now_lesson_in_str_prep(now_lessons)
+            now_lessons_str = creating_schedule.get_now_lesson_in_str_prep(now_lessons)
 
         # Проверяем, что расписание сформировалось
-        if isinstance(now_lessons_str, APIError):
+        if isinstance(now_lessons_str, None):
             schedule_processing.sending_schedule_is_not_available(
                 bot=bot, chat_id=chat_id)
             return
@@ -266,10 +263,10 @@ def get_schedule(bot, message, storage, tz):
         schedule = schedule['schedule']
         week = find_week()
 
-        near_lessons = get_near_lesson(schedule=schedule, week=week)
+        near_lessons = near_lesson.get_near_lesson(schedule=schedule, week=week)
 
         # Проверяем, что расписание сформировалось
-        if isinstance(near_lessons, APIError):
+        if isinstance(near_lessons, None):
             schedule_processing.sending_schedule_is_not_available(
                 bot=bot, chat_id=chat_id)
             return
@@ -283,14 +280,14 @@ def get_schedule(bot, message, storage, tz):
 
         # Студент
         if storage.get_user(chat_id=chat_id)['course'] != 'None':
-            near_lessons_str = get_now_lesson_in_str_stud(near_lessons)
+            near_lessons_str = creating_schedule.get_now_lesson_in_str_stud(near_lessons)
 
         # Преподаватель
         elif storage.get_user(chat_id=chat_id)['course'] == 'None':
-            near_lessons_str = get_now_lesson_in_str_prep(near_lessons)
+            near_lessons_str = creating_schedule.get_now_lesson_in_str_prep(near_lessons)
 
         # Проверяем, что расписание сформировалось
-        if isinstance(near_lessons_str, APIError):
+        if isinstance(near_lessons_str, None):
             schedule_processing.sending_schedule_is_not_available(
                 bot=bot, chat_id=chat_id)
             return

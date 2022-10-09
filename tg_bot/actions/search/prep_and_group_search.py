@@ -1,8 +1,6 @@
-from API.functions_api import full_schedule_in_str, full_schedule_in_str_prep, APIError, schedule_view_exams
-from API.functions_api import find_week
-
-from tools import keyboards, schedule_processing, statistics
-from tools.storage import MongodbService
+from tools.tg_tools import keyboards, schedule_processing
+from tools.schedule_tools import find_week, near_lesson, creating_schedule
+from db.mongo_storage import MongodbService
 import json
 
 # Глобальная переменная(словарь), которая хранит в себе 3 состояния
@@ -131,7 +129,7 @@ def search(message, bot, storage, tz, last_msg=None):
             return
 
         schedule = schedule['schedule']
-        week = find_week()
+        week = find_week.find_week()
 
         # меняем неделю
         if message == 'На следующую неделю':
@@ -139,12 +137,12 @@ def search(message, bot, storage, tz, last_msg=None):
 
         week_name = 'четная' if week == 'odd' else 'нечетная'
         if request_group:
-            schedule_str = full_schedule_in_str(schedule, week=week)
+            schedule_str = creating_schedule.full_schedule_in_str(schedule, week=week)
         elif request_prep:
-            schedule_str = full_schedule_in_str_prep(schedule, week=week)
+            schedule_str = creating_schedule.full_schedule_in_str_prep(schedule, week=week)
 
         # Проверяем, что расписание сформировалось
-        if isinstance(schedule_str, APIError):
+        if isinstance(schedule_str, None):
             schedule_processing.sending_schedule_is_not_available(bot=bot, chat_id=chat_id)
             return
 
@@ -175,10 +173,10 @@ def search(message, bot, storage, tz, last_msg=None):
             return
 
         # Задаем расписанию экзаменов вид для подачи пользователю
-        schedule_exams = schedule_view_exams(schedule=schedule_str)
+        schedule_exams = creating_schedule.schedule_view_exams(schedule=schedule_str)
 
         # Проверяем, что расписание сформировалось
-        if isinstance(schedule_exams, APIError):
+        if isinstance(schedule_exams, None):
             schedule_processing.sending_schedule_is_not_available(bot=bot, chat_id=chat_id)
             return
 

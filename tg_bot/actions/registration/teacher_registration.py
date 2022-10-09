@@ -1,5 +1,6 @@
 import json
-from tools import keyboards
+
+from tools.tg_tools import keyboards
 
 
 def start_prep_reg(bot, message, storage):

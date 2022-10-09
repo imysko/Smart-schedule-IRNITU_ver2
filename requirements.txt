@@ -1,0 +1,16 @@
+pytz==2022.4
+python-dotenv==0.21.0
+
+telebot==0.0.4
+pyTelegramBotAPI==4.7.0
+keyboa==3.1.0
+
+vkbottle==4.3.10
+vk_api==11.9.9
+
+pendulum==2.1.2
+psycopg2-binary==2.9.3
+
+pymongo==4.2.0
+
+flask==2.2.2

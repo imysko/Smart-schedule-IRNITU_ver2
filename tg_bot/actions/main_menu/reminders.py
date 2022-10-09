@@ -1,9 +1,9 @@
 import json
 
-from API.functions_api import calculating_reminder_times, APIError
-from API.functions_api import get_notifications_status
-from tools import keyboards, statistics, schedule_processing
+from tools.schedule_tools.notifications import *
+from tools.tg_tools import keyboards, schedule_processing
 from tools.logger import logger
+from tools import statistics
 
 
 def reminder_info(bot, message, storage, tz):
@@ -16,7 +16,7 @@ def reminder_info(bot, message, storage, tz):
 
     # Проверяем статус напоминания
     notifications_status = get_notifications_status(time)
-    if isinstance(notifications_status, APIError):
+    if isinstance(notifications_status, None):
         schedule_processing.sending_service_is_not_available(bot, chat_id)
         return
 
@@ -45,7 +45,7 @@ def reminder_settings(bot, message, storage, tz):
 
         # Проверяем статус напоминания
         notifications_status = get_notifications_status(time)
-        if isinstance(notifications_status, APIError):
+        if isinstance(notifications_status, None):
             schedule_processing.sending_service_is_not_available(bot, chat_id)
             return
 
@@ -70,7 +70,7 @@ def reminder_settings(bot, message, storage, tz):
 
         # Проверяем статус напоминания
         notifications_status = get_notifications_status(time)
-        if isinstance(notifications_status, APIError):
+        if isinstance(notifications_status, None):
             schedule_processing.sending_service_is_not_available(bot, chat_id)
             return
 
@@ -88,7 +88,7 @@ def reminder_settings(bot, message, storage, tz):
 
         # Проверяем статус напоминания
         notifications_status = get_notifications_status(time)
-        if isinstance(notifications_status, APIError):
+        if isinstance(notifications_status, None):
             schedule_processing.sending_service_is_not_available(bot, chat_id)
             return
 
@@ -105,7 +105,7 @@ def reminder_settings(bot, message, storage, tz):
 
         # Проверяем статус напоминания
         notifications_status = get_notifications_status(time)
-        if isinstance(notifications_status, APIError):
+        if isinstance(notifications_status, None):
             schedule_processing.sending_service_is_not_available(bot, chat_id)
             return
 

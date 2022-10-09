@@ -1,10 +1,8 @@
 import json
 
-from keyboa import keyboa_maker
+from keyboa import Keyboa
 
-from API.functions_api import find_week
-from API.functions_api import full_schedule_in_str_prep, APIError
-from tools import keyboards, schedule_processing
+from tools.tg_tools import keyboards, schedule_processing
 
 # Глобальная переменная(словарь), которая хранит в себе 3 состояния
 # (номер страницы; слово, которые находим; список соответствия для выхода по условию в стейте)
@@ -125,7 +123,7 @@ def search_aud(message, bot, storage, tz, last_msg=None):
         request_word = data
         list_search = [page, request_word, all_found_aud]
         aud_list[chat_id] = list_search
-        kb_all_results = keyboa_maker(items=all_found_aud, copy_text_to_callback=True, items_in_row=3)
+        kb_all_results = Keyboa(items=all_found_aud, copy_text_to_callback=True, items_in_row=3)
 
         msg = bot.send_message(
             chat_id=chat_id, reply_markup=kb_all_results,
@@ -139,7 +137,7 @@ def search_aud(message, bot, storage, tz, last_msg=None):
         if len(aud_list[chat_id]) == 3:
             pass
         elif all_results:
-            kb_all_results = keyboa_maker(items=all_found_aud, copy_text_to_callback=True, items_in_row=3)
+            kb_all_results = Keyboa(items=all_found_aud, copy_text_to_callback=True, items_in_row=3)
             bot.send_message(
                 chat_id=chat_id, reply_markup=kb_all_results,
                 text="Результат поиска")

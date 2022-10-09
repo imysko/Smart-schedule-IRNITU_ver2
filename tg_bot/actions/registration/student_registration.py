@@ -1,6 +1,7 @@
 import json
-from tools.logger import logger
-from tools import keyboards
+
+from tools.tg_tools import keyboards
+from tools import logger
 
 
 def start_student_reg(bot, message, storage):
