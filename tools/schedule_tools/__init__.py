@@ -1,4 +1,4 @@
-DAYS = {
+DAY_OF_WEEK = {
     1: 'понедельник',
     2: 'вторник',
     3: 'среда',
@@ -6,6 +6,21 @@ DAYS = {
     5: 'пятница',
     6: 'суббота',
     7: 'воскресенье'
+}
+
+MONTHS = {
+    1: 'января',
+    2: 'февраля',
+    3: 'марта',
+    4: 'апреля',
+    5: 'мая',
+    6: 'июня',
+    7: 'июля',
+    8: 'августа',
+    9: 'сентября',
+    10: 'октября',
+    11: 'ноября',
+    12: 'декабря'
 }
 
 
@@ -21,7 +36,7 @@ def getting_week_and_day_of_week(pg_lesson: dict) -> tuple:
         else:
             week = 'odd'
 
-    return week, DAYS[day]
+    return week, DAY_OF_WEEK[day]
 
 
 def is_there_dict_with_value_in_list(input_list_with_dict: list, value: str) -> bool:
@@ -71,5 +86,5 @@ def sorting_lessons_in_a_day_by_time_and_ngroup(schedule: list):
 
 
 def days_in_right_order(schedule: list) -> list:
-    schedule = sorted(schedule, key=lambda x: get_dict_key(DAYS, x['day']))
+    schedule = sorted(schedule, key=lambda x: get_dict_key(DAY_OF_WEEK, x['day']))
     return schedule

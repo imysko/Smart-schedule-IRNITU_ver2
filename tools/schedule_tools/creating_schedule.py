@@ -4,6 +4,7 @@ import time
 from datetime import datetime, timedelta
 import pytz
 from time import strptime
+from tools.schedule_tools import DAY_OF_WEEK, MONTHS
 
 TZ_IRKUTSK = pytz.timezone('Asia/Irkutsk')
 # определяем на Linux или на Windows мы запускаемся
@@ -13,22 +14,18 @@ locale.setlocale(locale.LC_TIME, locale_name)
 
 def day_creating(day):
     day = datetime.strptime(day, "%Y-%m-%d")
-    months = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября',
-              'декабря']
-    day_week = ['Понедельник', 'Вторник', 'Среда',
-                'Четверг', 'Пятница', 'Суббота', 'Воскресенье']
 
     year = int(day.year)
     int_month = int(day.month)
     int_day = int(day.day)
 
-    month = months[int_month - 1]
+    month = MONTHS[int_month]
 
     today = datetime(int(year), int_month, int_day)
 
     int_day_week = today.weekday()
 
-    return str(day_week[int_day_week]) + ', ' + str(int_day) + ' ' + str(month) + ' ' + str(year) + ' г.'
+    return str(DAY_OF_WEEK[int_day_week]) + ', ' + str(int_day) + ' ' + str(month) + ' ' + str(year) + ' г.'
 
 
 def schedule_view_exams(schedule):
