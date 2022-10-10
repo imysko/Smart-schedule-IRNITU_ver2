@@ -1,13 +1,14 @@
 import os
 from contextlib import closing
-from datetime import datetime, date, timedelta
+from datetime import datetime, date
 
 import pytz
+from dotenv import load_dotenv
 import pendulum as pendulum
 import psycopg2
 from psycopg2.extras import DictCursor
 
-import itertools
+load_dotenv()
 
 TIME_ZONE = pytz.timezone('Asia/Irkutsk')
 
@@ -63,30 +64,32 @@ def get_institutes() -> list:
             return institutes
 
 
-def get_courses_by_institute(institute: str) -> list:
+def get_courses_by_institute(institute_id: int) -> list:
     query = """
         SELECT DISTINCT kurs AS course
         FROM real_groups
-        WHERE faculty_title = '{institute}'
+        WHERE faculty_id = {institute}
           AND is_active = True
-    """.format(institute=institute)
+        ORDER BY course;
+    """.format(institute=institute_id)
 
     with closing(psycopg2.connect(**db_params)) as conn:
         with conn.cursor(cursor_factory=DictCursor) as cursor:
             cursor.execute(query)
             rows = cursor.fetchall()
-            courses = [course[0] for course in rows]
+            courses = [{course[0]: '{"course": "' + str(course[0]) + '"}'} for course in rows]
             return courses
 
 
-def get_groups_by_institute_and_course(institute: str, course: int) -> list:
+def get_groups_by_institute_and_course(institute_id: int, course: int) -> list:
     query = """
         SELECT obozn AS name,
                id_7  AS group_id
         FROM real_groups
-        WHERE faculty_title = '{institute}'
+        WHERE faculty_id = {institute}
           AND kurs = {course}
-    """.format(institute=institute, course=course)
+          AND is_active = True
+    """.format(institute=institute_id, course=course)
 
     with closing(psycopg2.connect(**db_params)) as conn:
         with conn.cursor(cursor_factory=DictCursor) as cursor:

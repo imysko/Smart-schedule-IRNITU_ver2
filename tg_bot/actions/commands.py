@@ -16,14 +16,23 @@ def start(bot: TeleBot, message, storage, time_zone: timezone):
     )
 
 
-def registration(bot: TeleBot, message, storage, time_zone: timezone):
+def registration(bot: TeleBot, message, storage, time_zone: timezone, edit: bool = False):
     chat_id = message.chat.id
+    message_id = message.message_id
 
-    bot.send_message(
-        chat_id=chat_id,
-        text=registration_messages['repeat_registration'],
-        reply_markup=keyboards.keyboard_user_role()
-    )
+    if not edit:
+        bot.send_message(
+            chat_id=chat_id,
+            text=registration_messages['repeat_registration'],
+            reply_markup=keyboards.keyboard_user_role()
+        )
+    else:
+        bot.edit_message_text(
+            chat_id=chat_id,
+            message_id=message_id,
+            text=registration_messages['repeat_registration'],
+            reply_markup=keyboards.keyboard_user_role()
+        )
 
 
 def help(bot: TeleBot, message, storage, time_zone: timezone):

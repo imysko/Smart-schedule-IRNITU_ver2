@@ -122,12 +122,83 @@ def registration_handler(message):
             message=message,
             storage=storage
         )
+
+        # пользователь - студент и сохранить id чата
     elif data == '{"registration": "teacher"}':
         teacher_registration.start_teacher_registration(
             bot=bot,
             message=message,
             storage=storage
         )
+
+        # пользователь - преподаватель и сохранить id чата
+    elif data == '{"registration": "back"}':
+        commands.registration(
+            bot=bot,
+            message=message.message,
+            storage=storage,
+            time_zone=TZ_IRKUTSK,
+            edit=True
+        )
+
+        # удалить информацию о пользователе
+
+    logger.info(f'Inline button data: {data}')
+
+
+@bot.callback_query_handler(func=lambda message: 'institute' in message.data)
+def institute_registration_handler(message):
+    data = message.data
+
+    if data == '{"institute": "back"}':
+        student_registration.start_student_registration(
+            bot=bot,
+            message=message,
+            storage=storage
+        )
+
+        # удалить институт из монго
+    else:
+        student_registration.select_course_student_registration(
+            bot=bot,
+            message=message,
+            storage=storage
+        )
+
+        # сохранить институт в монго
+
+    logger.info(f'Inline button data: {data}')
+
+
+@bot.callback_query_handler(func=lambda message: 'course' in message.data)
+def course_registration_handler(message):
+    data = message.data
+
+    if data == '{"course": "back"}':
+        student_registration.select_course_student_registration(
+            bot=bot,
+            message=message,
+            storage=storage
+        )
+
+        # удалить курс из монго
+    else:
+        student_registration.select_group_student_registration(
+            bot=bot,
+            message=message,
+            storage=storage
+        )
+
+        # сохранить курс в монго
+
+    logger.info(f'Inline button data: {data}')
+
+
+@bot.callback_query_handler(func=lambda message: 'group' in message.data)
+def group_registration_handler(message):
+    data = message.data
+
+    # сохранить группу в монго
 
     logger.info(f'Inline button data: {data}')
 

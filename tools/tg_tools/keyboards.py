@@ -8,20 +8,24 @@ user_role = [
 ]
 
 
+def keyboard_back(callback: str) -> InlineKeyboardMarkup:
+    return Keyboa(items={'<': '{"' + callback + '": "back"}'})()
+
+
 def keyboard_user_role() -> InlineKeyboardMarkup:
     return Keyboa(items=user_role)()
 
 
 def keyboard_institutes(institutes: list) -> InlineKeyboardMarkup:
-    return Keyboa(items=institutes)()
+    return Keyboa.combine(keyboards=(Keyboa(items=institutes)(), keyboard_back('registration')))
 
 
 def keyboard_courses(courses: list) -> InlineKeyboardMarkup:
-    return Keyboa(items=courses, copy_text_to_callback=True)()
+    return Keyboa.combine(keyboards=(Keyboa(items=courses)(), keyboard_back('institute')))
 
 
 def keyboard_groups(groups: list) -> InlineKeyboardMarkup:
-    return Keyboa(items=groups)()
+    return Keyboa.combine(keyboards=(Keyboa(items=groups)(), keyboard_back('course')))
 
 
 def keyboard_start_menu() -> ReplyKeyboardMarkup:

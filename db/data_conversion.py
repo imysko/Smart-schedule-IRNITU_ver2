@@ -7,7 +7,7 @@ def convert_institutes(pg_institutes: list) -> list:
 
     list_institutes = pg_institutes
     for institute in list_institutes:
-        institute[institute['institute_title']] = institute['institute_id']
+        institute[institute['institute_title']] = '{"institute": "' + str(institute['institute_id']) + '"}'
         del institute['institute_title']
         del institute['institute_id']
 
@@ -20,7 +20,7 @@ def convert_groups(pg_groups: list) -> list:
 
     list_groups = pg_groups
     for group in list_groups:
-        group[group['name']] = group['group_id']
+        group[group['name']] = '{"group": "' + str(group['group_id']) + '"}'
         del group['name']
         del group['group_id']
 
