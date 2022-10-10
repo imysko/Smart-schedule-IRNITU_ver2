@@ -1,6 +1,9 @@
 import os
 
+from dotenv import load_dotenv
 from pymongo import MongoClient
+
+load_dotenv()
 
 MONGO_DB_ADDR = os.environ.get('MONGO_DB_ADDR')
 MONGO_DB_PORT = os.environ.get('MONGO_DB_PORT')
@@ -20,16 +23,13 @@ class MongodbService(object):
         return cls._instance
 
     def __init__(self):
-        self._client = MongoClient(
-            f'mongodb://{MONGO_DB_ADDR}:{MONGO_DB_PORT}')
+        self._client = MongoClient(f'mongodb://{MONGO_DB_ADDR}:{MONGO_DB_PORT}')
         self._db = self._client[MONGO_DB_DATABASE]
 
     def get_data(self, collection) -> list:
-        """Возвращает список документов из указанной коллекции"""
         return list(self._db[collection].find())
 
     def save_data(self, collection, data: dict):
-        """Сохраняет документ в указанную коллекцию"""
         return self._db[collection].insert_one(data)
 
     def get_users_with_reminders_tg(self):
@@ -39,7 +39,6 @@ class MongodbService(object):
         return list(self._db.VK_users.find(filter={'notifications': {'$ne': 0}}))
 
     def save_or_update_vk_user(self, chat_id: int, institute='', course='', group='', notifications=0, reminders=[]):
-        """Сохраняет или изменяет данные пользователя VK (коллекция VK_users)"""
         update = {'chat_id': chat_id, 'notifications': 0}
         if institute:
             update['institute'] = institute
@@ -55,7 +54,6 @@ class MongodbService(object):
         return self._db.VK_users.update_one(filter={'chat_id': chat_id}, update={'$set': update}, upsert=True)
 
     def save_or_update_tg_user(self, chat_id: int, institute='', course='', group='', notifications=0, reminders=[]):
-        """Сохраняет или изменяет данные пользователя Telegram (коллекция users)"""
         update = {'chat_id': chat_id, 'notifications': 0, 'reminders': {}}
         if institute:
             update['institute'] = institute
@@ -69,3 +67,12 @@ class MongodbService(object):
             update['reminders'] = reminders
 
         return self._db.users.update_one(filter={'chat_id': chat_id}, update={'$set': update}, upsert=True)
+
+    def get_tg_user(self, chat_id: int):
+        return self._db.users.find_one(filter={'chat_id': chat_id})
+
+    def delete_tg_user_or_userdata(self, chat_id: int, delete_only_course: bool = False):
+        if delete_only_course:
+            return self._db.users.update_one(filter={'chat_id': chat_id}, update={'$unset': {'course': ''}},
+                                             upsert=True)
+        return self._db.users.delete_one(filter={'chat_id': chat_id})

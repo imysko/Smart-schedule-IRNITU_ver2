@@ -9,7 +9,6 @@ from db.mongo_storage import MongodbService
 from tg_bot.actions import commands
 from tg_bot.actions.registration import student as student_registration
 from tg_bot.actions.registration import teacher as teacher_registration
-from tools import statistics
 from tools.logger import logger
 from tools.messages import error_messages
 
@@ -20,13 +19,15 @@ TZ_IRKUTSK = pytz.timezone('Asia/Irkutsk')
 
 bot = TeleBot(token=TOKEN)
 
-storage = None
-# storage = MongodbService().get_instance()
+storage = MongodbService().get_instance()
 
 content_schedule = ['Расписание 🗓', 'Ближайшая пара ⏱', 'Расписание на сегодня 🍏', 'На текущую неделю',
                     'На следующую неделю',
                     'Расписание на завтра 🍎', 'Следующая', 'Текущая', 'Экзамены']
+
 content_main_menu_buttons = ['Основное меню', '<==Назад', 'Другое ⚡']
+
+content_students_registration = ['institute', 'course', 'group']
 content_reminder_settings = [
     'notification_btn', 'del_notifications', 'add_notifications', 'save_notifications']
 content_prep_group = ["found_prep", "prep_list"]
@@ -149,8 +150,7 @@ def reminders_info_handler(message):
 
 
 # Reminder settings
-@bot.callback_query_handler(
-    func=lambda message: any(word in message.data for word in content_reminder_settings))
+@bot.callback_query_handler(func=lambda message: any(word in message.data for word in content_reminder_settings))
 def reminder_settings_handler(message):
     data = message.data
     # Open settings
@@ -181,19 +181,16 @@ def main_menu_buttons_handler(message):
 # Text handler
 @bot.message_handler(content_types=['text'])
 def text(message):
-    # chat_id = message.chat.id
-    # data = message.text
-    # user = storage.get_user(chat_id=chat_id)
-    # logger.info(f'Message data: {data}')
+    chat_id = message.chat.id
+    data = message.text
+    user = storage.get_tg_user(chat_id=chat_id)
+    logger.info(f'Message data: {data}')
 
-    # if user:
-    #     # Clear keyboard
-    #     bot.send_message(chat_id, text=error_messages['wrong_command'])
-    #     statistics.add(action='Wrong command', storage=storage, tz=TZ_IRKUTSK)
-    # else:
-    #     bot.send_message(chat_id, text=error_messages['registration_not_finished'])
-    #     statistics.add(action='Registration not finished', storage=storage, tz=TZ_IRKUTSK)
-    pass
+    if user:
+        # Clear keyboard
+        bot.send_message(chat_id, text=error_messages['wrong_command'])
+    else:
+        bot.send_message(chat_id, text=error_messages['registration_not_finished'])
 
 
 if __name__ == '__main__':
