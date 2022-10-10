@@ -1,17 +1,10 @@
 from keyboa import Keyboa
-from telebot.types import InlineKeyboardMarkup
+from telebot import types
+from telebot.types import InlineKeyboardMarkup, ReplyKeyboardMarkup
 
 user_role = [
     {'Я студент': '{"registration": "student"}'},
     {'Я преподователь': '{"registration": "teacher"}'}
-]
-start_menu = [
-    {'Расписание 🗓': '{"start_menu": "schedule"}'},
-    {'Ближайшая пара ⏱': '{"start_menu": "near_lesson"}'},
-    {'Расписание на сегодня 🍏': '{"start_menu": "today_schedule"}'},
-    {'Расписание на завтра 🍎': '{"start_menu": "tomorrow_schedule"}'},
-    {'Поиск 🔎': '{"start_menu": "search"}'},
-    {'Другое ⚡': '{"start_menu": "another"}'}
 ]
 
 
@@ -31,5 +24,16 @@ def keyboard_groups(groups: list) -> InlineKeyboardMarkup:
     return Keyboa(items=groups)()
 
 
-def keyboard_start_menu() -> InlineKeyboardMarkup:
-    return Keyboa(items=start_menu)()
+def keyboard_start_menu() -> ReplyKeyboardMarkup:
+    markup = types.ReplyKeyboardMarkup(one_time_keyboard=False, resize_keyboard=True)
+    btn1 = types.KeyboardButton('Расписание 🗓')
+    btn2 = types.KeyboardButton('Ближайшая пара ⏱')
+    btn3 = types.KeyboardButton('Расписание на сегодня 🍏')
+    btn4 = types.KeyboardButton('Расписание на завтра 🍎')
+    btn5 = types.KeyboardButton('Поиск 🔎')
+    btn6 = types.KeyboardButton('Другое ⚡')
+    markup.add(btn1, btn2)
+    markup.add(btn3)
+    markup.add(btn4)
+    markup.add(btn5, btn6)
+    return markup
