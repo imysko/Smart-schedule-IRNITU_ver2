@@ -1,7 +1,6 @@
 pytz==2022.4
 python-dotenv==0.21.0
 
-telebot==0.0.4
 pyTelegramBotAPI==4.7.0
 keyboa==3.1.0
 

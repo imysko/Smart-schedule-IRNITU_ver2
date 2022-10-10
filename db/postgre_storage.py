@@ -48,7 +48,8 @@ def get_week_even(start_date: datetime):
 
 def get_institutes() -> list:
     query = """
-        SELECT DISTINCT faculty_title AS institute_title
+        SELECT DISTINCT faculty_title AS institute_title,
+                        faculty_id    AS institute_id
         FROM real_groups
         WHERE faculty_title NOT LIKE ''
         ORDER BY institute_title;
@@ -58,7 +59,7 @@ def get_institutes() -> list:
         with conn.cursor(cursor_factory=DictCursor) as cursor:
             cursor.execute(query)
             rows = cursor.fetchall()
-            institutes = [institute[0] for institute in rows]
+            institutes = [dict(institute) for institute in rows]
             return institutes
 
 
@@ -80,7 +81,8 @@ def get_courses_by_institute(institute: str) -> list:
 
 def get_groups_by_institute_and_course(institute: str, course: int) -> list:
     query = """
-        SELECT obozn AS name
+        SELECT obozn AS name,
+               id_7  AS group_id
         FROM real_groups
         WHERE faculty_title = '{institute}'
           AND kurs = {course}
@@ -90,7 +92,7 @@ def get_groups_by_institute_and_course(institute: str, course: int) -> list:
         with conn.cursor(cursor_factory=DictCursor) as cursor:
             cursor.execute(query)
             rows = cursor.fetchall()
-            groups = [group[0] for group in rows]
+            groups = [dict(group) for group in rows]
             return groups
 
 
