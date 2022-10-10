@@ -7,6 +7,8 @@ from telebot import TeleBot
 
 from db.mongo_storage import MongodbService
 from tg_bot.actions import commands
+from tg_bot.actions.registration import student as student_registration
+from tg_bot.actions.registration import teacher as teacher_registration
 from tools import statistics
 from tools.logger import logger
 from tools.messages import error_messages
@@ -50,28 +52,60 @@ def start_handler(message):
 @bot.message_handler(func=lambda message: message.text in ['Регистрация', 'регистрация', '/reg', 'reg'],
                      content_types=['text'])
 def registration_handler(message):
-    pass
+    commands.registration(
+        bot=bot,
+        message=message,
+        storage=storage,
+        time_zone=TZ_IRKUTSK
+    )
 
 
 # /help
 @bot.message_handler(func=lambda message: message.text in ['Помощь', 'помощь', '/help', 'help'],
                      content_types=['text'])
 def help_handler(message):
-    pass
+    commands.help(
+        bot=bot,
+        message=message,
+        storage=storage,
+        time_zone=TZ_IRKUTSK
+    )
 
 
 # /about
 @bot.message_handler(func=lambda message: message.text in ['О проекте', 'о проекте', '/about', 'about'],
                      content_types=['text'])
 def about_handler(message):
-    pass
+    commands.about(
+        bot=bot,
+        message=message,
+        storage=storage,
+        time_zone=TZ_IRKUTSK
+    )
+
+
+# /map
+@bot.message_handler(func=lambda message: message.text in ['Карта', 'карта', '/map', 'map'],
+                     content_types=['text'])
+def map_handler(message):
+    commands.show_map(
+        bot=bot,
+        message=message,
+        storage=storage,
+        time_zone=TZ_IRKUTSK
+    )
 
 
 # /authors
 @bot.message_handler(func=lambda message: message.text in ['Авторы', 'авторы', '/authors', 'authors'],
                      content_types=['text'])
 def authors_handler(message):
-    pass
+    commands.authors(
+        bot=bot,
+        message=message,
+        storage=storage,
+        time_zone=TZ_IRKUTSK
+    )
 
 
 # Inline buttons handlers
@@ -80,12 +114,20 @@ def authors_handler(message):
 @bot.callback_query_handler(func=lambda message: 'registration' in message.data)
 def registration_handler(message):
     data = message.data
+
     if data == '{"registration": "student"}':
-        # Start student registration
-        pass
+        student_registration.start_student_registration(
+            bot=bot,
+            message=message,
+            storage=storage
+        )
     elif data == '{"registration": "teacher"}':
-        # Start teacher registration
-        pass
+        teacher_registration.start_teacher_registration(
+            bot=bot,
+            message=message,
+            storage=storage
+        )
+
     logger.info(f'Inline button data: {data}')
 
 

@@ -2,8 +2,8 @@ from keyboa import Keyboa
 from telebot.types import InlineKeyboardMarkup
 
 user_role = [
-    {'Я студент': 1},
-    {'Я преподователь': 2}
+    {'Я студент': '{"registration": "student"}'},
+    {'Я преподователь': '{"registration": "teacher"}'}
 ]
 
 
