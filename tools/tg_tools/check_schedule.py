@@ -1,4 +1,4 @@
-from tools import get_text_schedule_not_available
+from tools.schedule_tools import get_text_schedule_not_available
 import keyboards
 
 

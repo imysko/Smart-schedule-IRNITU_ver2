@@ -10,7 +10,7 @@ from actions.registration import student_registration, teacher_registration
 from actions.search.prep_and_group_search import start_search, handler_buttons, search
 from actions.search.aud_search import start_search_aud, handler_buttons_aud, handler_buttons_aud_all_results
 
-from tg_bot.tools import keyboards
+from tools.tg_tools import keyboards
 from tools.logger import logger
 from db.mongo_storage import MongodbService
 
@@ -90,6 +90,19 @@ def authors_handler(message):
 
 
 # ==================== Обработка Inline кнопок ==================== #
+@bot.callback_query_handler(func=lambda message: 'registration' in message.data)
+def registration_handler(message):
+    data = message.data
+    if data == '{"registration": "student"}':
+        student_registration.start_student_reg(
+            bot=bot, message=message, storage=storage)
+    elif data == '{"registration": "teacher"}':
+        teacher_registration.start_prep_reg(
+            bot=bot, message=message, storage=storage)
+
+    logger.info(f'Inline button data: {data}')
+
+
 @bot.callback_query_handler(func=lambda message: any(word in message.data for word in content_students_registration))
 def student_registration_handler(message):
     """Регистрация студентов"""

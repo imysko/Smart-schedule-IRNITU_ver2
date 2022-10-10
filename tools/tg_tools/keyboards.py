@@ -34,13 +34,19 @@ def make_keyboard_empty():
     return markup
 
 
-def make_inline_keyboard_choose_institute(institutes=[]):
+def make_inline_keyboard_choose_registration():
+    markup = types.InlineKeyboardMarkup()
+    markup.add(types.InlineKeyboardButton(text='Я студент', callback_data='{"registration": "student"}'))
+    markup.add(types.InlineKeyboardButton(text='Я преподователь', callback_data='{"registration": "teacher"}'))
+
+    return markup
+
+
+def make_inline_keyboard_choose_institute(institutes: list):
     """Кнопки выбора института"""
     markup = types.InlineKeyboardMarkup()
-    data = '{"institute": "' + "Преподаватель" + '"}'
-    markup.add(types.InlineKeyboardButton(text='Преподаватель', callback_data=data))
     for institute in institutes:
-        name = institute['name']
+        name = institute
         short_name = name
         # Проверяем длину callback_data
         callback_body = '{"institute": ""}'
@@ -50,16 +56,19 @@ def make_inline_keyboard_choose_institute(institutes=[]):
         data = '{"institute": "' + short_name + '"}'
 
         markup.add(types.InlineKeyboardButton(text=name, callback_data=data))
+
+    # Кнопка назад
+    data = json.dumps({"institute": "back"})
+    markup.add(types.InlineKeyboardButton(text='<', callback_data=data))
     return markup
 
 
-def make_inline_keyboard_choose_courses(courses=[]):
+def make_inline_keyboard_choose_courses(courses: list):
     """Кнопки выбора курса"""
     markup = types.InlineKeyboardMarkup()
     for course in courses:
-        name = course['name']
-        data = '{"course":"' + name + '"}'
-        markup.add(types.InlineKeyboardButton(text=name, callback_data=data))
+        data = '{"course":"' + course + '"}'
+        markup.add(types.InlineKeyboardButton(text=course, callback_data=data))
 
     # Кнопка назад
     data = json.dumps({"course": "back"})

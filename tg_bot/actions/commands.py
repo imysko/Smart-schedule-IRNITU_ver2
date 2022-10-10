@@ -1,5 +1,6 @@
 from tools.tg_tools import keyboards
 from tools import statistics
+from db import postgre_storage
 
 
 def start(bot, message, storage, tz):
@@ -12,8 +13,8 @@ def start(bot, message, storage, tz):
         storage.delete_user_or_userdata(chat_id)
 
     bot.send_message(chat_id=chat_id, text='Для начала пройдите небольшую регистрацию\n'
-                                           'Выберите институт',
-                     reply_markup=keyboards.make_inline_keyboard_choose_institute(storage.get_institutes()))
+                                           'Кто вы?',
+                     reply_markup=keyboards.make_inline_keyboard_choose_registration())
 
     statistics.add(action='start', storage=storage, tz=tz)
 
@@ -23,8 +24,8 @@ def registration(bot, message, storage, tz):
     chat_id = message.chat.id
     storage.delete_user_or_userdata(chat_id=chat_id)
     bot.send_message(chat_id=chat_id, text='Пройдите повторную регистрацию\n'
-                                           'Выберите институт',
-                     reply_markup=keyboards.make_inline_keyboard_choose_institute(storage.get_institutes()))
+                                           'Кто вы?',
+                     reply_markup=keyboards.make_inline_keyboard_choose_registration())
 
     statistics.add(action='reg', storage=storage, tz=tz)
 
