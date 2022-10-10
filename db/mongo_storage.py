@@ -69,32 +69,3 @@ class MongodbService(object):
             update['reminders'] = reminders
 
         return self._db.users.update_one(filter={'chat_id': chat_id}, update={'$set': update}, upsert=True)
-
-    def get_schedule(self, group):
-        """Возвращает расписание группы"""
-        return self._db.schedule.find_one(filter={'group': group})
-
-    def save_status_tg(self, date, time):
-        """Сохраняем время последнего парса"""
-        status = {
-            'name': 'tg_reminders',
-            'date': date,
-            'time': time,
-        }
-
-        return self._db.status.update_one(filter={'name': 'tg_reminders'}, update={'$set': status}, upsert=True)
-
-    def save_status_reminders_vk(self, date, time):
-        """Сохраняем время последнего парса"""
-        status = {
-            'name': 'vk_reminders',
-            'date': date,
-            'time': time,
-        }
-
-        return self._db.status.update_one(filter={'name': 'vk_reminders'}, update={'$set': status}, upsert=True)
-
-    def save_schedule_exam(self, exam):
-        """Записывает расписание экзаменов"""
-        self._db.exams_schedule.drop()
-        return self._db.exams_schedule.insert_many(exam)
