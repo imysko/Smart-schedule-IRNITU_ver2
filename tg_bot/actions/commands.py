@@ -1,14 +1,15 @@
-from pymongo import MongoClient
 from pytz import timezone
 from telebot import TeleBot
 
+from db.mongo_storage import MongodbServiceTG
 from tools.messages import registration_messages, other_messages
-from tools.tg_tools import reply_keyboards, inline_keyboards
+from tools.tg_tools import inline_keyboards
 
 
-def start(bot: TeleBot, message, storage, time_zone: timezone):
+def start(bot: TeleBot, message, storage: MongodbServiceTG):
     chat_id = message.chat.id
 
+    storage.delete_user_or_userdata(chat_id)
     bot.send_message(
         chat_id=chat_id,
         text=registration_messages['new_registration'],
@@ -16,10 +17,11 @@ def start(bot: TeleBot, message, storage, time_zone: timezone):
     )
 
 
-def registration(bot: TeleBot, message, storage, time_zone: timezone, edit: bool = False):
+def registration(bot: TeleBot, message, storage: MongodbServiceTG, edit: bool = False):
     chat_id = message.chat.id
     message_id = message.message_id
 
+    storage.delete_user_or_userdata(chat_id)
     if not edit:
         bot.send_message(
             chat_id=chat_id,
@@ -35,7 +37,7 @@ def registration(bot: TeleBot, message, storage, time_zone: timezone, edit: bool
         )
 
 
-def help(bot: TeleBot, message, storage, time_zone: timezone):
+def help(bot: TeleBot, message, storage: MongodbServiceTG):
     chat_id = message.chat.id
     bot.send_message(
         chat_id=chat_id,
@@ -43,7 +45,7 @@ def help(bot: TeleBot, message, storage, time_zone: timezone):
     )
 
 
-def about(bot: TeleBot, message, storage, time_zone: timezone):
+def about(bot: TeleBot, message, storage: MongodbServiceTG):
     chat_id = message.chat.id
 
     bot.send_message(
@@ -53,7 +55,7 @@ def about(bot: TeleBot, message, storage, time_zone: timezone):
     )
 
 
-def show_map(bot: TeleBot, message, storage, time_zone: timezone):
+def show_map(bot: TeleBot, message, storage: MongodbServiceTG):
     chat_id = message.chat.id
     bot.send_message(
         chat_id,
@@ -61,7 +63,7 @@ def show_map(bot: TeleBot, message, storage, time_zone: timezone):
     )
 
 
-def authors(bot: TeleBot, message, storage, time_zone: timezone):
+def authors(bot: TeleBot, message, storage: MongodbServiceTG):
     chat_id = message.chat.id
 
     bot.send_message(
