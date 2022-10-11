@@ -27,10 +27,7 @@ db_params = {
 }
 
 
-def get_week_even(start_date: datetime):
-    """
-    Возвращает 0 если неделя нечетная, и 1 если неделя четная
-    """
+def is_week_even(start_date: datetime) -> bool:
     september_1st = datetime(start_date.year, 9, 1)
 
     if start_date.month >= 9 or start_date.isocalendar()[1] == september_1st.isocalendar()[1]:
@@ -119,7 +116,7 @@ def get_schedule_by_group(group: str) -> list:
     start_of_first_week = pendulum.instance(date_now).start_of("week")
     start_of_second_week = pendulum.instance(start_of_first_week).add(weeks=1)
 
-    is_even = get_week_even(date_now)
+    is_even = is_week_even(date_now)
     if is_even == 1:
         odd_week = start_of_second_week
         even_week = start_of_first_week

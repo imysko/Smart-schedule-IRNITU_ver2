@@ -19,7 +19,7 @@ class MongodbService(object):
     def get_instance(cls, *args, **kwargs):
         if cls._instance is None:
             cls._instance = super().__new__(cls, *args, **kwargs)
-            cls.__init__(cls._instance, *args, **kwargs)
+            cls.__init__(cls._instance)
         return cls._instance
 
     def __init__(self):
@@ -32,14 +32,28 @@ class MongodbService(object):
     def save_data(self, collection, data: dict):
         return self._db[collection].insert_one(data)
 
-    def get_users_with_reminders_tg(self):
+
+class MongodbServiceTG(MongodbService):
+    def __init__(self):
+        super().__init__()
+
+    def get_users_with_reminders(self):
         return list(self._db.users.find(filter={'notifications': {'$ne': 0}}))
 
-    def get_users_with_reminders_vk(self):
-        return list(self._db.VK_users.find(filter={'notifications': {'$ne': 0}}))
+    def create_user(self, chat_id: int):
+        update = {'chat_id': chat_id, 'institute': '', 'course': '', 'group': '', 'notifications': 0, 'reminders': []}
+        self._db.users.update_one(filter={'chat_id': chat_id}, update={'$set': update}, upsert=True)
 
-    def save_or_update_vk_user(self, chat_id: int, institute='', course='', group='', notifications=0, reminders=[]):
-        update = {'chat_id': chat_id, 'notifications': 0}
+    def save_or_update_user(
+            self,
+            chat_id: int,
+            institute=None,
+            course=None,
+            group=None,
+            notifications=None,
+            reminders=None
+    ):
+        update = {'chat_id': chat_id}
         if institute:
             update['institute'] = institute
         if course:
@@ -51,28 +65,48 @@ class MongodbService(object):
         if reminders:
             update['reminders'] = reminders
 
-        return self._db.VK_users.update_one(filter={'chat_id': chat_id}, update={'$set': update}, upsert=True)
+        self._db.users.update_one(filter={'chat_id': chat_id}, update={'$set': update}, upsert=True)
 
-    def save_or_update_tg_user(self, chat_id: int, institute='', course='', group='', notifications=0, reminders=[]):
-        update = {'chat_id': chat_id, 'notifications': 0, 'reminders': {}}
-        if institute:
-            update['institute'] = institute
-        if course:
-            update['course'] = course
-        if group:
-            update['group'] = group
-        if notifications:
-            update['notifications'] = notifications
-        if reminders:
-            update['reminders'] = reminders
-
-        return self._db.users.update_one(filter={'chat_id': chat_id}, update={'$set': update}, upsert=True)
-
-    def get_tg_user(self, chat_id: int):
+    def get_user(self, chat_id: int):
         return self._db.users.find_one(filter={'chat_id': chat_id})
 
-    def delete_tg_user_or_userdata(self, chat_id: int, delete_only_course: bool = False):
+    def delete_user_or_userdata(self, chat_id: int, delete_only_course: bool = False):
         if delete_only_course:
             return self._db.users.update_one(filter={'chat_id': chat_id}, update={'$unset': {'course': ''}},
                                              upsert=True)
         return self._db.users.delete_one(filter={'chat_id': chat_id})
+
+
+class MongodbServiceVK(MongodbService):
+    def __init__(self):
+        super().__init__()
+
+    def get_users_with_reminders(self):
+        return list(self._db.VK_users.find(filter={'notifications': {'$ne': 0}}))
+
+    def create_user(self, chat_id: str):
+        update = {'chat_id': chat_id, 'institute': '', 'course': '', 'group': '', 'notifications': 0, 'reminders': []}
+        self._db.VK_users.update_one(filter={'chat_id': chat_id}, update={'$set': update}, upsert=True)
+
+    def save_or_update_user(
+            self,
+            chat_id: int,
+            institute=None,
+            course=None,
+            group=None,
+            notifications=None,
+            reminders=None
+    ):
+        update = {'chat_id': chat_id}
+        if institute:
+            update['institute'] = institute
+        if course:
+            update['course'] = course
+        if group:
+            update['group'] = group
+        if notifications:
+            update['notifications'] = notifications
+        if reminders:
+            update['reminders'] = reminders
+
+        self._db.VK_users.update_one(filter={'chat_id': chat_id}, update={'$set': update}, upsert=True)

@@ -1,3 +1,4 @@
+import json
 import os
 import time
 
@@ -5,12 +6,13 @@ import pytz
 from dotenv import load_dotenv
 from telebot import TeleBot
 
-from db.mongo_storage import MongodbService
+from db.mongo_storage import MongodbServiceTG
 from tg_bot.actions import commands
 from tg_bot.actions.registration import student as student_registration
 from tg_bot.actions.registration import teacher as teacher_registration
 from tools.logger import logger
-from tools.messages import error_messages
+from tools.messages import error_messages, registration_messages
+from tools.tg_tools import reply_keyboards, inline_keyboards
 
 load_dotenv()
 
@@ -19,7 +21,7 @@ TZ_IRKUTSK = pytz.timezone('Asia/Irkutsk')
 
 bot = TeleBot(token=TOKEN)
 
-storage = MongodbService().get_instance()
+storage = MongodbServiceTG().get_instance()
 
 content_schedule = ['Расписание 🗓', 'Ближайшая пара ⏱', 'Расписание на сегодня 🍏', 'На текущую неделю',
                     'На следующую неделю',
@@ -117,22 +119,23 @@ def registration_handler(message):
     data = message.data
 
     if data == '{"registration": "student"}':
+        storage.create_user(message.message.chat.id)
         student_registration.start_student_registration(
             bot=bot,
             message=message,
             storage=storage
         )
 
-        # пользователь - студент и сохранить id чата
     elif data == '{"registration": "teacher"}':
+        storage.create_user(message.message.chat.id)
         teacher_registration.start_teacher_registration(
             bot=bot,
             message=message,
             storage=storage
         )
 
-        # пользователь - преподаватель и сохранить id чата
     elif data == '{"registration": "back"}':
+        storage.delete_user_or_userdata(message.message.chat.id)
         commands.registration(
             bot=bot,
             message=message.message,
@@ -140,8 +143,6 @@ def registration_handler(message):
             time_zone=TZ_IRKUTSK,
             edit=True
         )
-
-        # удалить информацию о пользователе
 
     logger.info(f'Inline button data: {data}')
 
@@ -151,21 +152,22 @@ def institute_registration_handler(message):
     data = message.data
 
     if data == '{"institute": "back"}':
+        storage.create_user(message.message.chat.id)
         student_registration.start_student_registration(
             bot=bot,
             message=message,
             storage=storage
         )
-
-        # удалить институт из монго
     else:
+        storage.save_or_update_user(
+            chat_id=message.message.chat.id,
+            institute=json.loads(data)['institute']
+        )
         student_registration.select_course_student_registration(
             bot=bot,
             message=message,
             storage=storage
         )
-
-        # сохранить институт в монго
 
     logger.info(f'Inline button data: {data}')
 
@@ -175,22 +177,25 @@ def course_registration_handler(message):
     data = message.data
 
     if data == '{"course": "back"}':
+        storage.delete_user_or_userdata(
+            chat_id=message.message.chat.id,
+            delete_only_course=True
+        )
         student_registration.select_course_student_registration(
             bot=bot,
             message=message,
             storage=storage
         )
-
-        # удалить курс из монго
     else:
+        storage.save_or_update_user(
+            chat_id=message.message.chat.id,
+            course=json.loads(data)['course']
+        )
         student_registration.select_group_student_registration(
             bot=bot,
             message=message,
             storage=storage
         )
-
-        # сохранить курс в монго
-
     logger.info(f'Inline button data: {data}')
 
 
@@ -198,7 +203,16 @@ def course_registration_handler(message):
 def group_registration_handler(message):
     data = message.data
 
-    # сохранить группу в монго
+    storage.save_or_update_user(
+        chat_id=message.message.chat.id,
+        group=json.loads(data)['group']
+    )
+
+    student_registration.finish_student_registration(
+        bot=bot,
+        message=message,
+        storage=storage
+    )
 
     logger.info(f'Inline button data: {data}')
 

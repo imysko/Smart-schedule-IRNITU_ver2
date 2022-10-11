@@ -3,7 +3,7 @@ from pytz import timezone
 from telebot import TeleBot
 
 from tools.messages import registration_messages, other_messages
-from tools.tg_tools import keyboards
+from tools.tg_tools import reply_keyboards, inline_keyboards
 
 
 def start(bot: TeleBot, message, storage, time_zone: timezone):
@@ -12,7 +12,7 @@ def start(bot: TeleBot, message, storage, time_zone: timezone):
     bot.send_message(
         chat_id=chat_id,
         text=registration_messages['new_registration'],
-        reply_markup=keyboards.keyboard_user_role()
+        reply_markup=inline_keyboards.keyboard_user_role()
     )
 
 
@@ -24,14 +24,14 @@ def registration(bot: TeleBot, message, storage, time_zone: timezone, edit: bool
         bot.send_message(
             chat_id=chat_id,
             text=registration_messages['repeat_registration'],
-            reply_markup=keyboards.keyboard_user_role()
+            reply_markup=inline_keyboards.keyboard_user_role()
         )
     else:
         bot.edit_message_text(
             chat_id=chat_id,
             message_id=message_id,
             text=registration_messages['repeat_registration'],
-            reply_markup=keyboards.keyboard_user_role()
+            reply_markup=inline_keyboards.keyboard_user_role()
         )
 
 
