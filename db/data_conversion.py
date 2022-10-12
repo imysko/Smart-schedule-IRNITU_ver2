@@ -1,30 +1,39 @@
 from datetime import timedelta, datetime
 
+DAY_OF_WEEK = {
+    1: 'Понедельник',
+    2: 'Вторник',
+    3: 'Среда',
+    4: 'Четверг',
+    5: 'Пятница',
+    6: 'Суббота',
+    7: 'Воскресенье'
+}
 
-def convert_institutes(pg_institutes: list) -> list:
-    if not pg_institutes:
+
+def schedule_group_by_date(pg_schedule: list) -> list:
+    if not pg_schedule:
         raise ValueError('Данные не могут быть пустыми')
 
-    list_institutes = pg_institutes
-    for institute in list_institutes:
-        institute[institute['institute_title']] = '{"institute": "' + str(institute['institute_id']) + '"}'
-        del institute['institute_title']
-        del institute['institute_id']
+    schedule_list = []
 
-    return list_institutes
+    for record in pg_schedule:
+        date = (record['dbeg'] + timedelta(days=(record['day'] - 1)))
+        day = DAY_OF_WEEK[record['day']]
 
+        del record['dbeg']
+        del record['day']
 
-def convert_groups(pg_groups: list) -> list:
-    if not pg_groups:
-        raise ValueError('Данные не могут быть пустыми')
+        if not any(item['date'] == date for item in schedule_list):
+            schedule_list.append({
+                'date': date,
+                'day_of_week': day,
+                'lessons': [record]
+            })
+        else:
+            next(item for item in schedule_list if item['date'] == date)['lessons'].append(record)
 
-    list_groups = pg_groups
-    for group in list_groups:
-        group[group['name']] = '{"group": "' + str(group['group_id']) + '"}'
-        del group['name']
-        del group['group_id']
-
-    return list_groups
+    return schedule_list
 
 
 def convert_schedule(pg_schedule: list,
@@ -40,13 +49,9 @@ def convert_schedule(pg_schedule: list,
         start_of_week = pg_schedule[-1]['dbeg']
 
     pg_schedule = list(filter(lambda x: x['dbeg'] == start_of_week, pg_schedule))
-
-    for record in pg_schedule:
-        record['date'] = (record['dbeg'] + timedelta(days=(record['day'] - 1)))
-        del record['dbeg']
-        del record['day']
+    schedule_list = schedule_group_by_date(pg_schedule)
 
     if selected_date is not None:
-        pg_schedule = list(filter(lambda x: x['date'] == selected_date.date(), pg_schedule))
+        schedule_list = list(filter(lambda x: x['date'] == selected_date.date(), schedule_list))
 
-    return pg_schedule
+    return schedule_list

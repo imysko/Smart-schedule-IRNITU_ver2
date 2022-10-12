@@ -1,9 +1,10 @@
 import json
 
 from telebot import TeleBot
-from db import data_conversion, postgre_storage
+from db import postgre_storage
 from db.mongo_storage import MongodbServiceTG
 from tools.tg_tools import inline_keyboards, reply_keyboards
+from tools.tg_tools import data_conversion_callback
 from tools.messages import registration_messages
 from tools.logger import logger
 
@@ -13,7 +14,7 @@ def start_student_registration(bot: TeleBot, message, storage: MongodbServiceTG)
     message_id = message.message.message_id
     data = message.data
 
-    institutes = data_conversion.convert_institutes(
+    institutes = data_conversion_callback.convert_institutes(
         postgre_storage.get_institutes()
     )
 
@@ -34,7 +35,8 @@ def select_course_student_registration(bot: TeleBot, message, storage: MongodbSe
 
     institute_id = storage.get_user(chat_id)['institute']
 
-    courses = postgre_storage.get_courses_by_institute(institute_id)
+    courses = data_conversion_callback.convert_courses(
+        postgre_storage.get_courses_by_institute(institute_id))
 
     bot.edit_message_text(
         message_id=message_id,
@@ -56,7 +58,7 @@ def select_group_student_registration(bot: TeleBot, message, storage: MongodbSer
     institute_id = user['institute']
     course = json.loads(data)['course']
 
-    groups = data_conversion.convert_groups(
+    groups = data_conversion_callback.convert_groups(
         postgre_storage.get_groups_by_institute_and_course(
             institute_id=institute_id,
             course=course

@@ -2,7 +2,6 @@ import json
 import os
 import time
 
-import pytz
 from dotenv import load_dotenv
 from telebot import TeleBot
 
@@ -98,8 +97,9 @@ def authors_handler(message):
 @bot.callback_query_handler(func=lambda message: 'registration' in message.data)
 def registration_handler(message):
     data = message.data
+    callback = json.loads(data)['registration']
 
-    if data == '{"registration": "student"}':
+    if callback == 'student':
         storage.create_user(message.message.chat.id)
         student_registration.start_student_registration(
             bot=bot,
@@ -107,7 +107,7 @@ def registration_handler(message):
             storage=storage
         )
 
-    elif data == '{"registration": "teacher"}':
+    elif callback == 'teacher':
         storage.create_user(message.message.chat.id)
         teacher_registration.start_teacher_registration(
             bot=bot,
@@ -115,7 +115,7 @@ def registration_handler(message):
             storage=storage
         )
 
-    elif data == '{"registration": "back"}':
+    elif callback == 'back':
         storage.delete_user_or_userdata(message.message.chat.id)
         commands.registration(
             bot=bot,
@@ -130,8 +130,9 @@ def registration_handler(message):
 @bot.callback_query_handler(func=lambda message: 'institute' in message.data)
 def institute_registration_handler(message):
     data = message.data
+    callback = json.loads(data)['institute']
 
-    if data == '{"institute": "back"}':
+    if callback == 'back':
         storage.create_user(message.message.chat.id)
         student_registration.start_student_registration(
             bot=bot,
@@ -155,8 +156,9 @@ def institute_registration_handler(message):
 @bot.callback_query_handler(func=lambda message: 'course' in message.data)
 def course_registration_handler(message):
     data = message.data
+    callback = json.loads(data)['course']
 
-    if data == '{"course": "back"}':
+    if callback == 'back':
         storage.delete_user_or_userdata(
             chat_id=message.message.chat.id,
             delete_only_course=True

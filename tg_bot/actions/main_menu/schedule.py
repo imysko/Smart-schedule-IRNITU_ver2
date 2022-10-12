@@ -1,10 +1,11 @@
 from telebot import TeleBot
 
-from db import postgre_storage
+from db import postgre_storage, data_conversion
 from db.mongo_storage import MongodbServiceTG
 from db.postgre_storage import is_week_even
 from tools.messages import error_messages, default_messages
 from tools.tg_tools import reply_keyboards
+from tools.schedule_tools import schedule_conversion
 
 
 def get_schedule(bot: TeleBot, message, storage: MongodbServiceTG):
@@ -49,11 +50,31 @@ def get_schedule(bot: TeleBot, message, storage: MongodbServiceTG):
 
 
 def get_current_week(bot: TeleBot, message, storage: MongodbServiceTG):
-    pass
+    user_group = storage.get_user(message.chat.id)['group']
+    schedule_list = data_conversion.convert_schedule(
+        pg_schedule=postgre_storage.get_schedule_by_group(user_group),
+        next_week=False
+    )
+
+    for day in schedule_conversion.convert_lessons(schedule_list):
+        bot.send_message(
+            chat_id=message.chat.id,
+            text=day
+        )
 
 
 def get_next_week(bot: TeleBot, message, storage: MongodbServiceTG):
-    pass
+    user_group = storage.get_user(message.chat.id)['group']
+    schedule_list = data_conversion.convert_schedule(
+        pg_schedule=postgre_storage.get_schedule_by_group(user_group),
+        next_week=True
+    )
+
+    for day in schedule_conversion.convert_lessons(schedule_list):
+        bot.send_message(
+            chat_id=message.chat.id,
+            text=day
+        )
 
 
 def get_today(bot: TeleBot, message, storage: MongodbServiceTG):

@@ -74,7 +74,7 @@ def get_courses_by_institute(institute_id: int) -> list:
         with conn.cursor(cursor_factory=DictCursor) as cursor:
             cursor.execute(query)
             rows = cursor.fetchall()
-            courses = [{course[0]: '{"course": "' + str(course[0]) + '"}'} for course in rows]
+            courses = [course[0] for course in rows]
             return courses
 
 
@@ -86,6 +86,7 @@ def get_groups_by_institute_and_course(institute_id: int, course: int) -> list:
         WHERE faculty_id = {institute}
           AND kurs = {course}
           AND is_active = True
+        ORDER BY name;
     """.format(institute=institute_id, course=course)
 
     with closing(psycopg2.connect(**db_params)) as conn:
@@ -98,7 +99,8 @@ def get_groups_by_institute_and_course(institute_id: int, course: int) -> list:
 
 def get_teachers() -> list:
     query = """
-        SELECT preps AS fullname
+        SELECT preps AS fullname,
+               id_61 AS teacher_id
         FROM prepods
         ORDER BY fullname;
     """
@@ -107,11 +109,11 @@ def get_teachers() -> list:
         with conn.cursor(cursor_factory=DictCursor) as cursor:
             cursor.execute(query)
             rows = cursor.fetchall()
-            teachers = [teacher[0] for teacher in rows]
+            teachers = [dict(teacher) for teacher in rows]
             return teachers
 
 
-def get_schedule_by_group(group: str) -> list:
+def get_schedule_by_group(group_id: int) -> list:
     date_now = datetime.now(TIME_ZONE)
     start_of_first_week = pendulum.instance(date_now).start_of("week")
     start_of_second_week = pendulum.instance(start_of_first_week).add(weeks=1)
@@ -142,12 +144,59 @@ def get_schedule_by_group(group: str) -> list:
                            ON teachers.id_61 = ANY (schedule.teachers)
                  JOIN real_groups AS groups
                       ON groups.id_7 = ANY (schedule.groups)
-        WHERE 'ИСТб-20-3' = groups.obozn
+        WHERE {group_id} = groups.id_7
           AND groups.is_active = TRUE
           AND ((schedule.dbeg = '{odd_week:%Y-%m-%d}' AND (everyweek = 2 OR everyweek = 1 AND day <= 7))
             OR (schedule.dbeg = '{even_week:%Y-%m-%d}' AND (everyweek = 2 OR everyweek = 1 AND day > 7)))
         ORDER BY dbeg, day, lesson_number, subgroup;
-    """.format(odd_week=odd_week, even_week=even_week, group=group)
+    """.format(odd_week=odd_week, even_week=even_week, group_id=group_id)
+
+    with closing(psycopg2.connect(**db_params)) as conn:
+        with conn.cursor(cursor_factory=DictCursor) as cursor:
+            cursor.execute(query)
+            rows = cursor.fetchall()
+            schedules = [dict(schedule) for schedule in rows]
+
+            return schedules
+
+
+def get_schedule_by_teacher(teacher: str) -> list:
+    date_now = datetime.now(TIME_ZONE)
+    start_of_first_week = pendulum.instance(date_now).start_of("week")
+    start_of_second_week = pendulum.instance(start_of_first_week).add(weeks=1)
+
+    is_even = is_week_even(date_now)
+    if is_even == 1:
+        odd_week = start_of_second_week
+        even_week = start_of_first_week
+    else:
+        even_week = start_of_second_week
+        odd_week = start_of_first_week
+
+    query = """
+        SELECT vacpara.para                AS lesson_number,
+               vacpara.begtime             AS lesson_start,
+               vacpara.endtime             AS lesson_end,
+               schedule.discipline_verbose AS name,
+               teachers.preps              AS teacher_fullname,
+               schedule.auditories_verbose AS classroom,
+               schedule.nt                 AS lesson_type,
+               schedule.ngroup             AS subgroup,
+               (schedule.day - 1) % 7 + 1  AS day,
+               schedule.dbeg
+        FROM schedule_v2 AS schedule
+                 JOIN vacpara
+                      ON schedule.para = vacpara.id_66
+                 LEFT JOIN prepods AS teachers
+                           ON teachers.id_61 = ANY (schedule.teachers)
+                 JOIN real_groups AS groups
+                      ON groups.id_7 = ANY (schedule.groups)
+        WHERE {teacher} = groups.id_7
+          AND groups.is_active = TRUE
+          AND ((schedule.dbeg = '{odd_week:%Y-%m-%d}' AND (everyweek = 2 OR everyweek = 1 AND day <= 7))
+            OR (schedule.dbeg = '{even_week:%Y-%m-%d}' AND (everyweek = 2 OR everyweek = 1 AND day > 7)))
+        ORDER BY dbeg, day, lesson_number, subgroup;
+    """.format(odd_week=odd_week, even_week=even_week, teacher=teacher)
 
     with closing(psycopg2.connect(**db_params)) as conn:
         with conn.cursor(cursor_factory=DictCursor) as cursor:
