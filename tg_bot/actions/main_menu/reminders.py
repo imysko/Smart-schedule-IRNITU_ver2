@@ -1,18 +1,11 @@
 import json
 
-from telebot import TeleBot
+from telebot import TeleBot, logger
+from telebot.apihelper import ApiTelegramException
 
 from db.mongo_storage import MongodbServiceTG
-from tools.messages import reminder_messages
+from tools.schedule_tools.notifications import calculating_reminder_times, get_reminders_status
 from tools.tg_tools import inline_keyboards
-
-
-def get_reminders_status(time: int) -> str:
-    if not time or time == 0:
-        notifications_status = reminder_messages['status_disabled']
-    else:
-        notifications_status = reminder_messages['status_enabled'].format(time=time)
-    return notifications_status
 
 
 def reminder_info(bot: TeleBot, message, storage: MongodbServiceTG):
@@ -31,4 +24,96 @@ def reminder_info(bot: TeleBot, message, storage: MongodbServiceTG):
 
 
 def reminder_settings(bot: TeleBot, message, storage: MongodbServiceTG):
-    pass
+    data = message.data
+
+    if 'decrease_reminder_time' in data:
+        decrease_time(bot, message)
+
+    elif 'increase_reminder_time' in data:
+        increase_time(bot, message)
+
+    elif 'save_reminder_time' in data:
+        save_time(bot, message, storage)
+
+
+def decrease_time(bot: TeleBot, message):
+    chat_id = message.message.chat.id
+    message_id = message.message.message_id
+    data = message.data
+
+    data = json.loads(data)
+    time = data['decrease_reminder_time']
+    if time == 0:
+        return
+    time -= 5
+
+    if time < 0:
+        time = 0
+
+    try:
+        bot.edit_message_reply_markup(
+            message_id=message_id,
+            chat_id=chat_id,
+            reply_markup=inline_keyboards.keyboard_set_notifications(time)
+        )
+    except ApiTelegramException as ex:
+        logger.error(ex)
+
+
+def increase_time(bot: TeleBot, message):
+    chat_id = message.message.chat.id
+    message_id = message.message.message_id
+    data = message.data
+
+    data = json.loads(data)
+    time = data['increase_reminder_time']
+    time += 5
+
+    try:
+        bot.edit_message_reply_markup(
+            message_id=message_id,
+            chat_id=chat_id,
+            reply_markup=inline_keyboards.keyboard_set_notifications(time)
+        )
+    except ApiTelegramException as ex:
+        logger.error(ex)
+
+
+def save_time(bot: TeleBot, message, storage: MongodbServiceTG):
+    chat_id = message.message.chat.id
+    message_id = message.message.message_id
+    data = message.data
+
+    data = json.loads(data)
+    time = data['save_reminder_time']
+
+    group = storage.get_user(chat_id)['group']
+
+    if storage.get_user(chat_id)['course'] == 'None':
+        # get teacher schedule
+        schedule = None
+    else:
+        # get student schedule
+        schedule = None
+
+    if time > 0:
+        reminders = []
+        # reminders = calculating_reminder_times(schedule=schedule, time=int(time))
+    else:
+        reminders = []
+
+    storage.save_or_update_user(
+        chat_id=chat_id,
+        notifications=time,
+        reminders=reminders
+    )
+
+    try:
+        bot.edit_message_text(
+            message_id=message_id,
+            chat_id=chat_id,
+            text=get_reminders_status(time),
+            reply_markup=inline_keyboards.keyboard_set_notifications(time)
+        )
+    except ApiTelegramException as ex:
+        logger.error(ex)

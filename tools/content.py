@@ -4,7 +4,6 @@ content_schedule = ['Расписание 🗓', 'Ближайшая пара �
 content_main_menu_buttons = ['Основное меню', '<==Назад', 'Другое ⚡']
 
 content_students_registration = ['institute', 'course', 'group']
-content_reminder_settings = ['{"reminders_settings": "decrease"}', '{"reminders_settings": "none"}',
-                             '{"reminders_settings": "increase"}', '{"reminders_settings": "save"}']
+content_reminder_settings = ['decrease_reminder_time', 'increase_reminder_time', 'save_reminder_time']
 content_prep_group = ["found_prep", "prep_list"]
 content_aud = ["search_aud", "menu_aud"]
