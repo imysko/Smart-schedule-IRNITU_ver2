@@ -199,6 +199,18 @@ def group_registration_handler(message):
     logger.info(f'Inline button data: {data}')
 
 
+@bot.callback_query_handler(func=lambda message: 'teacher_id' in message.data)
+def teacher_registration_finish_handler(message):
+    teacher_registration.finish_teacher_registration_by_button(
+        bot=bot,
+        message=message,
+        storage=storage
+    )
+
+    bot.delete_message(message.message.chat.id, message.message.id)
+    logger.info(f'Inline button data: {message.data}')
+
+
 # Search
 @bot.message_handler(func=lambda message: message.text == 'Поиск 🔎', content_types=['text'])
 def reminders_info_handler(message):

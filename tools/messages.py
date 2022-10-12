@@ -18,7 +18,8 @@ registration_messages = {
     'enter_full_name': 'Введите своё ФИО полностью.\n'
                        'Например: Корняков Михаил Викторович',
     'successful_registration': 'Вы успешно зарегистрировались!',
-    'wrong_teacher_name': 'Проверьте правильность ввода'
+    'wrong_teacher_name': 'Проверьте правильность ввода',
+    'probably_you_mean': 'Возможно, вы имели ввиду:'
 }
 
 other_messages = {

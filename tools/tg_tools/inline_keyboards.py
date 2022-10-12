@@ -38,7 +38,7 @@ def keyboard_reminders() -> InlineKeyboardMarkup:
     return Keyboa(items=reminders)()
 
 
-def keyboard_set_notifications(time: int = 0):
+def keyboard_set_notifications(time: int = 0) -> InlineKeyboardMarkup:
     markup = types.InlineKeyboardMarkup()
     data_del = json.dumps({"del_notifications": time})
     if time != 0:
@@ -52,4 +52,14 @@ def keyboard_set_notifications(time: int = 0):
 
     data_save = json.dumps({"save_notifications": time})
     markup.add(types.InlineKeyboardButton(text='Сохранить', callback_data=data_save))
+    return markup
+
+
+def keyboard_with_possible_teachers(teachers: list) -> InlineKeyboardMarkup:
+    markup = types.InlineKeyboardMarkup()
+    for teacher in teachers:
+        data = json.dumps({'teacher_id': teacher['teacher_id']})
+        markup.add(types.InlineKeyboardButton(text=teacher['fullname'], callback_data=data))
+    data = json.dumps({'teacher_id': 'cancel'})
+    markup.add(types.InlineKeyboardButton(text='Отмена', callback_data=data))
     return markup
