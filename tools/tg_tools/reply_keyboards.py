@@ -61,6 +61,28 @@ def keyboard_search_goal() -> ReplyKeyboardMarkup:
     return markup
 
 
+def keyboard_search_classroom() -> ReplyKeyboardMarkup:
+    markup = types.ReplyKeyboardMarkup(one_time_keyboard=False, resize_keyboard=True)
+    btn1 = types.KeyboardButton('На текущую неделю')
+    btn2 = types.KeyboardButton('На следующую неделю')
+    btn3 = types.KeyboardButton('На сегодня')
+    btn4 = types.KeyboardButton('На завтра')
+    btn5 = types.KeyboardButton('Экзамены')
+    btn6 = types.KeyboardButton('Основное меню')
+    markup.add(btn1, btn2)
+    markup.add(btn3, btn4)
+    markup.add(btn5)
+    markup.add(btn6)
+    return markup
+
+
 def make_keyboard_empty() -> ReplyKeyboardRemove:
     markup = types.ReplyKeyboardRemove()
+    return markup
+
+
+def keyboard_main_menu() -> ReplyKeyboardMarkup:
+    markup = types.ReplyKeyboardMarkup(one_time_keyboard=False, resize_keyboard=True)
+    btn1 = types.KeyboardButton('Основное меню')
+    markup.add(btn1)
     return markup

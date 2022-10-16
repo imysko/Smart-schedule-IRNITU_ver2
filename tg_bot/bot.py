@@ -10,6 +10,7 @@ from tg_bot.actions import commands
 from tg_bot.actions.main_menu import main_menu, schedule, reminders
 from tg_bot.actions.registration import student as student_registration
 from tg_bot.actions.registration import teacher as teacher_registration
+from tg_bot.actions.search import classrooms as classrooms_search
 from tools.logger import logger
 from tools.messages import error_messages, default_messages
 from tools.tg_tools import reply_keyboards
@@ -213,7 +214,7 @@ def teacher_registration_finish_handler(message):
 
 # Search
 @bot.message_handler(func=lambda message: message.text == 'Поиск 🔎', content_types=['text'])
-def reminders_info_handler(message):
+def search_handler(message):
     chat_id = message.chat.id
     bot.send_message(
         chat_id=chat_id,
@@ -226,17 +227,25 @@ def reminders_info_handler(message):
 @bot.message_handler(
     func=lambda message: message.text == 'Группы и преподаватели' or message.text == 'Аудитории',
     content_types=['text'])
-def reminders_info_handler(message):
+def search_type_handler(message):
     chat_id = message.chat.id
     if message.text == "Группы и преподаватели":
         # Clear keyboard
         # Start search
         pass
     elif message.text == 'Аудитории':
-        # Clear keyboard
-        # Start search
-        pass
+        classrooms_search.start_search_classroom(
+            bot=bot,
+            message=message,
+            storage=storage,
+        )
     logger.info(f'Inline button data: {chat_id}')
+
+
+@bot.callback_query_handler(func=lambda message: 'classroom' in message.data)
+def teacher_registration_finish_handler(message):
+    classrooms_search.choose_period(message=message, bot=bot, storage=storage)
+    logger.info(f'Inline button data: {message.data}')
 
 
 # Reminder settings

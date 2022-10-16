@@ -14,7 +14,7 @@ TIME_ZONE = pytz.timezone('Asia/Irkutsk')
 
 PG_DB_DATABASE = os.environ.get('PG_DB_DATABASE', default='schedule')
 PG_DB_USER = os.environ.get('PG_DB_USER')
-PG_DB_PASSWORD = os.environ.get('PG_DB_PASSWORD')
+PG_DB_PASSWORD = os.environ.get('PG_DB_PASSWORD', default='')
 PG_DB_HOST = os.environ.get('PG_DB_HOST')
 PG_DB_PORT = os.environ.get('PG_DB_PORT', default='5432')
 
@@ -111,6 +111,22 @@ def get_teachers() -> list:
             rows = cursor.fetchall()
             teachers = [dict(teacher) for teacher in rows]
             return teachers
+
+
+def get_classrooms() -> list:
+    query = """
+        SELECT obozn AS name,
+               id_60 AS classroom_id
+        FROM auditories
+        ORDER BY name;
+    """
+
+    with closing(psycopg2.connect(**db_params)) as conn:
+        with conn.cursor(cursor_factory=DictCursor) as cursor:
+            cursor.execute(query)
+            rows = cursor.fetchall()
+            classrooms = [dict(classroom) for classroom in rows]
+            return classrooms
 
 
 def get_schedule_by_group(group_id: int) -> list:
