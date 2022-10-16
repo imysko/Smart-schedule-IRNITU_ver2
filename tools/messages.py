@@ -60,6 +60,13 @@ default_messages = {
     'start_menu': 'Основное меню'
 }
 
+schedule_messages = {
+    'empty_current_week_lessons': 'На этой неделе пар нет',
+    'empty_next_week_lessons': 'На следующей неделе пар нет',
+    'empty_today_lessons': 'Сегодня пар нет',
+    'empty_tomorrow_lessons': 'Завтра пар нет',
+}
+
 reminder_messages = {
     'status_disabled': 'Напоминания выключены ❌\n'
                        'Воспользуйтесь настройками, чтобы включить',

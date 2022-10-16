@@ -4,7 +4,7 @@ from datetime import datetime, date
 
 import pytz
 from dotenv import load_dotenv
-import pendulum as pendulum
+import pendulum
 import psycopg2
 from psycopg2.extras import DictCursor
 
@@ -42,6 +42,22 @@ def is_week_even(start_date: datetime) -> bool:
     weeks = (start_date - study_year_start).days // 7
 
     return weeks % 2
+
+
+def get_odd_even_week():
+    date_now = datetime.now(TIME_ZONE)
+    start_of_first_week = pendulum.instance(date_now).start_of("week")
+    start_of_second_week = pendulum.instance(start_of_first_week).add(weeks=1)
+
+    is_even = is_week_even(date_now)
+    if is_even == 1:
+        odd_week = start_of_second_week
+        even_week = start_of_first_week
+    else:
+        even_week = start_of_second_week
+        odd_week = start_of_first_week
+
+    return odd_week, even_week
 
 
 def get_institutes() -> list:
@@ -130,23 +146,14 @@ def get_classrooms() -> list:
 
 
 def get_schedule_by_group(group_id: int) -> list:
-    date_now = datetime.now(TIME_ZONE)
-    start_of_first_week = pendulum.instance(date_now).start_of("week")
-    start_of_second_week = pendulum.instance(start_of_first_week).add(weeks=1)
-
-    is_even = is_week_even(date_now)
-    if is_even == 1:
-        odd_week = start_of_second_week
-        even_week = start_of_first_week
-    else:
-        even_week = start_of_second_week
-        odd_week = start_of_first_week
+    odd_week, even_week = get_odd_even_week()
 
     query = """
         SELECT vacpara.para                AS lesson_number,
                vacpara.begtime             AS lesson_start,
                vacpara.endtime             AS lesson_end,
                schedule.discipline_verbose AS name,
+               groups.obozn                AS list_group,
                teachers.preps              AS teacher_fullname,
                schedule.auditories_verbose AS classroom,
                schedule.nt                 AS lesson_type,
@@ -176,43 +183,34 @@ def get_schedule_by_group(group_id: int) -> list:
             return schedules
 
 
-def get_schedule_by_teacher(teacher: str) -> list:
-    date_now = datetime.now(TIME_ZONE)
-    start_of_first_week = pendulum.instance(date_now).start_of("week")
-    start_of_second_week = pendulum.instance(start_of_first_week).add(weeks=1)
-
-    is_even = is_week_even(date_now)
-    if is_even == 1:
-        odd_week = start_of_second_week
-        even_week = start_of_first_week
-    else:
-        even_week = start_of_second_week
-        odd_week = start_of_first_week
+def get_schedule_by_teacher(teacher_id: int) -> list:
+    odd_week, even_week = get_odd_even_week()
 
     query = """
-        SELECT vacpara.para                AS lesson_number,
-               vacpara.begtime             AS lesson_start,
-               vacpara.endtime             AS lesson_end,
-               schedule.discipline_verbose AS name,
-               teachers.preps              AS teacher_fullname,
-               schedule.auditories_verbose AS classroom,
-               schedule.nt                 AS lesson_type,
-               schedule.ngroup             AS subgroup,
-               (schedule.day - 1) % 7 + 1  AS day,
-               schedule.dbeg
+        SELECT DISTINCT vacpara.para                AS lesson_number,
+                        vacpara.begtime             AS lesson_start,
+                        vacpara.endtime             AS lesson_end,
+                        schedule.discipline_verbose AS name,
+                        groups.obozn                AS list_group,
+                        teachers.preps              AS teacher_fullname,
+                        schedule.auditories_verbose AS classroom,
+                        schedule.nt                 AS lesson_type,
+                        schedule.ngroup             AS subgroup,
+                        (schedule.day - 1) % 7 + 1  AS day,
+                        schedule.dbeg
         FROM schedule_v2 AS schedule
                  JOIN vacpara
                       ON schedule.para = vacpara.id_66
-                 LEFT JOIN prepods AS teachers
-                           ON teachers.id_61 = ANY (schedule.teachers)
+                 JOIN prepods AS teachers
+                      ON teachers.id_61 = ANY (schedule.teachers)
                  JOIN real_groups AS groups
                       ON groups.id_7 = ANY (schedule.groups)
-        WHERE {teacher} = groups.id_7
+        WHERE {teacher_id} = ANY (schedule.teachers)
           AND groups.is_active = TRUE
           AND ((schedule.dbeg = '{odd_week:%Y-%m-%d}' AND (everyweek = 2 OR everyweek = 1 AND day <= 7))
             OR (schedule.dbeg = '{even_week:%Y-%m-%d}' AND (everyweek = 2 OR everyweek = 1 AND day > 7)))
         ORDER BY dbeg, day, lesson_number, subgroup;
-    """.format(odd_week=odd_week, even_week=even_week, teacher=teacher)
+    """.format(odd_week=odd_week, even_week=even_week, teacher_id=teacher_id)
 
     with closing(psycopg2.connect(**db_params)) as conn:
         with conn.cursor(cursor_factory=DictCursor) as cursor:

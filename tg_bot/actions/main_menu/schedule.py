@@ -1,11 +1,15 @@
+import pytz
+from datetime import datetime, timedelta
+
 from telebot import TeleBot
 
-from db import postgre_storage, data_conversion
+from db import getting_schedule
 from db.mongo_storage import MongodbServiceTG
-from db.postgre_storage import is_week_even
-from tools.messages import error_messages, default_messages
+from tools.messages import error_messages, default_messages, schedule_messages
 from tools.tg_tools import reply_keyboards
 from tools.schedule_tools import schedule_conversion
+
+TIMEZONE = pytz.timezone('Asia/Irkutsk')
 
 
 def get_schedule(bot: TeleBot, message, storage: MongodbServiceTG):
@@ -51,34 +55,77 @@ def get_schedule(bot: TeleBot, message, storage: MongodbServiceTG):
 
 def get_current_week(bot: TeleBot, message, storage: MongodbServiceTG):
     user_group = storage.get_user(message.chat.id)['group']
-    schedule_list = data_conversion.convert_schedule(
-        pg_schedule=postgre_storage.get_schedule_by_group(user_group),
+
+    # забахать проерку на пользователя: группа или препод
+
+    schedule_list = getting_schedule.get_group_schedule(
+        group_id=user_group,
         next_week=False
     )
+    schedule_list = schedule_conversion.convert_lessons_group(schedule_list)
 
-    for day in schedule_conversion.convert_lessons(schedule_list):
+    if len(schedule_list):
+        for day in schedule_list:
+            bot.send_message(
+                chat_id=message.chat.id,
+                text=day,
+                parse_mode='HTML'
+            )
+    else:
         bot.send_message(
             chat_id=message.chat.id,
-            text=day
+            text=schedule_messages['empty_current_week_lessons'],
         )
 
 
 def get_next_week(bot: TeleBot, message, storage: MongodbServiceTG):
     user_group = storage.get_user(message.chat.id)['group']
-    schedule_list = data_conversion.convert_schedule(
-        pg_schedule=postgre_storage.get_schedule_by_group(user_group),
+
+    # забахать проерку на пользователя: группа или препод
+
+    schedule_list = getting_schedule.get_group_schedule(
+        group_id=user_group,
         next_week=True
     )
+    schedule_list = schedule_conversion.convert_lessons_group(schedule_list)
 
-    for day in schedule_conversion.convert_lessons(schedule_list):
+    if len(schedule_list):
+        for day in schedule_list:
+            bot.send_message(
+                chat_id=message.chat.id,
+                text=day,
+                parse_mode='HTML'
+            )
+    else:
         bot.send_message(
             chat_id=message.chat.id,
-            text=day
+            text=schedule_messages['empty_next_week_lessons'],
         )
 
 
 def get_today(bot: TeleBot, message, storage: MongodbServiceTG):
-    pass
+    user_group = storage.get_user(message.chat.id)['group']
+
+    # забахать проерку на пользователя: группа или препод
+
+    schedule_list = getting_schedule.get_group_schedule(
+        group_id=user_group,
+        selected_date=datetime.now(TIMEZONE)
+    )
+    schedule_list = schedule_conversion.convert_lessons_group(schedule_list)
+
+    if len(schedule_list):
+        for day in schedule_list:
+            bot.send_message(
+                chat_id=message.chat.id,
+                text=day,
+                parse_mode='HTML'
+            )
+    else:
+        bot.send_message(
+            chat_id=message.chat.id,
+            text=schedule_messages['empty_today_lessons'],
+        )
 
 
 def get_tomorrow(bot: TeleBot, message, storage: MongodbServiceTG):
@@ -102,4 +149,26 @@ def get_tomorrow(bot: TeleBot, message, storage: MongodbServiceTG):
     #    return
 
     #week = 'even' if is_week_even is 1 else 'odd'
-    pass
+
+    user_group = storage.get_user(message.chat.id)['group']
+
+    # забахать проерку на пользователя: группа или препод
+
+    schedule_list = getting_schedule.get_group_schedule(
+        group_id=user_group,
+        selected_date=datetime.now(TIMEZONE) + timedelta(days=1)
+    )
+    schedule_list = schedule_conversion.convert_lessons_group(schedule_list)
+
+    if len(schedule_list):
+        for day in schedule_list:
+            bot.send_message(
+                chat_id=message.chat.id,
+                text=day,
+                parse_mode='HTML'
+            )
+    else:
+        bot.send_message(
+            chat_id=message.chat.id,
+            text=schedule_messages['empty_tomorrow_lessons'],
+        )

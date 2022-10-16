@@ -1,36 +1,39 @@
 TYPE_OF_LESSON = {
-    0: None,
-    1: 'лекция',
-    2: 'практика',
-    3: 'лабораторная работа'
+    1: 'Лекция',
+    2: 'Практика',
+    3: 'Лабораторная работа'
 }
 
 
-def convert_lessons(schedule_list: list) -> list:
+def convert_lessons_group(schedule_list: list) -> list:
     format_schedule_list = []
 
     for day in schedule_list:
-        format_day = \
-            f'{day["date"]}\n' \
-            f'{day["day_of_week"]}\n'
+        format_day = f'{day["day_of_week"]}\n\n'
 
         for lesson in day['lessons']:
-            # - {TYPE_OF_LESSON[lesson["lesson_type"]]}
-            format_day += \
-                f'\t{lesson["lesson_number"]} - {TYPE_OF_LESSON[lesson["lesson_type"]]}\n' \
-                f'\t{lesson["lesson_start"]}-{lesson["lesson_end"]}\n' \
-                f'{lesson["name"]}\n' \
-                f'{lesson["teacher_fullname"]}\n' \
-                f'Аудитория: {lesson["classroom"]}\n' \
-                f'Подгруппа {lesson["subgroup"]}\n'
+            format_day += f'\t{lesson["lesson_start"]} - {lesson["lesson_end"]}\n'
+
+            if lesson['lesson_type'] is not None and lesson['lesson_type'] != 0:
+                format_day += f'\t{TYPE_OF_LESSON[lesson["lesson_type"]]}\n'
+
+            format_day += f' - {lesson["name"]}\n'
+
+            for teacher in lesson['teacher_fullname']:
+                if teacher is not None and teacher != '':
+                    format_day += f'{teacher}\n'
+
+            if lesson['classroom'] is not None and lesson['classroom'] != '':
+                format_day += f'Aудитория: {lesson["classroom"]}\n'
+
+            if lesson['subgroup'] is not None and lesson['subgroup'] != 0:
+                format_day += f'Подгруппа {lesson["subgroup"]}\n'
+
+            format_day += '\n'
 
         format_schedule_list.append(format_day)
 
     return format_schedule_list
-
-
-def convert_lesson():
-    pass
 
 
 def convert_exams():
