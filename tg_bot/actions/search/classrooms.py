@@ -50,7 +50,7 @@ def search_classroom(message, bot: TeleBot, storage):
         bot.send_message(
             chat_id=chat_id,
             text=search_messages['select_type_search'],
-            reply_markup=inline_keyboards.keyboard_search_classrooms(classroom_id)
+            reply_markup=inline_keyboards.keyboard_search_classroom(classroom_id)
         )
     else:
         msg = bot.send_message(

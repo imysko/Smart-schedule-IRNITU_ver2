@@ -2,7 +2,7 @@ content_schedule = ['Расписание 🗓', 'Ближайшая пара �
                     'На следующую неделю', 'Расписание на завтра 🍎', 'Следующая', 'Текущая', 'Экзамены']
 
 content_main_menu_buttons = ['Основное меню', '<==Назад', 'Другое ⚡']
-
+content_search_type_buttons = ['Аудитории', 'Группы', 'Преподаватели']
 content_students_registration = ['institute', 'course', 'group']
 content_reminder_settings = ['decrease_reminder_time', 'increase_reminder_time', 'save_reminder_time']
 content_prep_group = ["found_prep", "prep_list"]

@@ -22,7 +22,7 @@ def keyboard_main_menu() -> InlineKeyboardMarkup:
 
 
 def keyboard_back(callback: str) -> InlineKeyboardMarkup:
-    return Keyboa(items={'<': '{"' + callback + '": "back"}'})()
+    return Keyboa(items={'<': json.dumps({callback: "back"})})()
 
 
 def keyboard_user_role() -> InlineKeyboardMarkup:
@@ -65,14 +65,22 @@ def keyboard_set_notifications(time: int = 0) -> InlineKeyboardMarkup:
 def keyboard_with_possible_teachers(teachers: list) -> InlineKeyboardMarkup:
     markup = types.InlineKeyboardMarkup()
     for teacher in teachers:
-        data = json.dumps({'teacher_id': teacher['teacher_id']})
+        data = json.dumps({'register_teacher_id': teacher['teacher_id']})
         markup.add(types.InlineKeyboardButton(text=teacher['fullname'], callback_data=data))
-    data = json.dumps({'teacher_id': 'cancel'})
+    data = json.dumps({'register_teacher_id': 'cancel'})
     markup.add(types.InlineKeyboardButton(text='Отмена', callback_data=data))
     return markup
 
 
-def keyboard_search_classrooms(classroom: str) -> InlineKeyboardMarkup:
+def keyboard_search_with_possible_teachers(teachers: list) -> InlineKeyboardMarkup:
+    markup = types.InlineKeyboardMarkup()
+    for teacher in teachers:
+        data = json.dumps({'search_teacher_id': teacher['teacher_id']})
+        markup.add(types.InlineKeyboardButton(text=teacher['fullname'], callback_data=data))
+    return markup
+
+
+def keyboard_search_classroom(classroom: str) -> InlineKeyboardMarkup:
     markup = types.InlineKeyboardMarkup()
     current_week = json.dumps({'current_week_classroom': classroom})
     next_week = json.dumps({'next_week_classroom': classroom})
@@ -88,4 +96,21 @@ def keyboard_search_classrooms(classroom: str) -> InlineKeyboardMarkup:
         types.InlineKeyboardButton(text='На завтра', callback_data=tomorrow)
     )
     markup.add(types.InlineKeyboardButton(text='Экзамены', callback_data=exams))
+    return markup
+
+
+def keyboard_search_teacher(teacher: str) -> InlineKeyboardMarkup:
+    markup = types.InlineKeyboardMarkup()
+    current_week = json.dumps({'current_week_teacher': teacher})
+    next_week = json.dumps({'next_week_teacher': teacher})
+    today = json.dumps({'today_teacher': teacher})
+    tomorrow = json.dumps({'tomorrow_teacher': teacher})
+    markup.add(
+        types.InlineKeyboardButton(text='На текущую неделю', callback_data=current_week),
+        types.InlineKeyboardButton(text='На следующую неделю', callback_data=next_week)
+    )
+    markup.add(
+        types.InlineKeyboardButton(text='На сегодня', callback_data=today),
+        types.InlineKeyboardButton(text='На завтра', callback_data=tomorrow)
+    )
     return markup

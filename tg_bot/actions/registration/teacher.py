@@ -41,7 +41,7 @@ def start_teacher_registration(bot: TeleBot, message, storage: MongodbServiceTG)
 
 def finish_teacher_registration(message, bot: TeleBot, storage: MongodbServiceTG, last_msg=None):
     chat_id = message.chat.id
-    message = message.text
+    text = message.text
 
     if last_msg:
         message_id = last_msg.message_id
@@ -52,7 +52,7 @@ def finish_teacher_registration(message, bot: TeleBot, storage: MongodbServiceTG
 
     teachers_list = postgre_storage.get_teachers()
 
-    teacher = list(filter(lambda user: user['fullname'] == message, teachers_list))
+    teacher = list(filter(lambda user: user['fullname'] == text, teachers_list))
     if len(teacher) != 0:
         storage.save_or_update_user(
             chat_id=chat_id,
@@ -65,7 +65,7 @@ def finish_teacher_registration(message, bot: TeleBot, storage: MongodbServiceTG
             reply_markup=reply_keyboards.keyboard_start_menu()
         )
     else:
-        teachers = find_teacher(message, teachers_list)
+        teachers = find_teacher(text, teachers_list)
         if len(teachers) == 0:
             bot.send_message(
                 chat_id=chat_id,
@@ -73,7 +73,7 @@ def finish_teacher_registration(message, bot: TeleBot, storage: MongodbServiceTG
                 reply_markup=inline_keyboards.keyboard_user_role()
             )
         else:
-            message = bot.send_message(
+            bot.send_message(
                 chat_id=chat_id,
                 text=registration_messages['probably_you_mean'],
                 reply_markup=inline_keyboards.keyboard_with_possible_teachers(teachers)
@@ -84,7 +84,7 @@ def finish_teacher_registration_by_button(message, bot: TeleBot, storage: Mongod
     chat_id = message.message.chat.id
     data = json.loads(message.data)
 
-    if data['teacher_id'] == 'cancel':
+    if data['register_teacher_id'] == 'cancel':
         bot.send_message(
             chat_id=chat_id,
             text=registration_messages['new_registration'],
@@ -92,14 +92,14 @@ def finish_teacher_registration_by_button(message, bot: TeleBot, storage: Mongod
         )
         return
 
-    teacher_id = data['teacher_id']
+    teacher_id = data['register_teacher_id']
     teachers_list = postgre_storage.get_teachers()
 
-    teacher = list(filter(lambda user: user['teacher_id'] == teacher_id, teachers_list))[0]
+    teacher = list(filter(lambda user: user['register_teacher_id'] == teacher_id, teachers_list))[0]
     storage.save_or_update_user(
         chat_id=chat_id,
         institute='teacher',
-        group=teacher['teacher_id']
+        group=teacher['register_teacher_id']
     )
     bot.send_message(
         chat_id=chat_id,

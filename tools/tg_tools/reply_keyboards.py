@@ -52,12 +52,13 @@ def keyboard_near_lesson() -> ReplyKeyboardMarkup:
 
 def keyboard_search_goal() -> ReplyKeyboardMarkup:
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=False, resize_keyboard=True)
-    btn1 = types.KeyboardButton('Группы и преподаватели')
-    btn2 = types.KeyboardButton('Аудитории')
-    btn3 = types.KeyboardButton('Основное меню')
-    markup.add(btn1)
-    markup.add(btn2)
+    btn1 = types.KeyboardButton('Группы')
+    btn2 = types.KeyboardButton('Преподаватели')
+    btn3 = types.KeyboardButton('Аудитории')
+    btn4 = types.KeyboardButton('Основное меню')
+    markup.add(btn1, btn2)
     markup.add(btn3)
+    markup.add(btn4)
     return markup
 
 

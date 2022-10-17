@@ -11,6 +11,7 @@ from tg_bot.actions.main_menu import main_menu, schedule, reminders
 from tg_bot.actions.registration import student as student_registration
 from tg_bot.actions.registration import teacher as teacher_registration
 from tg_bot.actions.search import classrooms as classrooms_search
+from tg_bot.actions.search import teachers as teachers_search
 from tools.logger import logger
 from tools.messages import error_messages, default_messages
 from tools.tg_tools import reply_keyboards
@@ -200,7 +201,7 @@ def group_registration_handler(message):
     logger.info(f'Inline button data: {data}')
 
 
-@bot.callback_query_handler(func=lambda message: 'teacher_id' in message.data)
+@bot.callback_query_handler(func=lambda message: 'register_teacher_id' in message.data)
 def teacher_registration_finish_handler(message):
     teacher_registration.finish_teacher_registration_by_button(
         bot=bot,
@@ -224,15 +225,19 @@ def search_handler(message):
     logger.info(f'Inline button data: {chat_id}')
 
 
-@bot.message_handler(
-    func=lambda message: message.text == 'Группы и преподаватели' or message.text == 'Аудитории',
-    content_types=['text'])
+@bot.message_handler(func=lambda message: message.text in content_search_type_buttons, content_types=['text'])
 def search_type_handler(message):
     chat_id = message.chat.id
-    if message.text == "Группы и преподаватели":
+    if message.text == "Группы":
         # Clear keyboard
         # Start search
         pass
+    elif message.text == "Преподаватели":
+        teachers_search.start_search_teacher(
+            bot=bot,
+            message=message,
+            storage=storage
+        )
     elif message.text == 'Аудитории':
         classrooms_search.start_search_classroom(
             bot=bot,
@@ -244,9 +249,24 @@ def search_type_handler(message):
 
 @bot.callback_query_handler(func=lambda message: 'classroom' in message.data)
 def teacher_registration_finish_handler(message):
-    classrooms_search.choose_period(message=message, bot=bot, storage=storage)
+    classrooms_search.choose_period(
+        message=message,
+        bot=bot,
+        storage=storage
+    )
     logger.info(f'Inline button data: {message.data}')
 
+
+@bot.callback_query_handler(func=lambda message: 'search_teacher_id' in message.data)
+def teacher_registration_finish_handler(message):
+    teachers_search.search_teacher_by_button(
+        bot=bot,
+        message=message,
+        storage=storage
+    )
+
+    bot.delete_message(message.message.chat.id, message.message.id)
+    logger.info(f'Inline button data: {message.data}')
 
 # Reminder settings
 @bot.callback_query_handler(func=lambda message: any(word in message.data for word in content_reminder_settings))
