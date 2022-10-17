@@ -1,10 +1,12 @@
+import json
 import re
 
 from telebot import TeleBot
 
-from db import postgre_storage
+from db import postgre_storage, getting_schedule
 from db.mongo_storage import MongodbServiceTG
-from tools.messages import search_messages, default_messages
+from tools.messages import search_messages, default_messages, schedule_messages
+from tools.schedule_tools import schedule_conversion
 from tools.tg_tools import reply_keyboards, inline_keyboards
 
 
@@ -77,7 +79,26 @@ def choose_period(message, bot: TeleBot, storage: MongodbServiceTG):
 
 
 def get_current_week(bot: TeleBot, message, storage: MongodbServiceTG):
-    pass
+    classroom_id = json.load(message.data)['current_week_classroom']
+
+    schedule_list = getting_schedule.get_classroom_schedule(
+        classroom_id=classroom_id,
+        next_week=False
+    )
+    schedule_list = schedule_conversion.convert_lessons_teachers(schedule_list)
+
+    if len(schedule_list):
+        for day in schedule_list:
+            bot.send_message(
+                chat_id=message.chat.id,
+                text=day,
+                parse_mode='HTML'
+            )
+    else:
+        bot.send_message(
+            chat_id=message.chat.id,
+            text=schedule_messages['empty_current_week_lessons'],
+        )
 
 
 def get_next_week(bot: TeleBot, message, storage: MongodbServiceTG):

@@ -219,3 +219,43 @@ def get_schedule_by_teacher(teacher_id: int) -> list:
             schedules = [dict(schedule) for schedule in rows]
 
             return schedules
+
+
+def get_schedule_by_classroom(classroom_id: int) -> list:
+    odd_week, even_week = get_odd_even_week()
+
+    query = """
+        SELECT DISTINCT vacpara.para                AS lesson_number,
+                        vacpara.begtime             AS lesson_start,
+                        vacpara.endtime             AS lesson_end,
+                        schedule.discipline_verbose AS name,
+                        groups.obozn                AS list_groups,
+                        teachers.preps              AS teachers,
+                        schedule.auditories_verbose AS classroom,
+                        schedule.nt                 AS lesson_type,
+                        schedule.ngroup             AS subgroup,
+                        (schedule.day - 1) % 7 + 1  AS day,
+                        schedule.dbeg
+        FROM schedule_v2 AS schedule
+                 JOIN vacpara
+                      ON schedule.para = vacpara.id_66
+                 JOIN prepods AS teachers
+                      ON teachers.id_61 = ANY (schedule.teachers)
+                 JOIN real_groups AS groups
+                      ON groups.id_7 = ANY (schedule.groups)
+                 JOIN auditories as classrooms
+                      ON classrooms.obozn = schedule.auditories_verbose
+        WHERE {classroom_id} = classrooms.id_60
+          AND groups.is_active = TRUE
+          AND ((schedule.dbeg = '{odd_week:%Y-%m-%d}' AND (everyweek = 2 OR everyweek = 1 AND day <= 7))
+            OR (schedule.dbeg = '{even_week:%Y-%m-%d}' AND (everyweek = 2 OR everyweek = 1 AND day > 7)))
+        ORDER BY dbeg, day, lesson_number, subgroup;
+    """.format(odd_week=odd_week, even_week=even_week, classroom_id=classroom_id)
+
+    with closing(psycopg2.connect(**db_params)) as conn:
+        with conn.cursor(cursor_factory=DictCursor) as cursor:
+            cursor.execute(query)
+            rows = cursor.fetchall()
+            schedules = [dict(schedule) for schedule in rows]
+
+            return schedules
