@@ -12,6 +12,7 @@ from tg_bot.actions.registration import student as student_registration
 from tg_bot.actions.registration import teacher as teacher_registration
 from tg_bot.actions.search import classrooms as classrooms_search
 from tg_bot.actions.search import teachers as teachers_search
+from tg_bot.actions.search import groups as groups_search
 from tools.logger import logger
 from tools.messages import error_messages, default_messages
 from tools.tg_tools import reply_keyboards
@@ -183,7 +184,7 @@ def course_registration_handler(message):
     logger.info(f'Inline button data: {data}')
 
 
-@bot.callback_query_handler(func=lambda message: 'group' in message.data)
+@bot.callback_query_handler(func=lambda message: 'register_group_id' in message.data)
 def group_registration_handler(message):
     data = message.data
 
@@ -229,9 +230,11 @@ def search_handler(message):
 def search_type_handler(message):
     chat_id = message.chat.id
     if message.text == "Группы":
-        # Clear keyboard
-        # Start search
-        pass
+        groups_search.start_search_group(
+            bot=bot,
+            message=message,
+            storage=storage,
+        )
     elif message.text == "Преподаватели":
         teachers_search.start_search_teacher(
             bot=bot,

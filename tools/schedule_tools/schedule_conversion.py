@@ -62,7 +62,7 @@ def convert_lessons_teachers(schedule_list: list) -> list:
             for group in lesson['list_group'][3:]:
                 if group is not None and group != '':
                     format_day += f'{group}, '
-            if len(lesson['list_group'] > 3):
+            if len(lesson['list_group']) > 3:
                 format_day += f'+ {len(lesson["list_group"][3:])} групп'
 
             if lesson['subgroup'] is not None and lesson['subgroup'] != 0:

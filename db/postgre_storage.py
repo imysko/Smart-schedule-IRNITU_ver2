@@ -113,6 +113,22 @@ def get_groups_by_institute_and_course(institute_id: int, course: int) -> list:
             return groups
 
 
+def get_groups() -> list:
+    query = """
+           SELECT obozn AS name,
+                  id_7  AS group_id
+           FROM real_groups
+           WHERE is_active = True;
+       """
+
+    with closing(psycopg2.connect(**db_params)) as conn:
+        with conn.cursor(cursor_factory=DictCursor) as cursor:
+            cursor.execute(query)
+            rows = cursor.fetchall()
+            groups = [dict(group) for group in rows]
+            return groups
+
+
 def get_teachers() -> list:
     query = """
         SELECT preps AS fullname,

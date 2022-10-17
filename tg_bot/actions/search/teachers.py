@@ -44,13 +44,13 @@ def search_teacher(message, bot: TeleBot, storage):
         return
 
     teachers_list = postgre_storage.get_teachers()
-    teacher = list(filter(lambda user: user['fullname'] == text, teachers_list))
+    teachers = list(filter(lambda user: user['fullname'] == text, teachers_list))
 
-    if len(teacher) != 0:
+    if len(teachers) != 0:
         bot.send_message(
             chat_id=chat_id,
             text=search_messages['select_type_search'],
-            reply_markup=inline_keyboards.keyboard_search_teacher(teacher[0])
+            reply_markup=inline_keyboards.keyboard_search(teachers[0]['teacher_id'], 'teacher')
         )
     else:
         teachers = find_teacher(text, teachers_list)
@@ -80,7 +80,7 @@ def search_teacher_by_button(message, bot: TeleBot, storage: MongodbServiceTG):
     bot.send_message(
         chat_id=chat_id,
         text=search_messages['select_type_search'],
-        reply_markup=inline_keyboards.keyboard_search_teacher(teacher)
+        reply_markup=inline_keyboards.keyboard_search(teacher, 'teacher')
     )
 
 

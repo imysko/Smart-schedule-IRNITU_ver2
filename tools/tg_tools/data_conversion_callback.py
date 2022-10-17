@@ -29,7 +29,7 @@ def convert_groups(pg_groups: list) -> list:
 
     list_groups = pg_groups
     for group in list_groups:
-        group[group['name']] = json.dumps({"group": str(group['group_id'])})
+        group[group['name']] = json.dumps({"register_group_id": str(group['group_id'])})
         del group['name']
         del group['group_id']
 
