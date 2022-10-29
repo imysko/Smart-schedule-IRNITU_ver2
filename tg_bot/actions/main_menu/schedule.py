@@ -176,3 +176,29 @@ def get_tomorrow(bot: TeleBot, message, storage: MongodbServiceTG):
             chat_id=message.chat.id,
             text=schedule_messages['empty_tomorrow_lessons'],
         )
+
+
+def get_current_lesson(bot: TeleBot, message, storage: MongodbServiceTG):
+    chat_id = message.chat.id
+
+    user_group = storage.get_user(chat_id)['group']
+
+    if storage.get_user(chat_id)['institute'] != 'teacher':
+        schedule_list = getting_schedule.get_group_current_lesson(group_id=user_group)
+    else:
+        schedule_list = getting_schedule.get_teacher_current_lesson(teacher_id=user_group)
+
+    # тут отправить сообщение
+
+
+def get_near_lesson(bot: TeleBot, message, storage: MongodbServiceTG):
+    chat_id = message.chat.id
+
+    user_group = storage.get_user(chat_id)['group']
+
+    if storage.get_user(chat_id)['institute'] != 'teacher':
+        schedule_list = getting_schedule.get_group_near_lesson(group_id=user_group)
+    else:
+        schedule_list = getting_schedule.get_teacher_near_lesson(teacher_id=user_group)
+
+    # тут отправить сообщение

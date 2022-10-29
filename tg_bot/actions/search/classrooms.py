@@ -7,7 +7,6 @@ from telebot import TeleBot
 
 from db import postgre_storage, getting_schedule
 from db.mongo_storage import MongodbServiceTG
-from tools.logger import logger
 from tools.messages import search_messages, default_messages, schedule_messages
 from tools.schedule_tools import schedule_conversion
 from tools.tg_tools import reply_keyboards, inline_keyboards
@@ -83,7 +82,6 @@ def choose_period(message, bot: TeleBot, storage: MongodbServiceTG):
 
 def get_current_week(bot: TeleBot, message, storage: MongodbServiceTG):
     classroom_id = json.loads(message.data)['current_week_classroom']
-    logger.info(message.data)
 
     schedule_list = getting_schedule.get_classroom_schedule(
         classroom_id=classroom_id,
@@ -107,7 +105,6 @@ def get_current_week(bot: TeleBot, message, storage: MongodbServiceTG):
 
 def get_next_week(bot: TeleBot, message, storage: MongodbServiceTG):
     classroom_id = json.loads(message.data)['next_week_classroom']
-    logger.info(message.data)
 
     schedule_list = getting_schedule.get_classroom_schedule(
         classroom_id=classroom_id,
@@ -131,7 +128,6 @@ def get_next_week(bot: TeleBot, message, storage: MongodbServiceTG):
 
 def get_today(bot: TeleBot, message, storage: MongodbServiceTG):
     classroom_id = json.loads(message.data)['today_classroom']
-    logger.info(message.data)
 
     schedule_list = getting_schedule.get_classroom_schedule(
         classroom_id=classroom_id,
@@ -155,7 +151,6 @@ def get_today(bot: TeleBot, message, storage: MongodbServiceTG):
 
 def get_tomorrow(bot: TeleBot, message, storage: MongodbServiceTG):
     classroom_id = json.loads(message.data)['tomorrow_classroom']
-    logger.info(message.data)
 
     schedule_list = getting_schedule.get_classroom_schedule(
         classroom_id=classroom_id,
