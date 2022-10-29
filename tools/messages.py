@@ -65,6 +65,8 @@ schedule_messages = {
     'empty_next_week_lessons': 'На следующей неделе пар нет',
     'empty_today_lessons': 'Сегодня пар нет',
     'empty_tomorrow_lessons': 'Завтра пар нет',
+    'empty_current_lessons': 'Сейчас пар нет',
+    'empty_near_lessons': 'В ближайшее время пар нет',
 }
 
 reminder_messages = {

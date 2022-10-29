@@ -165,7 +165,6 @@ def get_teacher_near_lesson(teacher_id: int) -> dict:
         lessons_list = list(filter(
             lambda lesson: lesson['lesson_number'] == lessons_list[0]['lesson_number'], lessons_list))
         lessons = {
-            'date': schedule_list[0]['date'],
             'day_of_week': schedule_list[0]['day_of_week'],
             'lessons': lessons_list
         }
@@ -175,7 +174,6 @@ def get_teacher_near_lesson(teacher_id: int) -> dict:
             lambda lesson: lesson['lesson_number'] == schedule_list[1]['lessons'][0]['lesson_number'],
             schedule_list[1]['lessons']))
         lessons = {
-            'date': schedule_list[1]['date'],
             'day_of_week': schedule_list[1]['day_of_week'],
             'lessons': lessons_list
         }

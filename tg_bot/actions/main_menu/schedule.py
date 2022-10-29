@@ -184,11 +184,23 @@ def get_current_lesson(bot: TeleBot, message, storage: MongodbServiceTG):
     user_group = storage.get_user(chat_id)['group']
 
     if storage.get_user(chat_id)['institute'] != 'teacher':
-        schedule_list = getting_schedule.get_group_current_lesson(group_id=user_group)
+        lessons = getting_schedule.get_group_current_lesson(group_id=user_group)
+        lessons = schedule_conversion.convert_current_lessons_group(lessons)
     else:
-        schedule_list = getting_schedule.get_teacher_current_lesson(teacher_id=user_group)
+        lessons = getting_schedule.get_teacher_current_lesson(teacher_id=user_group)
+        lessons = schedule_conversion.convert_current_lessons_teacher(lessons)
 
-    # тут отправить сообщение
+    if len(lessons):
+        bot.send_message(
+            chat_id=message.chat.id,
+            text=lessons,
+            parse_mode='HTML'
+        )
+    else:
+        bot.send_message(
+            chat_id=message.chat.id,
+            text=schedule_messages['empty_current_lessons'],
+        )
 
 
 def get_near_lesson(bot: TeleBot, message, storage: MongodbServiceTG):
@@ -198,7 +210,23 @@ def get_near_lesson(bot: TeleBot, message, storage: MongodbServiceTG):
 
     if storage.get_user(chat_id)['institute'] != 'teacher':
         schedule_list = getting_schedule.get_group_near_lesson(group_id=user_group)
+        schedule_list = schedule_conversion.convert_near_lessons_group(schedule_list)
     else:
         schedule_list = getting_schedule.get_teacher_near_lesson(teacher_id=user_group)
+        schedule_list = schedule_conversion.convert_near_lessons_teacher(schedule_list)
+
+
+    if len(schedule_list):
+        for day in schedule_list:
+            bot.send_message(
+                chat_id=message.chat.id,
+                text=day,
+                parse_mode='HTML'
+            )
+    else:
+        bot.send_message(
+            chat_id=message.chat.id,
+            text=schedule_messages['empty_near_lessons'],
+        )
 
     # тут отправить сообщение
