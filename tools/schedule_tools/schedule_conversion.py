@@ -58,15 +58,14 @@ def convert_lessons_teachers(schedule_list: list) -> list:
                 format_day += f'Aудитория: {lesson["classroom"]}\n'
 
             if len(lesson['list_group']):
-                format_day += f'Группы: '
-            for group in lesson['list_group'][3:]:
-                if group is not None and group != '':
-                    format_day += f'{group}, '
-            if len(lesson['list_group']) > 3:
-                format_day += f'+ {len(lesson["list_group"][3:])} групп'
+                format_day += f'Группы: ' \
+                              f'{", ".join(group if group is not None else "" for group in lesson["list_group"][:3])}'
+            if len(lesson["list_group"][3:]):
+                format_day += f' + {len(lesson["list_group"][3:])} групп'
+            format_day += f'\n'
 
             if lesson['subgroup'] is not None and lesson['subgroup'] != 0:
-                format_day += f'Подгруппа {lesson["subgroup"]}\n'
+                format_day += f'Подгруппа {lesson["subgroup"]}'
 
             format_day += '\n'
 

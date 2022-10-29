@@ -95,11 +95,11 @@ def finish_teacher_registration_by_button(message, bot: TeleBot, storage: Mongod
     teacher_id = data['register_teacher_id']
     teachers_list = postgre_storage.get_teachers()
 
-    teacher = list(filter(lambda user: user['register_teacher_id'] == teacher_id, teachers_list))[0]
+    teacher = list(filter(lambda user: user['teacher_id'] == teacher_id, teachers_list))[0]
     storage.save_or_update_user(
         chat_id=chat_id,
         institute='teacher',
-        group=teacher['register_teacher_id']
+        group=teacher['teacher_id']
     )
     bot.send_message(
         chat_id=chat_id,

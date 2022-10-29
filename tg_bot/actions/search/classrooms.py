@@ -1,13 +1,18 @@
 import json
 import re
+from datetime import datetime, timedelta
 
+import pytz
 from telebot import TeleBot
 
 from db import postgre_storage, getting_schedule
 from db.mongo_storage import MongodbServiceTG
+from tools.logger import logger
 from tools.messages import search_messages, default_messages, schedule_messages
 from tools.schedule_tools import schedule_conversion
 from tools.tg_tools import reply_keyboards, inline_keyboards
+
+TIMEZONE = pytz.timezone('Asia/Irkutsk')
 
 
 def start_search_classroom(bot: TeleBot, message, storage: MongodbServiceTG):
@@ -79,7 +84,8 @@ def choose_period(message, bot: TeleBot, storage: MongodbServiceTG):
 
 
 def get_current_week(bot: TeleBot, message, storage: MongodbServiceTG):
-    classroom_id = json.load(message.data)['current_week_classroom']
+    classroom_id = json.loads(message.data)['current_week_classroom']
+    logger.info(message.data)
 
     schedule_list = getting_schedule.get_classroom_schedule(
         classroom_id=classroom_id,
@@ -90,24 +96,84 @@ def get_current_week(bot: TeleBot, message, storage: MongodbServiceTG):
     if len(schedule_list):
         for day in schedule_list:
             bot.send_message(
-                chat_id=message.chat.id,
+                chat_id=message.message.chat.id,
                 text=day,
                 parse_mode='HTML'
             )
     else:
         bot.send_message(
-            chat_id=message.chat.id,
+            chat_id=message.message.chat.id,
             text=schedule_messages['empty_current_week_lessons'],
         )
 
 
 def get_next_week(bot: TeleBot, message, storage: MongodbServiceTG):
-    pass
+    classroom_id = json.loads(message.data)['next_week_classroom']
+    logger.info(message.data)
+
+    schedule_list = getting_schedule.get_classroom_schedule(
+        classroom_id=classroom_id,
+        next_week=True
+    )
+    schedule_list = schedule_conversion.convert_lessons_teachers(schedule_list)
+
+    if len(schedule_list):
+        for day in schedule_list:
+            bot.send_message(
+                chat_id=message.message.chat.id,
+                text=day,
+                parse_mode='HTML'
+            )
+    else:
+        bot.send_message(
+            chat_id=message.message.chat.id,
+            text=schedule_messages['empty_next_week_lessons'],
+        )
 
 
 def get_today(bot: TeleBot, message, storage: MongodbServiceTG):
-    pass
+    classroom_id = json.loads(message.data)['today_classroom']
+    logger.info(message.data)
+
+    schedule_list = getting_schedule.get_classroom_schedule(
+        classroom_id=classroom_id,
+        selected_date=datetime.now(TIMEZONE)
+    )
+    schedule_list = schedule_conversion.convert_lessons_teachers(schedule_list)
+
+    if len(schedule_list):
+        for day in schedule_list:
+            bot.send_message(
+                chat_id=message.message.chat.id,
+                text=day,
+                parse_mode='HTML'
+            )
+    else:
+        bot.send_message(
+            chat_id=message.message.chat.id,
+            text=schedule_messages['empty_today_lessons'],
+        )
 
 
 def get_tomorrow(bot: TeleBot, message, storage: MongodbServiceTG):
-    pass
+    classroom_id = json.loads(message.data)['tomorrow_classroom']
+    logger.info(message.data)
+
+    schedule_list = getting_schedule.get_classroom_schedule(
+        classroom_id=classroom_id,
+        selected_date=datetime.now(TIMEZONE) + timedelta(days=1)
+    )
+    schedule_list = schedule_conversion.convert_lessons_teachers(schedule_list)
+
+    if len(schedule_list):
+        for day in schedule_list:
+            bot.send_message(
+                chat_id=message.message.chat.id,
+                text=day,
+                parse_mode='HTML'
+            )
+    else:
+        bot.send_message(
+            chat_id=message.message.chat.id,
+            text=schedule_messages['empty_tomorrow_lessons'],
+        )

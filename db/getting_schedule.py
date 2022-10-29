@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from db import data_conversion, postgre_storage
+from tools.logger import logger
 
 
 def get_group_schedule(
@@ -48,7 +49,11 @@ def get_classroom_schedule(
         selected_date=selected_date
     )
 
+    logger.info(data_list)
+
     data_list = data_conversion.schedule_group_by_teachers(data_list)
+    logger.info(data_list)
     data_list = data_conversion.schedule_group_by_groups(data_list)
+    logger.info(data_list)
 
     return data_list
