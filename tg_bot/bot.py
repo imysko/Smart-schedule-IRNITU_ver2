@@ -250,9 +250,29 @@ def search_type_handler(message):
     logger.info(f'Inline button data: {chat_id}')
 
 
-@bot.callback_query_handler(func=lambda message: 'classroom' in message.data)
+@bot.callback_query_handler(func=lambda message: any(word in message.data for word in content_search_classrooms))
 def teacher_registration_finish_handler(message):
     classrooms_search.choose_period(
+        message=message,
+        bot=bot,
+        storage=storage
+    )
+    logger.info(f'Inline button data: {message.data}')
+
+
+@bot.callback_query_handler(func=lambda message: any(word in message.data for word in content_search_teachers))
+def teacher_registration_finish_handler(message):
+    teachers_search.choose_period(
+        message=message,
+        bot=bot,
+        storage=storage
+    )
+    logger.info(f'Inline button data: {message.data}')
+
+
+@bot.callback_query_handler(func=lambda message: any(word in message.data for word in content_search_groups))
+def teacher_registration_finish_handler(message):
+    groups_search.choose_period(
         message=message,
         bot=bot,
         storage=storage
@@ -270,6 +290,7 @@ def teacher_registration_finish_handler(message):
 
     bot.delete_message(message.message.chat.id, message.message.id)
     logger.info(f'Inline button data: {message.data}')
+
 
 # Reminder settings
 @bot.callback_query_handler(func=lambda message: any(word in message.data for word in content_reminder_settings))

@@ -8,4 +8,8 @@ content_reminder_settings = ['decrease_reminder_time', 'increase_reminder_time',
 content_prep_group = ["found_prep", "prep_list"]
 content_aud = ["search_aud", "menu_aud"]
 content_search_classrooms = ["current_week_classroom", "next_week_classroom", "today_classroom",
-                             "tomorrow_classroom", "exams_classroom"]
+                             "tomorrow_classroom"]
+content_search_teachers = ["current_week_teacher", "next_week_teacher", "today_teacher",
+                           "tomorrow_teacher"]
+content_search_groups = ["current_week_group", "next_week_group", "today_group",
+                         "tomorrow_group"]

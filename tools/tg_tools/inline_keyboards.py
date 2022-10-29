@@ -95,5 +95,4 @@ def keyboard_search(item_id: str, search_type: str) -> InlineKeyboardMarkup:
         types.InlineKeyboardButton(text='На сегодня', callback_data=today),
         types.InlineKeyboardButton(text='На завтра', callback_data=tomorrow)
     )
-    markup.add(types.InlineKeyboardButton(text='Экзамены', callback_data=exams))
     return markup

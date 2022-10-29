@@ -79,8 +79,6 @@ def choose_period(message, bot: TeleBot, storage: MongodbServiceTG):
         get_today(bot, message, storage)
     elif 'tomorrow_classroom' in data:
         get_tomorrow(bot, message, storage)
-    elif 'exams_classrooms' in data:
-        pass
 
 
 def get_current_week(bot: TeleBot, message, storage: MongodbServiceTG):

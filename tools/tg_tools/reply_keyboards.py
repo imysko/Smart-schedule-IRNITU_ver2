@@ -32,11 +32,9 @@ def keyboard_choose_schedule() -> ReplyKeyboardMarkup:
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=False, resize_keyboard=True)
     btn1 = types.KeyboardButton('На текущую неделю')
     btn2 = types.KeyboardButton('На следующую неделю')
-    btn3 = types.KeyboardButton('Экзамены')
-    btn4 = types.KeyboardButton('Основное меню')
+    btn3 = types.KeyboardButton('Основное меню')
     markup.add(btn1, btn2)
     markup.add(btn3)
-    markup.add(btn4)
     return markup
 
 
@@ -68,12 +66,10 @@ def keyboard_search_classroom() -> ReplyKeyboardMarkup:
     btn2 = types.KeyboardButton('На следующую неделю')
     btn3 = types.KeyboardButton('На сегодня')
     btn4 = types.KeyboardButton('На завтра')
-    btn5 = types.KeyboardButton('Экзамены')
-    btn6 = types.KeyboardButton('Основное меню')
+    btn5 = types.KeyboardButton('Основное меню')
     markup.add(btn1, btn2)
     markup.add(btn3, btn4)
     markup.add(btn5)
-    markup.add(btn6)
     return markup
 
 
