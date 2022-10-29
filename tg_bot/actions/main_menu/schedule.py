@@ -43,9 +43,6 @@ def get_schedule(bot: TeleBot, message, storage: MongodbServiceTG):
     elif 'Расписание на завтра 🍎' == data and user.get('group'):
         get_tomorrow(bot, message, storage)
 
-    elif 'Экзамены' in data and user.get('group'):
-        pass
-
     elif 'Текущая' in data and user.get('group'):
         pass
 
