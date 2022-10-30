@@ -151,7 +151,8 @@ def convert_near_lessons_group(lessons: dict) -> str:
     format_lessons = f'🍎{lessons["day_of_week"]}🍎'
     format_lessons += '\n-------------------------------------------\n'
 
-    for lesson in lessons:
+    print(lessons)
+    for lesson in lessons['lessons']:
         format_lessons += format_lesson_group(lesson)
 
     return format_lessons
@@ -161,7 +162,7 @@ def convert_near_lessons_teacher(lessons: dict) -> str:
     format_lessons = f'🍎{lessons["day_of_week"]}🍎'
     format_lessons += '\n-------------------------------------------\n'
 
-    for lesson in lessons:
+    for lesson in lessons['lessons']:
         format_lessons += format_lesson_teacher(lesson)
 
     return format_lessons
