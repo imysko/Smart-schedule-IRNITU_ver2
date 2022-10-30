@@ -16,7 +16,6 @@ def get_reminders_status(time: int) -> str:
 def calculating_reminder_times(schedule: list, time: int) -> dict:
     reminders = {}
 
-    print(schedule)
     for day in schedule:
         reminders[day['day_of_week']] = []
         for lesson in day['lessons']:
@@ -51,18 +50,32 @@ def forming_user_to_submit(
         group: str,
         notifications: int,
         day_now: str,
-        time_now: datetime,
-        week: str
+        time_now: datetime
 ) -> dict:
     lesson_time = (time_now + timedelta(minutes=notifications)).strftime('%H:%M')
 
     user = {
         'chat_id': chat_id,
         'group': group,
-        'week': week,
         'day': day_now,
         'notifications': notifications,
         'time': lesson_time
     }
 
     return user
+
+
+def convert_minutes_word(minutes: int):
+    match minutes % 10:
+        case 1 if minutes != 11:
+            string = "минуту"
+        case 2 if minutes != 12:
+            string = "минуты"
+        case 3 if minutes != 13:
+            string = "минуты"
+        case 4 if minutes != 14:
+            string = "минуты"
+        case _:
+            string = "минут"
+
+    return string

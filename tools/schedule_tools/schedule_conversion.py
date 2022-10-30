@@ -116,11 +116,16 @@ def convert_lessons_reminder(lessons):
     for lesson in lessons:
         lessons_for_reminders += '-------------------------------------------\n'
         lessons_for_reminders += f'Начало в {lesson["lesson_start"]}\n'
-        lessons_for_reminders += f'👉lesson["name"]'
+        if lesson['lesson_type'] is not None and lesson['lesson_type'] != 0:
+            lessons_for_reminders += f'{TYPE_OF_LESSON[lesson["lesson_type"]]}\n'
+        lessons_for_reminders += f'👉{lesson["name"]}\n'
         auditory = lesson['classroom']
         if auditory:
-            lessons_for_reminders += f'Аудитория: {", ".join(auditory)}\n'
+            lessons_for_reminders += f'Аудитория: {auditory}\n'
+        if lesson['subgroup'] is not None and lesson['subgroup'] != 0:
+            lessons_for_reminders += f'Подгруппа {lesson["subgroup"]}\n'
         lessons_for_reminders += ", ".join(lesson["teacher_fullname"])
+        lessons_for_reminders += '\n'
         count += 1
 
     if count > 0:

@@ -1,7 +1,7 @@
 import locale
 import platform
 import threading
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Literal
 
 import pytz
@@ -9,7 +9,7 @@ import pytz
 from db.getting_schedule import get_group_schedule
 from db.mongo_storage import MongodbServiceTG, MongodbServiceVK
 from tools.schedule_tools.notifications import check_that_user_has_reminder_enabled_for_the_current_time, \
-    forming_user_to_submit, check_that_the_lesson_has_the_right_time
+    forming_user_to_submit, check_that_the_lesson_has_the_right_time, convert_minutes_word
 from tools.schedule_tools.schedule_conversion import convert_lessons_reminder
 from tools.logger import logger
 
@@ -27,6 +27,7 @@ class Reminder:
         self.users = []
 
     def sending_notifications(self):
+        print('here')
         for user in self.users:
             chat_id = user['chat_id']
             time = user['time']
@@ -34,24 +35,26 @@ class Reminder:
             notifications = user['notifications']
 
             try:
-                lessons = get_group_schedule(group_id=group, selected_date=datetime.now(TZ_IRKUTSK))
+                day = get_group_schedule(group_id=group, selected_date=datetime.now(TZ_IRKUTSK) + timedelta(days=3))
             except Exception as e:
                 logger.exception(f'Error (group: {group}):\n{e}')
                 return
 
-            if not lessons:
+            if not day:
                 continue
 
-            for lesson in lessons:
+            print(day)
+            for lesson in day[0]['lessons']:
+                print(lesson)
                 if not check_that_the_lesson_has_the_right_time(time, lesson['lesson_start']):
-                    lessons.remove(lesson)
+                    day.remove(lesson)
 
-            lessons_for_reminders = convert_lessons_reminder(lessons=lessons)
+            lessons_for_reminders = convert_lessons_reminder(lessons=day[0]['lessons'])
 
             if not lessons_for_reminders:
                 continue
 
-            text = f'Через {notifications} минут пара\n' \
+            text = f'Через {notifications} {convert_minutes_word(notifications)} пара\n' \
                    f'{lessons_for_reminders}'
 
             if self.platform == 'tg':
@@ -83,11 +86,7 @@ class Reminder:
 
         self.users = []
 
-        reminders = []
-        if self.platform == 'vk':
-            reminders = self.storage.get_users_with_reminders()
-        elif self.platform == 'tg':
-            reminders = self.storage.get_users_with_reminders()
+        reminders = self.storage.get_users_with_reminders()
 
         for reminder in reminders:
             if 'reminders' not in reminder.keys():
@@ -105,7 +104,7 @@ class Reminder:
                 group = reminder['group']
                 notifications = reminder['notifications']
 
-                user = forming_user_to_submit(chat_id, group, notifications, day_now, time_now, week)
+                user = forming_user_to_submit(chat_id, group, notifications, day_now, time_now)
                 self.users.append(user)
 
         self.sending_notifications()

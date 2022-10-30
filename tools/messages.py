@@ -49,7 +49,13 @@ other_messages = {
     'author_message':
         '<b>Авторы проекта:\n</b>'
         '- Ярослав @ProgNeo\n'
-        '- Илья @ilmysko\n'
+        '- Илья @ilmysko\n\n'
+        '<b>Бывшие авторы:\n</b>'
+        '- Алексей @bolanebyla\n'
+        '- Султан @ace_sultan\n'
+        '- Александр @alexandrshen\n'
+        '- Владислав @TixoNNNAN\n'
+        '- Кирилл @ADAMYORT\n\n'
         'По всем вопросом и предложениям пишите нам в личные сообщения.'
 }
 
