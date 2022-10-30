@@ -31,7 +31,7 @@ def format_lesson_group(lesson) -> str:
         format_day += f'\nAудитория: {lesson["classroom"]}'
     if lesson['subgroup'] is not None and lesson['subgroup'] != 0:
         format_day += f'\nПодгруппа {lesson["subgroup"]}'
-    format_day += '\n-------------------------------------------'
+    format_day += '\n-------------------------------------------\n'
     return format_day
 
 
@@ -107,6 +107,26 @@ def convert_lessons_classrooms(schedule_list: list) -> list:
         format_schedule_list.append(format_day)
 
     return format_schedule_list
+
+
+def convert_lessons_reminder(lessons):
+    lessons_for_reminders = ''
+
+    count = 0
+    for lesson in lessons:
+        lessons_for_reminders += '-------------------------------------------\n'
+        lessons_for_reminders += f'Начало в {lesson["lesson_start"]}\n'
+        lessons_for_reminders += f'👉lesson["name"]'
+        auditory = lesson['classroom']
+        if auditory:
+            lessons_for_reminders += f'Аудитория: {", ".join(auditory)}\n'
+        lessons_for_reminders += ", ".join(lesson["teacher_fullname"])
+        count += 1
+
+    if count > 0:
+        lessons_for_reminders += '-------------------------------------------\n'
+
+    return lessons_for_reminders
 
 
 def convert_current_lessons_group(lessons_list: list) -> str:

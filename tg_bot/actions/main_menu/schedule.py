@@ -44,10 +44,10 @@ def get_schedule(bot: TeleBot, message, storage: MongodbServiceTG):
         get_tomorrow(bot, message, storage)
 
     elif 'Текущая' in data and user.get('group'):
-        pass
+        get_current_lesson(bot, message, storage)
 
     elif 'Следующая' in data and user.get('group'):
-        pass
+        get_near_lesson(bot, message, storage)
 
 
 def get_current_week(bot: TeleBot, message, storage: MongodbServiceTG):

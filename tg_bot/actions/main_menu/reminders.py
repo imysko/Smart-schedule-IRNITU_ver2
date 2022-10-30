@@ -1,10 +1,12 @@
 import json
 
-from telebot import TeleBot, logger
+from telebot import TeleBot
 from telebot.apihelper import ApiTelegramException
 
+from db.getting_schedule import get_teacher_schedule, get_group_schedule
 from db.mongo_storage import MongodbServiceTG
-from tools.schedule_tools.notifications import calculating_reminder_times, get_reminders_status
+from tools.logger import logger
+from tools.schedule_tools.notifications import get_reminders_status, calculating_reminder_times
 from tools.tg_tools import inline_keyboards
 
 
@@ -90,15 +92,12 @@ def save_time(bot: TeleBot, message, storage: MongodbServiceTG):
     group = storage.get_user(chat_id)['group']
 
     if storage.get_user(chat_id)['course'] == 'None':
-        # get teacher schedule
-        schedule = None
+        schedule = get_teacher_schedule(group)
     else:
-        # get student schedule
-        schedule = None
+        schedule = get_group_schedule(group)
 
     if time > 0:
-        reminders = []
-        # reminders = calculating_reminder_times(schedule=schedule, time=int(time))
+        reminders = calculating_reminder_times(schedule=schedule, time=int(time))
     else:
         reminders = []
 
