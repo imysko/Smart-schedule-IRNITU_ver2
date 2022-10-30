@@ -95,6 +95,9 @@ class Reminder:
             if not user_days:
                 continue
 
+            if day_now not in user_days.keys():
+                continue
+
             user_day_reminder_time = user_days[day_now]
             if check_that_user_has_reminder_enabled_for_the_current_time(time_now, user_day_reminder_time):
                 chat_id = reminder['chat_id']
