@@ -26,8 +26,7 @@ class ReminderUpdater:
         self.users = self.get_users()
 
         for user in self.users:
-
-            group = user.get('group')
+            group = user['group']
             if not group:
                 continue
 

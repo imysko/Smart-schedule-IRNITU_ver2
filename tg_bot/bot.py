@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from telebot import TeleBot
 
 from db.mongo_storage import MongodbServiceTG
+from notifications import start_messages
 from tg_bot.actions import commands
 from tg_bot.actions.main_menu import main_menu, schedule, reminders
 from tg_bot.actions.registration import student as student_registration
@@ -23,7 +24,7 @@ load_dotenv()
 TOKEN = os.environ.get('TG_TOKEN')
 
 bot = TeleBot(token=TOKEN)
-
+start_messages.start_tg(bot)
 storage = MongodbServiceTG().get_instance()
 
 

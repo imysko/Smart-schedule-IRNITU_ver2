@@ -27,7 +27,6 @@ class Reminder:
         self.users = []
 
     def sending_notifications(self):
-        print('here')
         for user in self.users:
             chat_id = user['chat_id']
             time = user['time']
@@ -35,7 +34,7 @@ class Reminder:
             notifications = user['notifications']
 
             try:
-                day = get_group_schedule(group_id=group, selected_date=datetime.now(TZ_IRKUTSK) + timedelta(days=3))
+                day = get_group_schedule(group_id=group, selected_date=datetime.now(TZ_IRKUTSK))
             except Exception as e:
                 logger.exception(f'Error (group: {group}):\n{e}')
                 return
@@ -43,13 +42,12 @@ class Reminder:
             if not day:
                 continue
 
-            print(day)
+            lessons = []
             for lesson in day[0]['lessons']:
-                print(lesson)
-                if not check_that_the_lesson_has_the_right_time(time, lesson['lesson_start']):
-                    day.remove(lesson)
+                if check_that_the_lesson_has_the_right_time(time, lesson['lesson_start']):
+                    lessons.append(lesson)
 
-            lessons_for_reminders = convert_lessons_reminder(lessons=day[0]['lessons'])
+            lessons_for_reminders = convert_lessons_reminder(lessons=lessons)
 
             if not lessons_for_reminders:
                 continue
@@ -97,8 +95,7 @@ class Reminder:
             if not user_days:
                 continue
 
-            user_day_reminder_time = user_days.get(day_now.lower())
-
+            user_day_reminder_time = user_days[day_now]
             if check_that_user_has_reminder_enabled_for_the_current_time(time_now, user_day_reminder_time):
                 chat_id = reminder['chat_id']
                 group = reminder['group']
