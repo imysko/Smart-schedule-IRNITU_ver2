@@ -8,6 +8,7 @@ from telebot import TeleBot
 from db.mongo_storage import MongodbServiceTG
 from notifications import start_messages
 from tg_bot.actions import commands
+from tg_bot.actions.api import api
 from tg_bot.actions.main_menu import main_menu, schedule, reminders
 from tg_bot.actions.registration import student as student_registration
 from tg_bot.actions.registration import teacher as teacher_registration
@@ -330,6 +331,15 @@ def main_menu_buttons_handler(message):
         bot=bot,
         message=message,
         storage=storage
+    )
+
+
+# API
+@bot.message_handler(func=lambda message: message.text in content_api, content_types=['text'])
+def api_handler(message):
+    api.processing_api(
+        bot=bot,
+        message=message
     )
 
 
