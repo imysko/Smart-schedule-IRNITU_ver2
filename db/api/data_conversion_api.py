@@ -63,7 +63,7 @@ def convert_schedule_dict(pg_schedule: list):
         raise ValueError('Данные не могут быть пустыми')
 
     for record in pg_schedule:
-        record['date'] = (record['dbeg'] + timedelta(days=(record['day'] - 1)))
+        record['date'] = str((record['dbeg'] + timedelta(days=(record['day'] - 1))))
         del record['dbeg']
         del record['day']
 
