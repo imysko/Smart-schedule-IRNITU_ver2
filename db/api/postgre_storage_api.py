@@ -48,14 +48,18 @@ def get_week_even(start_date: datetime):
 
 
 def get_lessons() -> list:
+    query = """
+        SELECT id_66 AS lesson_id,
+               para  AS lesson_number,
+               begtime,
+               endtime
+        FROM vacpara
+        ORDER BY lesson_number
+    """
+
     with closing(psycopg2.connect(**db_params)) as conn:
         with conn.cursor(cursor_factory=DictCursor) as cursor:
-            cursor.execute("SELECT "
-                           "id_66 as id_lesson, "
-                           "para as lesson_number, "
-                           "begtime, "
-                           "endtime "
-                           "from vacpara")
+            cursor.execute(query)
             rows = cursor.fetchall()
             lessons = [dict(lesson) for lesson in rows]
             return lessons
@@ -67,7 +71,7 @@ def get_institutes() -> list:
                         faculty_title AS institute_title
         FROM real_groups
         WHERE faculty_title NOT LIKE ''
-        ORDER BY institute_title;
+        ORDER BY institute_title
     """
 
     with closing(psycopg2.connect(**db_params)) as conn:
@@ -86,7 +90,7 @@ def get_groups() -> list:
                faculty_id AS institute_id
         FROM real_groups
         WHERE is_active IS TRUE
-        ORDER BY name;
+        ORDER BY name
     """
 
     with closing(psycopg2.connect(**db_params)) as conn:
@@ -103,7 +107,8 @@ def get_teachers() -> list:
                preps  AS fullname,
                prep   AS shortname
         FROM prepods
-        ORDER BY fullname;
+        WHERE NOT preps = ''
+        ORDER BY fullname
     """
 
     with closing(psycopg2.connect(**db_params)) as conn:
@@ -115,24 +120,36 @@ def get_teachers() -> list:
 
 
 def get_classrooms() -> list:
+    query = """
+        SELECT id_60 AS classroom_id,
+               obozn AS name
+        FROM auditories
+        WHERE NOT obozn = '-'
+          AND NOT obozn = ''
+        ORDER BY name
+    """
+
     with closing(psycopg2.connect(**db_params)) as conn:
         with conn.cursor(cursor_factory=DictCursor) as cursor:
-            cursor.execute("SELECT "
-                           "id_60 as id_auditories, "
-                           "obozn as name "
-                           "from auditories")
+            cursor.execute(query)
             rows = cursor.fetchall()
-            auditories = [dict(auditory) for auditory in rows]
-            return auditories
+            classrooms = [dict(classroom) for classroom in rows]
+            return classrooms
 
 
 def get_disciplines() -> list:
+    query = """
+        SELECT id AS discipline_id,
+               title,
+               real_title
+        FROM disciplines
+        WHERE NOT title = ''
+        ORDER BY title
+    """
+
     with closing(psycopg2.connect(**db_params)) as conn:
         with conn.cursor(cursor_factory=DictCursor) as cursor:
-            cursor.execute("SELECT "
-                           "id as id_disciplines, "
-                           "title as name "
-                           "from disciplines")
+            cursor.execute(query)
             rows = cursor.fetchall()
             disciplines = [dict(discipline) for discipline in rows]
             return disciplines
@@ -153,26 +170,24 @@ def get_schedule(start_date: datetime = datetime.now(TIME_ZONE)) -> list:
         odd_week = start_of_first_week
 
     query = """
-        SELECT
-            id as id_schedule,
-            groups as ids_groups,
-            groups_verbose,
-            teachers as ids_teachers,
-            teachers_verbose,
-            auditories as ids_auditories,
-            auditories_verbose,
-            discipline,
-            discipline_verbose,
-            para as id_lesson,
-            dbeg as date_begin,
-            day,
-            ngroup as subgroup,
-            nt as lesson_type
-            from schedule_v2
-        WHERE (
-            (dbeg = '{odd_week:%Y-%m-%d}' and (everyweek = 2 or everyweek = 1 and day <= 7))
-            or (dbeg = '{even_week:%Y-%m-%d}' and (everyweek = 2 or everyweek = 1 and day > 7))
-            )
+        SELECT id                            AS schedule_id,
+               groups                        AS groups_ids,
+               groups_verbose,
+               teachers                      AS teachers_ids,
+               teachers_verbose,
+               auditories                    AS auditories_ids,
+               auditories_verbose,
+               discipline                    AS discipline_id,
+               discipline_verbose,
+               para                          AS lesson_id,
+               dbeg,
+               (schedule_v2.day - 1) % 7 + 1 AS day,
+               ngroup                        AS subgroup,
+               nt                            AS lesson_type
+        FROM schedule_v2
+        WHERE ((dbeg = '{odd_week:%Y-%m-%d}' AND (everyweek = 2 OR everyweek = 1 AND day <= 7))
+            OR (dbeg = '{even_week:%Y-%m-%d}' AND (everyweek = 2 OR everyweek = 1 AND day > 7)))
+        ORDER BY dbeg, day, lesson_id, subgroup
     """.format(odd_week=odd_week, even_week=even_week)
 
     with closing(psycopg2.connect(**db_params)) as conn:
@@ -187,26 +202,26 @@ def get_schedule_year(year: int = datetime.now().year) -> list:
     """Получение расписания групп из PostgreSQL"""
 
     start_study_year = date(year, 9, 1)
-    end_study_year = date(start_study_year.year + 1, 6, 30)
+    end_study_year = date(start_study_year.year + 1, 8, 30)
 
     query = """
-        SELECT
-            id as id_schedule,
-            groups as ids_groups,
-            groups_verbose,
-            teachers as ids_teachers,
-            teachers_verbose,
-            auditories as ids_auditories,
-            auditories_verbose,
-            discipline,
-            discipline_verbose,
-            para as id_lesson,
-            dbeg as date_begin,
-            day,
-            ngroup as subgroup,
-            nt as lesson_type
-            from schedule_v2
-        WHERE dbeg between '{start_study_year}' and '{end_study_year}'
+        SELECT id                            AS schedule_id,
+               groups                        AS groups_ids,
+               groups_verbose,
+               teachers                      AS teachers_ids,
+               teachers_verbose,
+               auditories                    AS auditories_ids,
+               auditories_verbose,
+               discipline                    AS discipline_id,
+               discipline_verbose,
+               para                          AS lesson_id,
+               dbeg,
+               (schedule_v2.day - 1) % 7 + 1 AS day,
+               ngroup                        AS subgroup,
+               nt                            AS lesson_type
+        FROM schedule_v2
+        WHERE dbeg BETWEEN '{start_study_year}' AND '{end_study_year}'
+        ORDER BY dbeg, day, lesson_id, subgroup
     """.format(start_study_year=start_study_year, end_study_year=end_study_year)
 
     with closing(psycopg2.connect(**db_params)) as conn:
