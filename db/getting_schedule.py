@@ -4,7 +4,6 @@ import pendulum
 import pytz
 
 from db import data_conversion, postgre_storage
-from tools.logger import logger
 
 TIME_ZONE = pytz.timezone('Asia/Irkutsk')
 
@@ -52,9 +51,7 @@ def get_classroom_schedule(
     )
 
     data_list = data_conversion.schedule_group_by_teachers(data_list)
-    logger.info(data_list)
     data_list = data_conversion.schedule_group_by_groups(data_list)
-    logger.info(data_list)
 
     return data_list
 

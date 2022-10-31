@@ -134,7 +134,7 @@ def get_next_week(bot: TeleBot, message, storage: MongodbServiceTG):
 
     schedule_list = getting_schedule.get_teacher_schedule(
         teacher_id=teacher_id,
-        next_week=False
+        next_week=True
     )
     schedule_list = schedule_conversion.convert_lessons_teachers(schedule_list)
 
@@ -155,7 +155,7 @@ def get_next_week(bot: TeleBot, message, storage: MongodbServiceTG):
 def get_today(bot: TeleBot, message, storage: MongodbServiceTG):
     chat_id = message.message.chat.id
 
-    teacher_id = json.loads(message.data)['next_week_teacher']
+    teacher_id = json.loads(message.data)['today_teacher']
 
     schedule_list = getting_schedule.get_teacher_schedule(
         teacher_id=teacher_id,
@@ -180,7 +180,7 @@ def get_today(bot: TeleBot, message, storage: MongodbServiceTG):
 def get_tomorrow(bot: TeleBot, message, storage: MongodbServiceTG):
     chat_id = message.message.chat.id
 
-    teacher_id = json.loads(message.data)['next_week_teacher']
+    teacher_id = json.loads(message.data)['tomorrow_teacher']
 
     schedule_list = getting_schedule.get_teacher_schedule(
         teacher_id=teacher_id,

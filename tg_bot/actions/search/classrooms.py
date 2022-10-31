@@ -87,7 +87,7 @@ def get_current_week(bot: TeleBot, message, storage: MongodbServiceTG):
         classroom_id=classroom_id,
         next_week=False
     )
-    schedule_list = schedule_conversion.convert_lessons_teachers(schedule_list)
+    schedule_list = schedule_conversion.convert_lessons_classrooms(schedule_list)
 
     if len(schedule_list):
         for day in schedule_list:
@@ -110,7 +110,7 @@ def get_next_week(bot: TeleBot, message, storage: MongodbServiceTG):
         classroom_id=classroom_id,
         next_week=True
     )
-    schedule_list = schedule_conversion.convert_lessons_teachers(schedule_list)
+    schedule_list = schedule_conversion.convert_lessons_classrooms(schedule_list)
 
     if len(schedule_list):
         for day in schedule_list:
@@ -133,7 +133,7 @@ def get_today(bot: TeleBot, message, storage: MongodbServiceTG):
         classroom_id=classroom_id,
         selected_date=datetime.now(TIMEZONE)
     )
-    schedule_list = schedule_conversion.convert_lessons_teachers(schedule_list)
+    schedule_list = schedule_conversion.convert_lessons_classrooms(schedule_list)
 
     if len(schedule_list):
         for day in schedule_list:
@@ -156,7 +156,7 @@ def get_tomorrow(bot: TeleBot, message, storage: MongodbServiceTG):
         classroom_id=classroom_id,
         selected_date=datetime.now(TIMEZONE) + timedelta(days=1)
     )
-    schedule_list = schedule_conversion.convert_lessons_teachers(schedule_list)
+    schedule_list = schedule_conversion.convert_lessons_classrooms(schedule_list)
 
     if len(schedule_list):
         for day in schedule_list:
