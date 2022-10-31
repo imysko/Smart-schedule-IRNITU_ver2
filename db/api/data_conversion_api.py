@@ -17,7 +17,7 @@ def convert_institutes_dict(pg_institutes: list):
     if not pg_institutes:
         raise ValueError('Данные не могут быть пустыми')
 
-    list_institutes = sorted(pg_institutes, key=lambda value: value['name'])
+    list_institutes = sorted(pg_institutes, key=lambda value: value['institute_title'])
 
     return {'institutes': list_institutes}
 
@@ -35,25 +35,25 @@ def convert_teachers_dict(pg_teachers: list):
     if not pg_teachers:
         raise ValueError('Данные не могут быть пустыми')
 
-    list_teachers = sorted(pg_teachers, key=lambda value: value['full_name'])
+    list_teachers = sorted(pg_teachers, key=lambda value: value['fullname'])
 
     return {'teachers': list_teachers}
 
 
-def convert_auditories_dict(pg_auditories: list):
-    if not pg_auditories:
+def convert_classrooms_dict(pg_classrooms: list):
+    if not pg_classrooms:
         raise ValueError('Данные не могут быть пустыми')
 
-    list_auditories = sorted(pg_auditories, key=lambda value: value['name'])
+    list_classrooms = sorted(pg_classrooms, key=lambda value: value['name'])
 
-    return {'auditories': list_auditories}
+    return {'classrooms': list_classrooms}
 
 
 def convert_disciplines_dict(pg_disciplines: list):
     if not pg_disciplines:
         raise ValueError('Данные не могут быть пустыми')
 
-    list_disciplines = sorted(pg_disciplines, key=lambda value: value['name'])
+    list_disciplines = sorted(pg_disciplines, key=lambda value: value['title'])
 
     return {'disciplines': list_disciplines}
 
@@ -63,8 +63,8 @@ def convert_schedule_dict(pg_schedule: list):
         raise ValueError('Данные не могут быть пустыми')
 
     for record in pg_schedule:
-        record['date'] = (record['date_begin'] + timedelta(days=(record['day'] - 1) % 7)).__str__()
-        del record['date_begin']
+        record['date'] = (record['dbeg'] + timedelta(days=(record['day'] - 1)))
+        del record['dbeg']
         del record['day']
 
     list_schedule = sorted(pg_schedule, key=lambda value: value['date'])
