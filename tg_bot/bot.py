@@ -220,12 +220,15 @@ def teacher_registration_finish_handler(message):
 @bot.message_handler(func=lambda message: message.text == 'Поиск 🔎', content_types=['text'])
 def search_handler(message):
     chat_id = message.chat.id
-    bot.send_message(
-        chat_id=chat_id,
-        text=default_messages['choose_search_type'],
-        reply_markup=reply_keyboards.keyboard_search_goal()
-    )
-    logger.info(f'Inline button data: {chat_id}')
+    user = storage.get_user(chat_id)
+
+    if user:
+        bot.send_message(
+            chat_id=chat_id,
+            text=default_messages['choose_search_type'],
+            reply_markup=reply_keyboards.keyboard_search_goal()
+        )
+        logger.info(f'Inline button data: {chat_id}')
 
 
 @bot.message_handler(func=lambda message: message.text in content_search_type_buttons, content_types=['text'])

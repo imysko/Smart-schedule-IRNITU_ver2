@@ -109,7 +109,7 @@ def convert_lessons_classrooms(schedule_list: list) -> list:
     return format_schedule_list
 
 
-def convert_lessons_reminder(lessons):
+def convert_lessons_reminder(lessons) -> str:
     lessons_for_reminders = ''
 
     count = 0
@@ -124,8 +124,9 @@ def convert_lessons_reminder(lessons):
             lessons_for_reminders += f'Аудитория: {auditory}\n'
         if lesson['subgroup'] is not None and lesson['subgroup'] != 0:
             lessons_for_reminders += f'Подгруппа {lesson["subgroup"]}\n'
-        lessons_for_reminders += ", ".join(lesson["teacher_fullname"])
-        lessons_for_reminders += '\n'
+        if lesson['teacher_fullname'][0] is not None:
+            lessons_for_reminders += ', '.join(lesson['teacher_fullname'])
+            lessons_for_reminders += '\n'
         count += 1
 
     if count > 0:
