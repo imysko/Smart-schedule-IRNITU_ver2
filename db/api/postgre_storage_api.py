@@ -11,6 +11,8 @@ from psycopg2.extras import DictCursor
 
 TIME_ZONE = pytz.timezone('Asia/Irkutsk')
 
+dotenv.load_dotenv()
+
 PG_DB_DATABASE = os.environ.get('PG_DB_DATABASE', default='schedule')
 PG_DB_USER = os.environ.get('PG_DB_USER')
 PG_DB_PASSWORD = os.environ.get('PG_DB_PASSWORD')
