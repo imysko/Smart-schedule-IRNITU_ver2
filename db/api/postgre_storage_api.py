@@ -1,7 +1,9 @@
 import os
+import calendar
 from contextlib import closing
-from datetime import datetime, date, timedelta
+from datetime import datetime, date
 
+import dotenv
 import pytz
 import pendulum as pendulum
 import psycopg2
@@ -15,10 +17,12 @@ PG_DB_PASSWORD = os.environ.get('PG_DB_PASSWORD')
 PG_DB_HOST = os.environ.get('PG_DB_HOST')
 PG_DB_PORT = os.environ.get('PG_DB_PORT', default='5432')
 
+dotenv.load_dotenv()
+
 db_params = {
     'database': PG_DB_DATABASE,
-    'user': 'ilia',
-    'password': '1453',
+    'user': PG_DB_USER,
+    'password': PG_DB_PASSWORD,
     'host': PG_DB_HOST,
     'port': PG_DB_PORT
 }
@@ -195,11 +199,10 @@ def get_schedule(start_date: datetime = datetime.now(TIME_ZONE)) -> list:
             return schedules
 
 
-def get_schedule_year(year: int = datetime.now().year) -> list:
-    """Получение расписания групп из PostgreSQL"""
+def get_schedule_month(year: int = datetime.now().year, month: int = datetime.now().month) -> list:
 
-    start_study_year = date(year, 9, 1)
-    end_study_year = date(start_study_year.year + 1, 8, 30)
+    start_day_of_month = date(year, month, 1)
+    end_day_of_month = date(year, month, calendar.monthrange(year, month)[1])
 
     query = """
         SELECT id                            AS schedule_id,
@@ -217,9 +220,9 @@ def get_schedule_year(year: int = datetime.now().year) -> list:
                ngroup                        AS subgroup,
                nt                            AS lesson_type
         FROM schedule_v2
-        WHERE dbeg BETWEEN '{start_study_year}' AND '{end_study_year}'
+        WHERE dbeg BETWEEN '{start_day_of_month}' AND '{end_day_of_month}'
         ORDER BY dbeg, day, lesson_id, subgroup
-    """.format(start_study_year=start_study_year, end_study_year=end_study_year)
+    """.format(start_day_of_month=start_day_of_month, end_day_of_month=end_day_of_month)
 
     with closing(psycopg2.connect(**db_params)) as conn:
         with conn.cursor(cursor_factory=DictCursor) as cursor:

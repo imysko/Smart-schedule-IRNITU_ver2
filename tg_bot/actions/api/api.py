@@ -39,7 +39,7 @@ async def processing_api(bot, message):
                 response = data_conversion_api.convert_schedule_dict(postgre_storage_api.get_schedule())
             case '/api/schedule/year':
                 file_name = 'schedule_year.json'
-                response = data_conversion_api.convert_schedule_dict(postgre_storage_api.get_schedule_year())
+                response = data_conversion_api.convert_schedule_dict(postgre_storage_api.get_schedule_month())
 
         current_dir = pathlib.Path().resolve()
 
