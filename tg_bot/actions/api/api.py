@@ -45,12 +45,13 @@ async def processing_api(bot, message):
 
         Path(f'{current_dir}/api_responses/{chat_id}').mkdir(parents=True, exist_ok=True)
         file = open(f'{current_dir}/api_responses/{chat_id}/{file_name}', 'w')
-        file.write(response)
+        file.write(json.dumps(response, ensure_ascii=False))
         file.close()
 
         bot.send_document(
             chat_id=chat_id,
-            document=open(f'{current_dir}/api_responses/{chat_id}/{file_name}')
+            document=open(f'{current_dir}/api_responses/{chat_id}/{file_name}'),
+            timeout=90
         )
         os.remove(f'{current_dir}/api_responses/{chat_id}/{file_name}')
     except ValueError as error:

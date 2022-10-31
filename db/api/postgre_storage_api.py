@@ -2,12 +2,15 @@ import os
 from contextlib import closing
 from datetime import datetime, date, timedelta
 
+import dotenv
 import pytz
 import pendulum as pendulum
 import psycopg2
 from psycopg2.extras import DictCursor
 
 TIME_ZONE = pytz.timezone('Asia/Irkutsk')
+
+dotenv.load_dotenv()
 
 PG_DB_DATABASE = os.environ.get('PG_DB_DATABASE', default='schedule')
 PG_DB_USER = os.environ.get('PG_DB_USER')
@@ -17,8 +20,8 @@ PG_DB_PORT = os.environ.get('PG_DB_PORT', default='5432')
 
 db_params = {
     'database': PG_DB_DATABASE,
-    'user': 'ilia',
-    'password': '1453',
+    'user': PG_DB_USER,
+    'password': PG_DB_PASSWORD,
     'host': PG_DB_HOST,
     'port': PG_DB_PORT
 }
