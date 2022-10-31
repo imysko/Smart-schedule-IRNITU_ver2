@@ -1,3 +1,4 @@
+import asyncio
 import json
 import os
 import time
@@ -340,10 +341,10 @@ def main_menu_buttons_handler(message):
 # API
 @bot.message_handler(func=lambda message: message.text in content_api, content_types=['text'])
 def api_handler(message):
-    api.processing_api(
+    asyncio.run(api.processing_api(
         bot=bot,
         message=message
-    )
+    ))
 
 
 # ==================== Text handler ==================== #

@@ -17,7 +17,7 @@ def convert_institutes_dict(pg_institutes: list):
     if not pg_institutes:
         raise ValueError('Данные не могут быть пустыми')
 
-    list_institutes = sorted(pg_institutes, key=lambda value: value['name'])
+    list_institutes = sorted(pg_institutes, key=lambda value: value['institute_title'])
 
     return {'institutes': list_institutes}
 
@@ -40,13 +40,13 @@ def convert_teachers_dict(pg_teachers: list):
     return {'teachers': list_teachers}
 
 
-def convert_auditories_dict(pg_auditories: list):
-    if not pg_auditories:
+def convert_classrooms_dict(pg_classrooms: list):
+    if not pg_classrooms:
         raise ValueError('Данные не могут быть пустыми')
 
-    list_auditories = sorted(pg_auditories, key=lambda value: value['name'])
+    list_classrooms = sorted(pg_classrooms, key=lambda value: value['name'])
 
-    return {'auditories': list_auditories}
+    return {'classrooms': list_classrooms}
 
 
 def convert_disciplines_dict(pg_disciplines: list):

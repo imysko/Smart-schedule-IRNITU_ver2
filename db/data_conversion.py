@@ -1,4 +1,6 @@
 import copy
+import re
+
 from db import postgre_storage
 from datetime import timedelta, datetime
 
@@ -110,6 +112,9 @@ def convert_schedule(pg_schedule: list,
     if not pg_schedule:
         raise ValueError('Данные не могут быть пустыми')
 
+    for lesson in pg_schedule:
+        lesson['name'] = cleanhtml(lesson['name'])
+
     if selected_date is not None:
         schedule_list = schedule_group_by_date(pg_schedule)
         schedule_list = list(filter(lambda x: x['date'] == selected_date.date(), schedule_list))
@@ -123,3 +128,9 @@ def convert_schedule(pg_schedule: list,
         schedule_list = schedule_group_by_date(schedule_list)
 
     return schedule_list
+
+
+def cleanhtml(html_str: str):
+    regex = re.compile('<img.*?></img>')
+    cleantext = re.sub(regex, '', html_str)
+    return cleantext
