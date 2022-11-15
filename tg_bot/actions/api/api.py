@@ -97,11 +97,8 @@ async def processing_api(bot, message):
                 file_name = 'lessons_names.json'
                 response = data_conversion_api.convert_disciplines_dict(postgre_storage_api.get_disciplines())
             case '/api/classrooms':
-                file_name = 'schedule_year.json'
+                file_name = 'classrooms.json'
                 response = data_conversion_api.convert_classrooms_dict(postgre_storage_api.get_classrooms())
-            case '/api/schedule/month':
-                file_name = 'schedule_month.json'
-                response = data_conversion_api.convert_schedule_dict(postgre_storage_api.get_schedule_month())
 
         current_dir = pathlib.Path().resolve()
 
