@@ -347,6 +347,22 @@ def api_handler(message):
     ))
 
 
+@bot.message_handler(func=lambda message: '/api/schedule/month' in message.text, content_types=['text'])
+def api_handler(message):
+    asyncio.run(api.processing_api_schedule_month(
+        bot=bot,
+        message=message
+    ))
+
+
+@bot.message_handler(func=lambda message: '/api/schedule/two_weeks' in message.text, content_types=['text'])
+def api_handler(message):
+    asyncio.run(api.processing_api_schedule_two_weeks(
+        bot=bot,
+        message=message
+    ))
+
+
 # ==================== Text handler ==================== #
 @bot.message_handler(content_types=['text'])
 def text(message):
