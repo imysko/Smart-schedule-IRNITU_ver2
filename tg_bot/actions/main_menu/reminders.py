@@ -89,7 +89,7 @@ def save_time(bot: TeleBot, message, storage: MongodbServiceTG):
     data = json.loads(data)
     time = data['save_reminder_time']
 
-    group = storage.get_user(chat_id)['group']
+    group = storage.get_user(chat_id)['group_id']
 
     if storage.get_user(chat_id)['course'] == 'None':
         schedule = get_teacher_schedule(group)

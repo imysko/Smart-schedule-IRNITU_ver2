@@ -41,7 +41,7 @@ class MongodbServiceTG(MongodbService):
         return list(self._db.users.find(filter={'notifications': {'$ne': 0}}))
 
     def create_user(self, chat_id: int):
-        update = {'chat_id': chat_id, 'institute': '', 'course': '', 'group': '', 'notifications': 0, 'reminders': []}
+        update = {'chat_id': chat_id, 'institute': '', 'course': '', 'group': '', 'group_id': '', 'notifications': 0, 'reminders': []}
         self._db.users.update_one(filter={'chat_id': chat_id}, update={'$set': update}, upsert=True)
 
     def save_or_update_user(
@@ -50,6 +50,7 @@ class MongodbServiceTG(MongodbService):
             institute=None,
             course=None,
             group=None,
+            group_id=None,
             notifications=None,
             reminders=None
     ):
@@ -60,6 +61,8 @@ class MongodbServiceTG(MongodbService):
             update['course'] = course
         if group:
             update['group'] = group
+        if group_id:
+            update['group_id'] = group_id
         if notifications:
             update['notifications'] = notifications
         if reminders:
@@ -85,7 +88,7 @@ class MongodbServiceVK(MongodbService):
         return list(self._db.VK_users.find(filter={'notifications': {'$ne': 0}}))
 
     def create_user(self, chat_id: str):
-        update = {'chat_id': chat_id, 'institute': '', 'course': '', 'group': '', 'notifications': 0, 'reminders': []}
+        update = {'chat_id': chat_id, 'institute': '', 'course': '', 'group': '', 'group_id': '', 'notifications': 0, 'reminders': []}
         self._db.VK_users.update_one(filter={'chat_id': chat_id}, update={'$set': update}, upsert=True)
 
     def save_or_update_user(
@@ -94,6 +97,7 @@ class MongodbServiceVK(MongodbService):
             institute=None,
             course=None,
             group=None,
+            group_id=None,
             notifications=None,
             reminders=None
     ):
@@ -104,6 +108,8 @@ class MongodbServiceVK(MongodbService):
             update['course'] = course
         if group:
             update['group'] = group
+        if group_id:
+            update['group_id'] = group_id
         if notifications:
             update['notifications'] = notifications
         if reminders:

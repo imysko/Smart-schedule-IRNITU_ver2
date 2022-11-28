@@ -30,7 +30,7 @@ class Reminder:
         for user in self.users:
             chat_id = user['chat_id']
             time = user['time']
-            group = user['group']
+            group = user['group_id']
             notifications = user['notifications']
 
             try:
@@ -101,7 +101,7 @@ class Reminder:
             user_day_reminder_time = user_days[day_now]
             if check_that_user_has_reminder_enabled_for_the_current_time(time_now, user_day_reminder_time):
                 chat_id = reminder['chat_id']
-                group = reminder['group']
+                group = reminder['group_id']
                 notifications = reminder['notifications']
 
                 user = forming_user_to_submit(chat_id, group, notifications, day_now, time_now)

@@ -193,7 +193,7 @@ def group_registration_handler(message):
 
     storage.save_or_update_user(
         chat_id=message.message.chat.id,
-        group=json.loads(data)['register_group_id']
+        group_id=json.loads(data)['register_group_id']
     )
 
     student_registration.finish_student_registration(

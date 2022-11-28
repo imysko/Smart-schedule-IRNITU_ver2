@@ -57,7 +57,7 @@ def finish_teacher_registration(message, bot: TeleBot, storage: MongodbServiceTG
         storage.save_or_update_user(
             chat_id=chat_id,
             institute='teacher',
-            group=teacher
+            group_id=teacher
         )
         bot.send_message(
             chat_id=chat_id,
@@ -99,7 +99,7 @@ def finish_teacher_registration_by_button(message, bot: TeleBot, storage: Mongod
     storage.save_or_update_user(
         chat_id=chat_id,
         institute='teacher',
-        group=teacher['teacher_id']
+        group_id=teacher['teacher_id']
     )
     bot.send_message(
         chat_id=chat_id,

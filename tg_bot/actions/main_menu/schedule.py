@@ -17,43 +17,43 @@ def get_schedule(bot: TeleBot, message, storage: MongodbServiceTG):
     data = message.text
     user = storage.get_user(chat_id=chat_id)
 
-    if 'Расписание 🗓' == data and user.get('group'):
+    if 'Расписание 🗓' == data and user.get('group_id'):
         bot.send_message(
             chat_id=chat_id,
             text=default_messages['choose_period'],
             reply_markup=reply_keyboards.keyboard_choose_schedule()
         )
 
-    elif 'Ближайшая пара ⏱' in data and user.get('group'):
+    elif 'Ближайшая пара ⏱' in data and user.get('group_id'):
         bot.send_message(
             chat_id=chat_id,
             text=default_messages['near_lesson'],
             reply_markup=reply_keyboards.keyboard_near_lesson()
         )
 
-    if 'На текущую неделю' == data and user.get('group'):
+    if 'На текущую неделю' == data and user.get('group_id'):
         get_current_week(bot, message, storage)
 
-    if 'На следующую неделю' == data and user.get('group'):
+    if 'На следующую неделю' == data and user.get('group_id'):
         get_next_week(bot, message, storage)
 
-    elif 'Расписание на сегодня 🍏' == data and user.get('group'):
+    elif 'Расписание на сегодня 🍏' == data and user.get('group_id'):
         get_today(bot, message, storage)
 
-    elif 'Расписание на завтра 🍎' == data and user.get('group'):
+    elif 'Расписание на завтра 🍎' == data and user.get('group_id'):
         get_tomorrow(bot, message, storage)
 
-    elif 'Текущая' in data and user.get('group'):
+    elif 'Текущая' in data and user.get('group_id'):
         get_current_lesson(bot, message, storage)
 
-    elif 'Следующая' in data and user.get('group'):
+    elif 'Следующая' in data and user.get('group_id'):
         get_near_lesson(bot, message, storage)
 
 
 def get_current_week(bot: TeleBot, message, storage: MongodbServiceTG):
     chat_id = message.chat.id
 
-    user_group = storage.get_user(chat_id)['group']
+    user_group = storage.get_user(chat_id)['group_id']
 
     if storage.get_user(chat_id)['institute'] != 'teacher':
         schedule_list = getting_schedule.get_group_schedule(
@@ -85,7 +85,7 @@ def get_current_week(bot: TeleBot, message, storage: MongodbServiceTG):
 def get_next_week(bot: TeleBot, message, storage: MongodbServiceTG):
     chat_id = message.chat.id
 
-    user_group = storage.get_user(chat_id)['group']
+    user_group = storage.get_user(chat_id)['group_id']
 
     if storage.get_user(chat_id)['institute'] != 'teacher':
         schedule_list = getting_schedule.get_group_schedule(
@@ -117,7 +117,7 @@ def get_next_week(bot: TeleBot, message, storage: MongodbServiceTG):
 def get_today(bot: TeleBot, message, storage: MongodbServiceTG):
     chat_id = message.chat.id
 
-    user_group = storage.get_user(chat_id)['group']
+    user_group = storage.get_user(chat_id)['group_id']
 
     if storage.get_user(chat_id)['institute'] != 'teacher':
         schedule_list = getting_schedule.get_group_schedule(
@@ -149,7 +149,7 @@ def get_today(bot: TeleBot, message, storage: MongodbServiceTG):
 def get_tomorrow(bot: TeleBot, message, storage: MongodbServiceTG):
     chat_id = message.chat.id
 
-    user_group = storage.get_user(chat_id)['group']
+    user_group = storage.get_user(chat_id)['group_id']
 
     if storage.get_user(chat_id)['institute'] != 'teacher':
         schedule_list = getting_schedule.get_group_schedule(
@@ -181,7 +181,7 @@ def get_tomorrow(bot: TeleBot, message, storage: MongodbServiceTG):
 def get_current_lesson(bot: TeleBot, message, storage: MongodbServiceTG):
     chat_id = message.chat.id
 
-    user_group = storage.get_user(chat_id)['group']
+    user_group = storage.get_user(chat_id)['group_id']
 
     if storage.get_user(chat_id)['institute'] != 'teacher':
         lessons = getting_schedule.get_group_current_lesson(group_id=user_group)
@@ -206,7 +206,7 @@ def get_current_lesson(bot: TeleBot, message, storage: MongodbServiceTG):
 def get_near_lesson(bot: TeleBot, message, storage: MongodbServiceTG):
     chat_id = message.chat.id
 
-    user_group = storage.get_user(chat_id)['group']
+    user_group = storage.get_user(chat_id)['group_id']
 
     if storage.get_user(chat_id)['institute'] != 'teacher':
         lessons = getting_schedule.get_group_near_lesson(group_id=user_group)
@@ -226,5 +226,3 @@ def get_near_lesson(bot: TeleBot, message, storage: MongodbServiceTG):
             chat_id=message.chat.id,
             text=schedule_messages['empty_near_lessons'],
         )
-
-    # тут отправить сообщение
