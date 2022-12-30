@@ -8,6 +8,8 @@ load_dotenv()
 MONGO_DB_ADDR = os.environ.get('MONGO_DB_ADDR')
 MONGO_DB_PORT = os.environ.get('MONGO_DB_PORT')
 MONGO_DB_DATABASE = os.environ.get('MONGO_DB_DATABASE')
+MONGO_DB_USER = os.environ.get('MONGO_DB_USER')
+MONGO_DB_PASSWORD = os.environ.get('MONGO_DB_PASSWORD')
 
 
 class MongodbService(object):
@@ -23,7 +25,7 @@ class MongodbService(object):
         return cls._instance
 
     def __init__(self):
-        self._client = MongoClient(f'mongodb://{MONGO_DB_ADDR}:{MONGO_DB_PORT}')
+        self._client = MongoClient(f'mongodb://{MONGO_DB_USER}:{MONGO_DB_PASSWORD}@{MONGO_DB_ADDR}:{MONGO_DB_PORT}')
         self._db = self._client[MONGO_DB_DATABASE]
 
     def get_data(self, collection) -> list:
