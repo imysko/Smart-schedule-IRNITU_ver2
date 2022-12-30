@@ -50,7 +50,7 @@ other_messages = {
         '<b>Авторы проекта:\n</b>'
         '- Ярослав @ProgNeo\n'
         '- Илья @ilmysko\n\n'
-        '<b>Бывшие авторы:\n</b>'
+        '<b>Авторы оригинального решения:\n</b>'
         '- Алексей @bolanebyla\n'
         '- Султан @ace_sultan\n'
         '- Александр @alexandrshen\n'

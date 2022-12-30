@@ -5,11 +5,12 @@ from pymongo import MongoClient
 
 load_dotenv()
 
-MONGO_DB_ADDR = os.environ.get('MONGO_DB_ADDR')
-MONGO_DB_PORT = os.environ.get('MONGO_DB_PORT')
+# MONGO_DB_ADDR = os.environ.get('MONGO_DB_ADDR')
+# MONGO_DB_PORT = os.environ.get('MONGO_DB_PORT')
+# MONGO_DB_PASSWORD = os.environ.get('MONGO_DB_PASSWORD')
+# MONGO_DB_USER = os.environ.get('MONGO_DB_USER')
+MONGO_URL = os.environ.get("MONGO_URL")
 MONGO_DB_DATABASE = os.environ.get('MONGO_DB_DATABASE')
-MONGO_DB_USER = os.environ.get('MONGO_DB_USER')
-MONGO_DB_PASSWORD = os.environ.get('MONGO_DB_PASSWORD')
 
 
 class MongodbService(object):
@@ -25,7 +26,7 @@ class MongodbService(object):
         return cls._instance
 
     def __init__(self):
-        self._client = MongoClient(f'mongodb://{MONGO_DB_USER}:{MONGO_DB_PASSWORD}@{MONGO_DB_ADDR}:{MONGO_DB_PORT}')
+        self._client = MongoClient(MONGO_URL)
         self._db = self._client[MONGO_DB_DATABASE]
 
     def get_data(self, collection) -> list:
@@ -49,27 +50,10 @@ class MongodbServiceTG(MongodbService):
     def save_or_update_user(
             self,
             chat_id: int,
-            institute=None,
-            course=None,
-            group=None,
-            group_id=None,
-            notifications=None,
-            reminders=None
+            *args,
+            **kwargs,
     ):
-        update = {'chat_id': chat_id}
-        if institute:
-            update['institute'] = institute
-        if course:
-            update['course'] = course
-        if group:
-            update['group'] = group
-        if group_id:
-            update['group_id'] = group_id
-        if notifications:
-            update['notifications'] = notifications
-        if reminders:
-            update['reminders'] = reminders
-
+        update = {'chat_id': chat_id, **kwargs}
         self._db.users.update_one(filter={'chat_id': chat_id}, update={'$set': update}, upsert=True)
 
     def get_user(self, chat_id: int):

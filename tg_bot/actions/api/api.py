@@ -6,6 +6,7 @@ from pathlib import Path
 
 from db.api import data_conversion_api, postgre_storage_api
 from tools.logger import logger
+from tools.schedule_tools.utils import get_now
 
 
 async def processing_api_schedule_two_weeks(bot, message):
@@ -17,7 +18,7 @@ async def processing_api_schedule_two_weeks(bot, message):
         if len(words) > 1:
             data = datetime.datetime.strptime(words[1], '%Y-%m-%d')
         else:
-            data = datetime.datetime.now()
+            data = get_now()
 
         file_name = f'two_weeks-{data.strftime("%Y-%m-%d")}.json'
         response = data_conversion_api.convert_schedule_dict(postgre_storage_api.get_schedule(data))
@@ -49,8 +50,8 @@ async def processing_api_schedule_month(bot, message):
             year = int(words[1])
             month = int(words[2])
         else:
-            month = datetime.datetime.now().month
-            year = datetime.datetime.now().year
+            month = get_now().month
+            year = get_now().year
 
         file_name = f'month-{year}-{month}.json'
         response = data_conversion_api.convert_schedule_dict(postgre_storage_api.get_schedule_month(year, month))

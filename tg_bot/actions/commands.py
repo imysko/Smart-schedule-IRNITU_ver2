@@ -3,18 +3,26 @@ from telebot import TeleBot
 
 from db.mongo_storage import MongodbServiceTG
 from tools.messages import registration_messages, other_messages
-from tools.tg_tools import inline_keyboards
+from tools.tg_tools import inline_keyboards, reply_keyboards
 
 
 def start(bot: TeleBot, message, storage: MongodbServiceTG):
     chat_id = message.chat.id
 
-    storage.delete_user_or_userdata(chat_id)
-    bot.send_message(
-        chat_id=chat_id,
-        text=registration_messages['new_registration'],
-        reply_markup=inline_keyboards.keyboard_user_role()
-    )
+    user = storage.get_user(chat_id)
+    if user:
+        bot.send_message(
+            chat_id=chat_id,
+            text=registration_messages['successful_registration'],
+            reply_markup=reply_keyboards.keyboard_start_menu()
+        )
+    else:
+        # storage.delete_user_or_userdata(chat_id)
+        bot.send_message(
+            chat_id=chat_id,
+            text=registration_messages['new_registration'],
+            reply_markup=inline_keyboards.keyboard_user_role()
+        )
 
 
 def registration(bot: TeleBot, message, storage: MongodbServiceTG, edit: bool = False):

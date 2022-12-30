@@ -1,8 +1,6 @@
 from datetime import timedelta
 import pytz
 
-TIME_ZONE = pytz.timezone('Asia/Irkutsk')
-
 
 def convert_lessons_dict(pg_lessons: list):
     if not pg_lessons:

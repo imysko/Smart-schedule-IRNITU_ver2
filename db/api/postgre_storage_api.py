@@ -9,8 +9,6 @@ import pendulum as pendulum
 import psycopg2
 from psycopg2.extras import DictCursor
 
-TIME_ZONE = pytz.timezone('Asia/Irkutsk')
-
 dotenv.load_dotenv()
 
 PG_DB_DATABASE = os.environ.get('PG_DB_DATABASE', default='schedule')
@@ -19,7 +17,6 @@ PG_DB_PASSWORD = os.environ.get('PG_DB_PASSWORD')
 PG_DB_HOST = os.environ.get('PG_DB_HOST')
 PG_DB_PORT = os.environ.get('PG_DB_PORT', default='5432')
 
-dotenv.load_dotenv()
 
 db_params = {
     'database': PG_DB_DATABASE,
@@ -155,7 +152,7 @@ def get_disciplines() -> list:
             return disciplines
 
 
-def get_schedule(start_date: datetime = datetime.now(TIME_ZONE)) -> list:
+def get_schedule(start_date: datetime) -> list:
     start_of_first_week = pendulum.instance(start_date).start_of("week")
     start_of_second_week = pendulum.instance(start_of_first_week).add(weeks=1)
 
@@ -196,7 +193,7 @@ def get_schedule(start_date: datetime = datetime.now(TIME_ZONE)) -> list:
             return schedules
 
 
-def get_schedule_month(year: int = datetime.now().year, month: int = datetime.now().month) -> list:
+def get_schedule_month(year: int, month: int) -> list:
     start_day_of_month = date(year, month, 1)
     end_day_of_month = date(year, month, calendar.monthrange(year, month)[1])
 

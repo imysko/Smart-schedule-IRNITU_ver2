@@ -4,8 +4,7 @@ import pendulum
 import pytz
 
 from db import data_conversion, postgre_storage
-
-TIME_ZONE = pytz.timezone('Asia/Irkutsk')
+from tools.schedule_tools.utils import TIMEZONE
 
 
 def get_group_schedule(
@@ -59,21 +58,21 @@ def get_classroom_schedule(
 def current_lesson(lesson: dict, datetime_now: datetime) -> bool:
     lesson_start_time = datetime.strptime(f'{str(datetime_now.date())} {lesson["lesson_start"]}', '%Y-%m-%d %H:%M')
     lesson_end_time = datetime.strptime(f'{str(datetime_now.date())} {lesson["lesson_end"]}', '%Y-%m-%d %H:%M')
-    return TIME_ZONE.localize(lesson_start_time) <= datetime_now <= TIME_ZONE.localize(lesson_end_time)
+    return TIMEZONE.localize(lesson_start_time) <= datetime_now <= TIMEZONE.localize(lesson_end_time)
 
 
 def past_lesson(lesson: dict, datetime_now: datetime) -> bool:
     lesson_end_time = datetime.strptime(f'{str(datetime_now.date())} {lesson["lesson_end"]}', '%Y-%m-%d %H:%M')
-    return TIME_ZONE.localize(lesson_end_time) >= datetime_now
+    return TIMEZONE.localize(lesson_end_time) >= datetime_now
 
 
 def future_lesson(lesson: dict, datetime_now: datetime) -> bool:
     lesson_start_time = datetime.strptime(f'{str(datetime_now.date())} {lesson["lesson_start"]}', '%Y-%m-%d %H:%M')
-    return datetime_now <= TIME_ZONE.localize(lesson_start_time)
+    return datetime_now <= TIMEZONE.localize(lesson_start_time)
 
 
 def get_group_current_lesson(group_id: int) -> list:
-    datetime_now = datetime.now(TIME_ZONE)
+    datetime_now = datetime.now(TIMEZONE)
 
     schedule_list = get_group_schedule(
         group_id=group_id,
@@ -88,7 +87,7 @@ def get_group_current_lesson(group_id: int) -> list:
 
 
 def get_group_near_lesson(group_id: int) -> dict:
-    datetime_now = datetime.now(TIME_ZONE)
+    datetime_now = datetime.now(TIMEZONE)
 
     schedule_list = get_group_schedule(group_id=group_id, next_week=False)
     schedule_list += get_group_schedule(group_id=group_id, next_week=True)
@@ -127,7 +126,7 @@ def get_group_near_lesson(group_id: int) -> dict:
 
 
 def get_teacher_current_lesson(teacher_id: int) -> list:
-    datetime_now = datetime.now(TIME_ZONE)
+    datetime_now = datetime.now(TIMEZONE)
 
     schedule_list = get_teacher_schedule(
         teacher_id=teacher_id,
@@ -142,7 +141,7 @@ def get_teacher_current_lesson(teacher_id: int) -> list:
 
 
 def get_teacher_near_lesson(teacher_id: int) -> dict:
-    datetime_now = datetime.now(TIME_ZONE)
+    datetime_now = datetime.now(TIMEZONE)
 
     schedule_list = get_teacher_schedule(teacher_id=teacher_id, next_week=False)
     schedule_list += get_teacher_schedule(teacher_id=teacher_id, next_week=True)

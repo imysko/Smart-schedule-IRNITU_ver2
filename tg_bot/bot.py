@@ -26,7 +26,7 @@ load_dotenv()
 TOKEN = os.environ.get('TG_TOKEN')
 
 bot = TeleBot(token=TOKEN)
-start_messages.start_tg(bot)
+# start_messages.start_tg(bot)
 storage = MongodbServiceTG().get_instance()
 
 
@@ -387,9 +387,4 @@ def text(message):
 if __name__ == '__main__':
     bot.remove_webhook()
     logger.info('Bot started!')
-    while True:
-        try:
-            bot.infinity_polling(none_stop=True)
-        except Exception as e:
-            logger.error(e)
-            time.sleep(3)
+    bot.infinity_polling(none_stop=True)

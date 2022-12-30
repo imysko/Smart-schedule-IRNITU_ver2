@@ -8,9 +8,10 @@ import pendulum
 import psycopg2
 from psycopg2.extras import DictCursor
 
+from tools.schedule_tools.utils import get_now
+
 load_dotenv()
 
-TIME_ZONE = pytz.timezone('Asia/Irkutsk')
 
 PG_DB_DATABASE = os.environ.get('PG_DB_DATABASE', default='schedule')
 PG_DB_USER = os.environ.get('PG_DB_USER')
@@ -45,7 +46,7 @@ def is_week_even(start_date: datetime) -> bool:
 
 
 def get_odd_even_week():
-    date_now = datetime.now(TIME_ZONE)
+    date_now = get_now()
     start_of_first_week = pendulum.instance(date_now).start_of("week")
     start_of_second_week = pendulum.instance(start_of_first_week).add(weeks=1)
 
@@ -113,13 +114,15 @@ def get_groups_by_institute_and_course(institute_id: int, course: int) -> list:
             return groups
 
 
-def get_groups() -> list:
+def get_groups(is_active=True) -> list:
     query = """
            SELECT obozn AS name,
                   id_7  AS group_id
            FROM real_groups
-           WHERE is_active = True;
        """
+
+    if is_active:
+        query += "  WHERE is_active = True"
 
     with closing(psycopg2.connect(**db_params)) as conn:
         with conn.cursor(cursor_factory=DictCursor) as cursor:

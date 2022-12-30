@@ -9,9 +9,8 @@ from db import postgre_storage, getting_schedule
 from db.mongo_storage import MongodbServiceTG
 from tools.messages import search_messages, default_messages, schedule_messages
 from tools.schedule_tools import schedule_conversion
+from tools.schedule_tools.utils import get_now
 from tools.tg_tools import reply_keyboards, inline_keyboards
-
-TIMEZONE = pytz.timezone('Asia/Irkutsk')
 
 
 def start_search_classroom(bot: TeleBot, message, storage: MongodbServiceTG):
@@ -131,7 +130,7 @@ def get_today(bot: TeleBot, message, storage: MongodbServiceTG):
 
     schedule_list = getting_schedule.get_classroom_schedule(
         classroom_id=classroom_id,
-        selected_date=datetime.now(TIMEZONE)
+        selected_date=get_now()
     )
     schedule_list = schedule_conversion.convert_lessons_classrooms(schedule_list)
 
@@ -154,7 +153,7 @@ def get_tomorrow(bot: TeleBot, message, storage: MongodbServiceTG):
 
     schedule_list = getting_schedule.get_classroom_schedule(
         classroom_id=classroom_id,
-        selected_date=datetime.now(TIMEZONE) + timedelta(days=1)
+        selected_date=get_now() + timedelta(days=1)
     )
     schedule_list = schedule_conversion.convert_lessons_classrooms(schedule_list)
 
