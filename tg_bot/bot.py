@@ -139,12 +139,17 @@ def institute_registration_handler(message):
     callback = json.loads(data)['institute']
 
     if callback == 'back':
+        storage.create_user(message.message.chat.id)
         student_registration.start_student_registration(
             bot=bot,
             message=message,
             storage=storage
         )
     else:
+        storage.save_or_update_user(
+            chat_id=message.message.chat.id,
+            institute=json.loads(data)['institute']
+        )
         student_registration.select_course_student_registration(
             bot=bot,
             message=message,
@@ -166,6 +171,10 @@ def course_registration_handler(message):
             storage=storage
         )
     else:
+        storage.save_or_update_user(
+            chat_id=message.message.chat.id,
+            course=json.loads(data)['course']
+        )
         student_registration.select_group_student_registration(
             bot=bot,
             message=message,

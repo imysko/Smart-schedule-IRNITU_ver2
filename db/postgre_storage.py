@@ -79,13 +79,13 @@ def get_institutes() -> list:
 
 
 def get_courses_by_institute(institute_id: int) -> list:
-    query = """
+    query = f"""
         SELECT DISTINCT kurs AS course
         FROM real_groups
-        WHERE faculty_id = {institute}
+        WHERE faculty_id = {institute_id}
           AND is_active = True
         ORDER BY course;
-    """.format(institute=institute_id)
+    """
 
     with closing(psycopg2.connect(**db_params)) as conn:
         with conn.cursor(cursor_factory=DictCursor) as cursor:
