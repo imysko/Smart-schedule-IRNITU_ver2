@@ -38,10 +38,10 @@ def get_schedule(bot: TeleBot, message, storage: MongodbServiceTG):
             get_week_schedule(bot, message, storage, next_week=True)
 
         elif 'Расписание на сегодня 🍏' == data:
-            get_today(bot, message, storage)
+            get_week_schedule(bot, message, storage, next_week=False, selected_date=get_now())
 
         elif 'Расписание на завтра 🍎' == data:
-            get_tomorrow(bot, message, storage)
+            get_week_schedule(bot, message, storage, next_week=False, selected_date=get_now() + timedelta(1))
 
         elif 'Текущая' in data:
             get_current_lesson(bot, message, storage)
@@ -50,7 +50,7 @@ def get_schedule(bot: TeleBot, message, storage: MongodbServiceTG):
             get_near_lesson(bot, message, storage)
 
 
-def get_week_schedule(bot: TeleBot, message, storage: MongodbServiceTG, next_week):
+def get_week_schedule(bot: TeleBot, message, storage: MongodbServiceTG, next_week, selected_date=None):
     chat_id = message.chat.id
 
     user = storage.get_user(chat_id)
@@ -61,7 +61,8 @@ def get_week_schedule(bot: TeleBot, message, storage: MongodbServiceTG, next_wee
     if groups_ids:
         schedule_list = getting_schedule.get_group_schedule(
             group_id=groups_ids[0],
-            next_week=next_week
+            next_week=next_week,
+            selected_date=selected_date
         )
         schedule_list = schedule_conversion.convert_lessons_group(schedule_list)
         if schedule_list:
@@ -80,7 +81,8 @@ def get_week_schedule(bot: TeleBot, message, storage: MongodbServiceTG, next_wee
     if teachers_ids:
         schedule_list = getting_schedule.get_teacher_schedule(
             teacher_id=teachers_ids[0],
-            next_week=next_week
+            next_week=next_week,
+            selected_date=selected_date
         )
         schedule_list = schedule_conversion.convert_lessons_teachers(schedule_list)
         if schedule_list:
@@ -96,69 +98,6 @@ def get_week_schedule(bot: TeleBot, message, storage: MongodbServiceTG, next_wee
                 text=empty_message,
             )
 
-
-def get_today(bot: TeleBot, message, storage: MongodbServiceTG):
-    chat_id = message.chat.id
-
-    user_group = storage.get_user(chat_id)['group_id']
-
-    if storage.get_user(chat_id)['institute'] != 'teacher':
-        schedule_list = getting_schedule.get_group_schedule(
-            group_id=user_group,
-            selected_date=get_now()
-        )
-        schedule_list = schedule_conversion.convert_lessons_group(schedule_list)
-    else:
-        schedule_list = getting_schedule.get_teacher_schedule(
-            teacher_id=user_group,
-            selected_date=get_now()
-        )
-        schedule_list = schedule_conversion.convert_lessons_teachers(schedule_list)
-
-    if len(schedule_list):
-        for day in schedule_list:
-            bot.send_message(
-                chat_id=message.chat.id,
-                text=day,
-                parse_mode='HTML'
-            )
-    else:
-        bot.send_message(
-            chat_id=message.chat.id,
-            text=schedule_messages['empty_today_lessons'],
-        )
-
-
-def get_tomorrow(bot: TeleBot, message, storage: MongodbServiceTG):
-    chat_id = message.chat.id
-
-    user_group = storage.get_user(chat_id)['group_id']
-
-    if storage.get_user(chat_id)['institute'] != 'teacher':
-        schedule_list = getting_schedule.get_group_schedule(
-            group_id=user_group,
-            selected_date=get_now() + timedelta(days=1)
-        )
-        schedule_list = schedule_conversion.convert_lessons_group(schedule_list)
-    else:
-        schedule_list = getting_schedule.get_teacher_schedule(
-            teacher_id=user_group,
-            selected_date=get_now() + timedelta(days=1)
-        )
-        schedule_list = schedule_conversion.convert_lessons_teachers(schedule_list)
-
-    if len(schedule_list):
-        for day in schedule_list:
-            bot.send_message(
-                chat_id=message.chat.id,
-                text=day,
-                parse_mode='HTML'
-            )
-    else:
-        bot.send_message(
-            chat_id=message.chat.id,
-            text=schedule_messages['empty_tomorrow_lessons'],
-        )
 
 
 def get_current_lesson(bot: TeleBot, message, storage: MongodbServiceTG):

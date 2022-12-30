@@ -53,11 +53,11 @@ def finish_teacher_registration(message, bot: TeleBot, storage: MongodbServiceTG
     teachers_list = postgre_storage.get_teachers()
 
     teacher = list(filter(lambda user: user['fullname'] == text, teachers_list))
-    if len(teacher) != 0:
+    if teacher:
         storage.save_or_update_user(
             chat_id=chat_id,
-            institute='teacher',
-            group_id=teacher
+            teachers_ids=[teacher[0]['teacher_id']],
+            groups_ids=[],
         )
         bot.send_message(
             chat_id=chat_id,
@@ -66,7 +66,7 @@ def finish_teacher_registration(message, bot: TeleBot, storage: MongodbServiceTG
         )
     else:
         teachers = find_teacher(text, teachers_list)
-        if len(teachers) == 0:
+        if not teachers:
             bot.send_message(
                 chat_id=chat_id,
                 text=registration_messages['wrong_teacher_name'],
@@ -98,8 +98,8 @@ def finish_teacher_registration_by_button(message, bot: TeleBot, storage: Mongod
     teacher = list(filter(lambda user: user['teacher_id'] == teacher_id, teachers_list))[0]
     storage.save_or_update_user(
         chat_id=chat_id,
-        institute='teacher',
-        group_id=teacher['teacher_id']
+        teachers_ids=[teacher['teacher_id']],
+        groups_ids=[]
     )
     bot.send_message(
         chat_id=chat_id,

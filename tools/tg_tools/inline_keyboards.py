@@ -6,7 +6,7 @@ from telebot.types import InlineKeyboardMarkup
 
 user_role = [
     {'Я студент': '{"registration": "student"}'},
-    {'Я преподователь': '{"registration": "teacher"}'}
+    {'Я преподаватель': '{"registration": "teacher"}'}
 ]
 reminders = [
     {'Настройки': '{"reminders": "settings"}'},

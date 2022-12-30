@@ -4,7 +4,7 @@ import pendulum
 import pytz
 
 from db import data_conversion, postgre_storage
-from tools.schedule_tools.utils import TIMEZONE
+from tools.schedule_tools.utils import TIMEZONE, get_now
 
 
 def get_group_schedule(
@@ -72,7 +72,7 @@ def future_lesson(lesson: dict, datetime_now: datetime) -> bool:
 
 
 def get_group_current_lesson(group_id: int) -> list:
-    datetime_now = datetime.now(TIMEZONE)
+    datetime_now = get_now()
 
     schedule_list = get_group_schedule(
         group_id=group_id,
@@ -87,7 +87,7 @@ def get_group_current_lesson(group_id: int) -> list:
 
 
 def get_group_near_lesson(group_id: int) -> dict:
-    datetime_now = datetime.now(TIMEZONE)
+    datetime_now = get_now()
 
     schedule_list = get_group_schedule(group_id=group_id, next_week=False)
     schedule_list += get_group_schedule(group_id=group_id, next_week=True)
@@ -126,7 +126,7 @@ def get_group_near_lesson(group_id: int) -> dict:
 
 
 def get_teacher_current_lesson(teacher_id: int) -> list:
-    datetime_now = datetime.now(TIMEZONE)
+    datetime_now = get_now()
 
     schedule_list = get_teacher_schedule(
         teacher_id=teacher_id,
@@ -141,7 +141,7 @@ def get_teacher_current_lesson(teacher_id: int) -> list:
 
 
 def get_teacher_near_lesson(teacher_id: int) -> dict:
-    datetime_now = datetime.now(TIMEZONE)
+    datetime_now = get_now()
 
     schedule_list = get_teacher_schedule(teacher_id=teacher_id, next_week=False)
     schedule_list += get_teacher_schedule(teacher_id=teacher_id, next_week=True)

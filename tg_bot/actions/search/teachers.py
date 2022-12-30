@@ -50,7 +50,7 @@ def search_teacher(message, bot: TeleBot, storage):
     teachers_list = postgre_storage.get_teachers()
     teachers = list(filter(lambda user: user['fullname'] == text, teachers_list))
 
-    if len(teachers) != 0:
+    if teachers:
         bot.send_message(
             chat_id=chat_id,
             text=search_messages['select_type_search'],
@@ -58,7 +58,7 @@ def search_teacher(message, bot: TeleBot, storage):
         )
     else:
         teachers = find_teacher(text, teachers_list)
-        if len(teachers) == 0:
+        if teachers:
             msg = bot.send_message(
                 chat_id=chat_id,
                 text=search_messages['check_input'],

@@ -11,7 +11,7 @@ from notifications import start_messages
 from tg_bot.actions import commands
 from tg_bot.actions.api import api
 from tg_bot.actions.main_menu import main_menu, schedule, reminders
-from tg_bot.actions.registration import student as student_registration
+from tg_bot.actions.registration import group as student_registration
 from tg_bot.actions.registration import teacher as teacher_registration
 from tg_bot.actions.search import classrooms as classrooms_search
 from tg_bot.actions.search import teachers as teachers_search
@@ -139,17 +139,12 @@ def institute_registration_handler(message):
     callback = json.loads(data)['institute']
 
     if callback == 'back':
-        storage.create_user(message.message.chat.id)
         student_registration.start_student_registration(
             bot=bot,
             message=message,
             storage=storage
         )
     else:
-        storage.save_or_update_user(
-            chat_id=message.message.chat.id,
-            institute=json.loads(data)['institute']
-        )
         student_registration.select_course_student_registration(
             bot=bot,
             message=message,
@@ -165,20 +160,12 @@ def course_registration_handler(message):
     callback = json.loads(data)['course']
 
     if callback == 'back':
-        storage.delete_user_or_userdata(
-            chat_id=message.message.chat.id,
-            delete_only_course=True
-        )
         student_registration.select_course_student_registration(
             bot=bot,
             message=message,
             storage=storage
         )
     else:
-        storage.save_or_update_user(
-            chat_id=message.message.chat.id,
-            course=json.loads(data)['course']
-        )
         student_registration.select_group_student_registration(
             bot=bot,
             message=message,
@@ -190,10 +177,12 @@ def course_registration_handler(message):
 @bot.callback_query_handler(func=lambda message: 'register_group_id' in message.data)
 def group_registration_handler(message):
     data = message.data
+    group_id = json.loads(data)['register_group_id']
 
     storage.save_or_update_user(
         chat_id=message.message.chat.id,
-        group_id=json.loads(data)['register_group_id']
+        groups_ids=[group_id],
+        teachers_ids=[]
     )
 
     student_registration.finish_student_registration(

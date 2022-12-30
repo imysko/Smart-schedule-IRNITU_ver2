@@ -29,7 +29,7 @@ def registration(bot: TeleBot, message, storage: MongodbServiceTG, edit: bool = 
     chat_id = message.chat.id
     message_id = message.message_id
 
-    storage.delete_user_or_userdata(chat_id)
+    # storage.delete_user_or_userdata(chat_id)
     if not edit:
         bot.send_message(
             chat_id=chat_id,
