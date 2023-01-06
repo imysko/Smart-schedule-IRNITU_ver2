@@ -18,15 +18,16 @@ id         integer not null
     constraint schedule_items_id_pk
         primary key autoincrement,
 groups text,
+group_id text,
+ngroup     integer,
 teacher_id integer,
 auditory_id   integer,
 discipline text,
+type         integer,
 para       integer,
 day        integer,
 everyweek  integer,
-nt         integer,
-dbeg       date,
-ngroup     integer
+dbeg       date
 );
 """)
     c.execute("""
@@ -177,15 +178,16 @@ def sqlite_fill_schedule_items(sqlite_connection):
             records.append((
                 item['id'],
                 item['groups_verbose'],
+                item['groups'][0] if len(item['groups']) == 1 else None,
+                item['ngroup'],
                 item['teachers'][0] if item['teachers'] else None,
                 item['auditories'][0] if item['auditories'] else None,
                 item['discipline_verbose'],
+                item['nt'],
                 item['para'],
                 item['day'],
                 item['everyweek'],
-                item['nt'],
                 item['dbeg'],
-                item['ngroup'],
             ))
 
             if item['groups']:
@@ -195,7 +197,7 @@ def sqlite_fill_schedule_items(sqlite_connection):
 
         for items, i, length in divide_chunks(records, 1000):
             sqlite_cursor.executemany("""
-            INSERT INTO schedule_items VALUES(?,?,?,?,?,?,?,?,?,?,?);
+            INSERT INTO schedule_items VALUES(?,?,?,?,?,?,?,?,?,?,?,?);
             """, items)
             sqlite_connection.commit()
             print(f"{i} / {length}")
