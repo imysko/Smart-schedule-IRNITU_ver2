@@ -1,7 +1,9 @@
+
 from pytz import timezone
 from telebot import TeleBot
 
 from db.mongo_storage import MongodbServiceTG
+from db.postgre_storage import PostgresStorageCursor
 from tools.messages import registration_messages, other_messages
 from tools.tg_tools import inline_keyboards, reply_keyboards
 
@@ -51,6 +53,9 @@ def help(bot: TeleBot, message, storage: MongodbServiceTG):
         chat_id=chat_id,
         text=other_messages['help_message']
     )
+
+def sqlite(bot: TeleBot, message):
+    pass
 
 
 def about(bot: TeleBot, message, storage: MongodbServiceTG):

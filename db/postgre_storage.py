@@ -12,7 +12,6 @@ from tools.schedule_tools.utils import get_now
 
 load_dotenv()
 
-
 PG_DB_DATABASE = os.environ.get('PG_DB_DATABASE', default='schedule')
 PG_DB_USER = os.environ.get('PG_DB_USER')
 PG_DB_PASSWORD = os.environ.get('PG_DB_PASSWORD', default='')
@@ -26,6 +25,18 @@ db_params = {
     'host': PG_DB_HOST,
     'port': PG_DB_PORT
 }
+
+
+class PostgresStorageCursor(object):
+    def __enter__(self):
+        self.connection = psycopg2.connect(**db_params)
+        self.cursor = self.connection.cursor(cursor_factory=DictCursor)
+
+        return self.cursor
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.cursor.close()
+        self.connection.close()
 
 
 def is_week_even(start_date: datetime) -> bool:
@@ -70,12 +81,11 @@ def get_institutes() -> list:
         ORDER BY institute_title;
     """
 
-    with closing(psycopg2.connect(**db_params)) as conn:
-        with conn.cursor(cursor_factory=DictCursor) as cursor:
-            cursor.execute(query)
-            rows = cursor.fetchall()
-            institutes = [dict(institute) for institute in rows]
-            return institutes
+    with PostgresStorageCursor() as cursor:
+        cursor.execute(query)
+        rows = cursor.fetchall()
+        institutes = [dict(institute) for institute in rows]
+        return institutes
 
 
 def get_courses_by_institute(institute_id: int) -> list:
@@ -87,12 +97,11 @@ def get_courses_by_institute(institute_id: int) -> list:
         ORDER BY course;
     """
 
-    with closing(psycopg2.connect(**db_params)) as conn:
-        with conn.cursor(cursor_factory=DictCursor) as cursor:
-            cursor.execute(query)
-            rows = cursor.fetchall()
-            courses = [course[0] for course in rows]
-            return courses
+    with PostgresStorageCursor() as cursor:
+        cursor.execute(query)
+        rows = cursor.fetchall()
+        courses = [course[0] for course in rows]
+        return courses
 
 
 def get_groups_by_institute_and_course(institute_id: int, course: int) -> list:
@@ -106,12 +115,11 @@ def get_groups_by_institute_and_course(institute_id: int, course: int) -> list:
         ORDER BY name;
     """.format(institute=institute_id, course=course)
 
-    with closing(psycopg2.connect(**db_params)) as conn:
-        with conn.cursor(cursor_factory=DictCursor) as cursor:
-            cursor.execute(query)
-            rows = cursor.fetchall()
-            groups = [dict(group) for group in rows]
-            return groups
+    with PostgresStorageCursor() as cursor:
+        cursor.execute(query)
+        rows = cursor.fetchall()
+        groups = [dict(group) for group in rows]
+        return groups
 
 
 def get_groups(is_active=True) -> list:
@@ -124,12 +132,11 @@ def get_groups(is_active=True) -> list:
     if is_active:
         query += "  WHERE is_active = True"
 
-    with closing(psycopg2.connect(**db_params)) as conn:
-        with conn.cursor(cursor_factory=DictCursor) as cursor:
-            cursor.execute(query)
-            rows = cursor.fetchall()
-            groups = [dict(group) for group in rows]
-            return groups
+    with PostgresStorageCursor() as cursor:
+        cursor.execute(query)
+        rows = cursor.fetchall()
+        groups = [dict(group) for group in rows]
+        return groups
 
 
 def get_teachers() -> list:
@@ -140,12 +147,11 @@ def get_teachers() -> list:
         ORDER BY fullname;
     """
 
-    with closing(psycopg2.connect(**db_params)) as conn:
-        with conn.cursor(cursor_factory=DictCursor) as cursor:
-            cursor.execute(query)
-            rows = cursor.fetchall()
-            teachers = [dict(teacher) for teacher in rows]
-            return teachers
+    with PostgresStorageCursor() as cursor:
+        cursor.execute(query)
+        rows = cursor.fetchall()
+        teachers = [dict(teacher) for teacher in rows]
+        return teachers
 
 
 def get_classrooms() -> list:
@@ -156,12 +162,11 @@ def get_classrooms() -> list:
         ORDER BY name;
     """
 
-    with closing(psycopg2.connect(**db_params)) as conn:
-        with conn.cursor(cursor_factory=DictCursor) as cursor:
-            cursor.execute(query)
-            rows = cursor.fetchall()
-            classrooms = [dict(classroom) for classroom in rows]
-            return classrooms
+    with PostgresStorageCursor() as cursor:
+        cursor.execute(query)
+        rows = cursor.fetchall()
+        classrooms = [dict(classroom) for classroom in rows]
+        return classrooms
 
 
 def get_schedule_by_group(group_id: int) -> list:
@@ -193,13 +198,12 @@ def get_schedule_by_group(group_id: int) -> list:
         ORDER BY dbeg, day, lesson_number, subgroup;
     """.format(odd_week=odd_week, even_week=even_week, group_id=group_id)
 
-    with closing(psycopg2.connect(**db_params)) as conn:
-        with conn.cursor(cursor_factory=DictCursor) as cursor:
-            cursor.execute(query)
-            rows = cursor.fetchall()
-            schedules = [dict(schedule) for schedule in rows]
+    with PostgresStorageCursor() as cursor:
+        cursor.execute(query)
+        rows = cursor.fetchall()
+        schedules = [dict(schedule) for schedule in rows]
 
-            return schedules
+        return schedules
 
 
 def get_schedule_by_teacher(teacher_id: int) -> list:
@@ -231,13 +235,12 @@ def get_schedule_by_teacher(teacher_id: int) -> list:
         ORDER BY dbeg, day, lesson_number, subgroup;
     """.format(odd_week=odd_week, even_week=even_week, teacher_id=teacher_id)
 
-    with closing(psycopg2.connect(**db_params)) as conn:
-        with conn.cursor(cursor_factory=DictCursor) as cursor:
-            cursor.execute(query)
-            rows = cursor.fetchall()
-            schedules = [dict(schedule) for schedule in rows]
+    with PostgresStorageCursor() as cursor:
+        cursor.execute(query)
+        rows = cursor.fetchall()
+        schedules = [dict(schedule) for schedule in rows]
 
-            return schedules
+        return schedules
 
 
 def get_schedule_by_classroom(classroom_id: int) -> list:
@@ -271,10 +274,9 @@ def get_schedule_by_classroom(classroom_id: int) -> list:
         ORDER BY dbeg, day, lesson_number, subgroup;
     """.format(odd_week=odd_week, even_week=even_week, classroom_id=classroom_id)
 
-    with closing(psycopg2.connect(**db_params)) as conn:
-        with conn.cursor(cursor_factory=DictCursor) as cursor:
-            cursor.execute(query)
-            rows = cursor.fetchall()
-            schedules = [dict(schedule) for schedule in rows]
+    with PostgresStorageCursor() as cursor:
+        cursor.execute(query)
+        rows = cursor.fetchall()
+        schedules = [dict(schedule) for schedule in rows]
 
-            return schedules
+        return schedules

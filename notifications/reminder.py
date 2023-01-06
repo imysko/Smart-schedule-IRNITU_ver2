@@ -12,8 +12,8 @@ from tools.schedule_tools.notifications import check_that_user_has_reminder_enab
     forming_user_to_submit, check_that_the_lesson_has_the_right_time, convert_minutes_word
 from tools.schedule_tools.schedule_conversion import convert_lessons_reminder
 from tools.logger import logger
+from tools.schedule_tools.utils import TIMEZONE
 
-TZ_IRKUTSK = pytz.timezone('Asia/Irkutsk')
 locale_name = ('ru_RU.UTF-8' if platform.system() == 'Linux' else 'ru_RU')
 locale.setlocale(locale.LC_TIME, locale_name)
 
@@ -77,8 +77,8 @@ class Reminder:
 
     def search_for_reminders(self):
         logger.info(f'{self.platform} сработало')
-        time_now = datetime.now(TZ_IRKUTSK)
-        day_now = datetime.now(TZ_IRKUTSK).strftime('%A').lower()
+        time_now = datetime.now(TIMEZONE)
+        day_now = datetime.now(TIMEZONE).strftime('%A').lower()
 
         threading.Timer(60, self.search_for_reminders).start()
 
