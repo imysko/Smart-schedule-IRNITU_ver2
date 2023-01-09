@@ -1,9 +1,25 @@
 import asyncio
 import json
 import os
+import sentry_sdk
 import time
-
 from dotenv import load_dotenv
+
+
+load_dotenv()
+
+SENTRY_DSN=os.environ.get('SENTRY_DSN')
+
+if SENTRY_DSN:
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+
+        # Set traces_sample_rate to 1.0 to capture 100%
+        # of transactions for performance monitoring.
+        # We recommend adjusting this value in production.
+        traces_sample_rate=1.0
+    )
+
 from telebot import TeleBot
 
 from db.mongo_storage import MongodbServiceTG
@@ -21,7 +37,7 @@ from tools.messages import error_messages, default_messages
 from tools.tg_tools import reply_keyboards
 from tools.content import *
 
-load_dotenv()
+
 
 TOKEN = os.environ.get('TG_TOKEN')
 
