@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 from telebot import TeleBot
 
 from db.mongo_storage import MongodbServiceTG
-from notifications import start_messages
+# from notifications import start_messages
 from tg_bot.actions import commands
 from tg_bot.actions.api import api
 from tg_bot.actions.main_menu import main_menu, schedule, reminders
