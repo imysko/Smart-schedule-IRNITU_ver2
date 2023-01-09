@@ -1,9 +1,11 @@
+from tempfile import TemporaryFile
 
 from pytz import timezone
 from telebot import TeleBot
 
 from db.mongo_storage import MongodbServiceTG
 from db.postgre_storage import PostgresStorageCursor
+from db.sqlite_generator import sqlite_generate
 from tools.messages import registration_messages, other_messages
 from tools.tg_tools import inline_keyboards, reply_keyboards
 
@@ -55,7 +57,11 @@ def help(bot: TeleBot, message, storage: MongodbServiceTG):
     )
 
 def sqlite(bot: TeleBot, message):
-    pass
+    with TemporaryFile() as fp:
+        fp.close()
+        sqlite_generate(fp.file.name)
+        bot.send_document(chat_id=message.chat.id, document=fp.open(), visible_file_name="sqlite.db")
+        fp.close()
 
 
 def about(bot: TeleBot, message, storage: MongodbServiceTG):
