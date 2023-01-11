@@ -51,7 +51,6 @@ full_name integer
 );""")
 
     c.execute("""
-
 -- auto-generated definition
 create table groups (
 id        integer not null
@@ -59,12 +58,11 @@ id        integer not null
         primary key autoincrement,
 title      text,
 kurs      integer,
-faculty_title      text
+faculty_id      integer
 );
 """)
 
     c.execute("""
-
 -- auto-generated definition
 create table auditories (
 id        integer not null
@@ -75,6 +73,18 @@ capacity      integer,
 type      integer
 );
         """)
+
+    c.execute("""
+
+    -- auto-generated definition
+create table faculties (
+id        integer not null
+    constraint faculties_id_pk
+        primary key autoincrement,
+title      integer
+);
+            """)
+
     c.close()
 
 
@@ -83,7 +93,7 @@ def sqlite_fill_groups(sqlite_connection):
         sqlite_cursor = sqlite_connection.cursor()
 
         query = """
-        SELECT id_7 as id, obozn, kurs, faculty_title
+        SELECT id_7 as id, obozn, kurs, faculty_id
         FROM real_groups
         WHERE is_active = True
         """
@@ -94,11 +104,29 @@ def sqlite_fill_groups(sqlite_connection):
                 item['id'],
                 item['obozn'],
                 item['kurs'],
-                item['faculty_title'],
+                item['faculty_id'],
             ))
 
         sqlite_cursor.executemany("""
         INSERT INTO groups VALUES(?,?,?,?);
+        """, records)
+        sqlite_connection.commit()
+
+        query = """
+        SELECT DISTINCT faculty_id, faculty_title
+        FROM real_groups
+        WHERE is_active = True
+        """
+        pg_cursor.execute(query)
+        records = []
+        for item in pg_cursor:
+            records.append((
+                item['faculty_id'],
+                item['faculty_title'],
+            ))
+
+        sqlite_cursor.executemany("""
+        INSERT INTO faculties VALUES(?,?);
         """, records)
         sqlite_connection.commit()
 
