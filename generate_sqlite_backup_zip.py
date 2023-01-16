@@ -17,7 +17,8 @@ try:
     with zipfile.ZipFile(filename, 'w', compresslevel=9, compression=zipfile.ZIP_BZIP2) as zf:
         zf.write(fp.name, "test.db")
 
-    os.unlink("sqlite.db.zip")
+    if os.path.exists("sqlite.db.zip"):
+        os.unlink("sqlite.db.zip")
     os.symlink(filename, "sqlite.db.zip")
 finally:
     os.unlink(fp.name)
