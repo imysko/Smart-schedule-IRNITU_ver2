@@ -80,7 +80,7 @@ def help_handler(message):
         storage=storage
     )
 
-@bot.message_handler(func=lambda message: message.text in ['sqlite'], content_types=['text'])
+@bot.message_handler(func=lambda message: message.text in ['sqlite', '/sqlite'], content_types=['text'])
 def sqlite_handler(message):
     commands.sqlite(
         bot=bot,

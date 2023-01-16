@@ -1,4 +1,6 @@
-from tempfile import TemporaryFile
+import os
+import zipfile
+from tempfile import TemporaryFile, NamedTemporaryFile
 
 from pytz import timezone
 from telebot import TeleBot
@@ -57,11 +59,8 @@ def help(bot: TeleBot, message, storage: MongodbServiceTG):
     )
 
 def sqlite(bot: TeleBot, message):
-    with TemporaryFile() as fp:
-        fp.close()
-        sqlite_generate(fp.file.name)
-        bot.send_document(chat_id=message.chat.id, document=fp.open(), visible_file_name="sqlite.db")
-        fp.close()
+    with open("sqlite.db.zip", 'rb') as f:
+        bot.send_document(chat_id=message.chat.id, document=f)
 
 
 def about(bot: TeleBot, message, storage: MongodbServiceTG):
