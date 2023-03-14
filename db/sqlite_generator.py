@@ -1,13 +1,10 @@
+import shutil
 import sqlite3
+from tempfile import TemporaryFile
 
 from db.postgre_storage import PostgresStorageCursor
+from tools.schedule_tools.utils import divide_chunks
 
-
-def divide_chunks(l, n):
-    # looping till length l
-    length = len(l)
-    for i in range(0, len(l), n):
-        yield l[i:i + n], i, length
 
 def sqlite_generate_tables(sqlite_connection):
     c = sqlite_connection.cursor()
@@ -233,8 +230,8 @@ def sqlite_fill_schedule_items(sqlite_connection):
         sqlite_cursor.close()
 
 
-def sqlite_generate():
-    sqlite_connection = sqlite3.connect('result2.db')
+def sqlite_generate(file_name):
+    sqlite_connection = sqlite3.connect(file_name)
 
     sqlite_generate_tables(sqlite_connection)
     sqlite_fill_groups(sqlite_connection)
@@ -246,5 +243,12 @@ def sqlite_generate():
 
 
 if __name__ == '__main__':
-    sqlite_generate()
+    with TemporaryFile() as fp:
+        fp.close()
+        sqlite_generate(fp.file.name)
+        shutil.copyfile(fp.file.name, "./test.db")
+
+
+
+
 

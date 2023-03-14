@@ -102,14 +102,13 @@ def get_week_schedule(bot: TeleBot, message, storage: MongodbServiceTG, next_wee
 
 def get_current_lesson(bot: TeleBot, message, storage: MongodbServiceTG):
     chat_id = message.chat.id
+    user = storage.get_user(chat_id)
 
-    user_group = storage.get_user(chat_id)['group_id']
-
-    if storage.get_user(chat_id)['institute'] != 'teacher':
-        lessons = getting_schedule.get_group_current_lesson(group_id=user_group)
+    if user['groups_ids']:
+        lessons = getting_schedule.get_group_current_lesson(group_id=user['groups_ids'][0])
         lessons = schedule_conversion.convert_current_lessons_group(lessons)
     else:
-        lessons = getting_schedule.get_teacher_current_lesson(teacher_id=user_group)
+        lessons = getting_schedule.get_teacher_current_lesson(teacher_id=user['teachers_ids'][0])
         lessons = schedule_conversion.convert_current_lessons_teacher(lessons)
 
     if len(lessons):
