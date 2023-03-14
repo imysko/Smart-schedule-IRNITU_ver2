@@ -218,7 +218,7 @@ def sqlite_fill_schedule_items(sqlite_connection):
                 item['dbeg'],
             ))
 
-            if item['groups']:
+            if item['groups'] and len(item['groups']) > 1:
                 sqlite_cursor.executemany(f"""
                 INSERT INTO groups_lists(schedule_item_id, group_id) VALUES(?, ?)
                 """, [(item['id'], g) for g in item['groups']])
