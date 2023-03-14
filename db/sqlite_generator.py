@@ -112,7 +112,7 @@ def sqlite_fill_groups(sqlite_connection):
         query = """
         SELECT DISTINCT faculty_id, faculty_title
         FROM real_groups
-        WHERE is_active = True
+        WHERE is_active = True and faculty_id is not null
         """
         pg_cursor.execute(query)
         records = []
