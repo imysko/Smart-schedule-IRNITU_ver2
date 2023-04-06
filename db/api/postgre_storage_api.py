@@ -4,10 +4,15 @@ from contextlib import closing
 from datetime import datetime, date
 
 import dotenv
-import pytz
 import pendulum as pendulum
 import psycopg2
 from psycopg2.extras import DictCursor
+
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session
+
+from db.models.database_models import LessonsTimeDB, GroupDB, TeacherDB, ClassroomDB, DisciplinesDB
+from db.models.response_models import LessonsTime, Institute, Group, Teacher, Classroom, Disciplines
 
 dotenv.load_dotenv()
 
@@ -17,6 +22,9 @@ PG_DB_PASSWORD = os.environ.get('PG_DB_PASSWORD')
 PG_DB_HOST = os.environ.get('PG_DB_HOST')
 PG_DB_PORT = os.environ.get('PG_DB_PORT', default='5432')
 
+engine = create_engine(
+    f"postgresql+psycopg2://{PG_DB_USER}:{PG_DB_PASSWORD}@{PG_DB_HOST}:{PG_DB_PORT}/{PG_DB_DATABASE}"
+)
 
 db_params = {
     'database': PG_DB_DATABASE,
@@ -44,112 +52,49 @@ def get_week_even(start_date: datetime):
     return weeks % 2
 
 
-def get_lessons() -> list:
-    query = """
-        SELECT id_66 AS lesson_id,
-               para  AS lesson_number,
-               begtime,
-               endtime
-        FROM vacpara
-        ORDER BY lesson_number
-    """
+def get_lessons_time() -> list:
+    with Session(engine) as session:
+        lessons_time = session.query(LessonsTimeDB).order_by(LessonsTimeDB.id_66).all()
 
-    with closing(psycopg2.connect(**db_params)) as conn:
-        with conn.cursor(cursor_factory=DictCursor) as cursor:
-            cursor.execute(query)
-            rows = cursor.fetchall()
-            lessons = [dict(lesson) for lesson in rows]
-            return lessons
+        return list(map(lambda x: LessonsTime(
+            id_66=x.id_66, para=x.para, begtime=x.begtime, endtime=x.endtime), lessons_time))
 
 
 def get_institutes() -> list:
-    query = """
-        SELECT DISTINCT faculty_id    AS institute_id,
-                        faculty_title AS institute_title
-        FROM real_groups
-        WHERE faculty_title NOT LIKE ''
-        ORDER BY institute_title
-    """
+    with Session(engine) as session:
+        institutes = session.query(GroupDB).distinct(GroupDB.faculty_title).where(GroupDB.faculty_title != '').all()
 
-    with closing(psycopg2.connect(**db_params)) as conn:
-        with conn.cursor(cursor_factory=DictCursor) as cursor:
-            cursor.execute(query)
-            rows = cursor.fetchall()
-            institutes = [dict(institute) for institute in rows]
-            return institutes
+        return sorted(list(map(lambda x: Institute(
+            faculty_id=x.faculty_id, faculty_title=x.faculty_title), institutes)), key=lambda i: i.institute_id)
 
 
 def get_groups() -> list:
-    query = """
-        SELECT id_7       AS group_id,
-               obozn      AS name,
-               kurs       AS course,
-               faculty_id AS institute_id
-        FROM real_groups
-        WHERE is_active IS TRUE
-        ORDER BY name
-    """
+    with Session(engine) as session:
+        groups = session.query(GroupDB).where(GroupDB.is_active == True).order_by(GroupDB.id_7).all()
 
-    with closing(psycopg2.connect(**db_params)) as conn:
-        with conn.cursor(cursor_factory=DictCursor) as cursor:
-            cursor.execute(query)
-            rows = cursor.fetchall()
-            groups = [dict(group) for group in rows]
-            return groups
+        return list(map(lambda x: Group(id_7=x.id_7, obozn=x.obozn, kurs=x.kurs, faculty_id=x.faculty_id), groups))
 
 
 def get_teachers() -> list:
-    query = """
-        SELECT id_61  AS teacher_id,
-               preps  AS fullname,
-               prep   AS shortname
-        FROM prepods
-        WHERE NOT preps = ''
-        ORDER BY fullname
-    """
+    with Session(engine) as session:
+        teacher = session.query(TeacherDB).where(TeacherDB.preps != '').order_by(TeacherDB.id_61).all()
 
-    with closing(psycopg2.connect(**db_params)) as conn:
-        with conn.cursor(cursor_factory=DictCursor) as cursor:
-            cursor.execute(query)
-            rows = cursor.fetchall()
-            teachers = [dict(teacher) for teacher in rows]
-            return teachers
+        return list(map(lambda x: Teacher(id_61=x.id_61, preps=x.preps, prep=x.prep), teacher))
 
 
 def get_classrooms() -> list:
-    query = """
-        SELECT id_60 AS classroom_id,
-               obozn AS name
-        FROM auditories
-        WHERE NOT obozn = '-'
-          AND NOT obozn = ''
-        ORDER BY name
-    """
+    with Session(engine) as session:
+        classrooms = session.query(ClassroomDB).where(ClassroomDB.obozn != '' and ClassroomDB.obozn != '-')\
+            .order_by(ClassroomDB.id_60).all()
 
-    with closing(psycopg2.connect(**db_params)) as conn:
-        with conn.cursor(cursor_factory=DictCursor) as cursor:
-            cursor.execute(query)
-            rows = cursor.fetchall()
-            classrooms = [dict(classroom) for classroom in rows]
-            return classrooms
+        return list(map(lambda x: Classroom(id_60=x.id_60, obozn=x.obozn), classrooms))
 
 
 def get_disciplines() -> list:
-    query = """
-        SELECT id AS discipline_id,
-               title,
-               real_title
-        FROM disciplines
-        WHERE NOT title = ''
-        ORDER BY title
-    """
+    with Session(engine) as session:
+        disciplines = session.query(DisciplinesDB).where(DisciplinesDB.title != '').order_by(DisciplinesDB.id).all()
 
-    with closing(psycopg2.connect(**db_params)) as conn:
-        with conn.cursor(cursor_factory=DictCursor) as cursor:
-            cursor.execute(query)
-            rows = cursor.fetchall()
-            disciplines = [dict(discipline) for discipline in rows]
-            return disciplines
+        return list(map(lambda x: Disciplines(id=x.id, title=x.title, real_title=x.real_title), disciplines))
 
 
 def get_schedule(start_date: datetime) -> list:
