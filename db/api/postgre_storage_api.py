@@ -1,12 +1,9 @@
 import os
 import calendar
-from contextlib import closing
 from datetime import datetime, date
 
 import dotenv
 import pendulum as pendulum
-import psycopg2
-from psycopg2.extras import DictCursor
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
@@ -27,14 +24,6 @@ PG_DB_PORT = os.environ.get('PG_DB_PORT', default='5432')
 POSTGRES_DATABASE = f"postgresql+psycopg2://{PG_DB_USER}:{PG_DB_PASSWORD}@{PG_DB_HOST}:{PG_DB_PORT}/{PG_DB_DATABASE}"
 
 engine = create_engine(POSTGRES_DATABASE, echo=True)
-
-db_params = {
-    'database': PG_DB_DATABASE,
-    'user': PG_DB_USER,
-    'password': PG_DB_PASSWORD,
-    'host': PG_DB_HOST,
-    'port': PG_DB_PORT
-}
 
 
 def is_even_week(start_date: date):
