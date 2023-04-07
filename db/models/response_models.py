@@ -1,5 +1,6 @@
 from datetime import date, timedelta
 
+
 class LessonsTime:
     def __init__(self, id_66: int, para: str, begtime: str, endtime: str):
         self.lesson_id = id_66
