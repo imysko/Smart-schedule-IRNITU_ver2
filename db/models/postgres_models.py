@@ -6,7 +6,7 @@ class Base(DeclarativeBase, object):
     pass
 
 
-class LessonsTimeDB(Base):
+class Vacpara(Base):
     __tablename__ = 'vacpara'
 
     id_66 = Column(Integer, primary_key=True)
@@ -15,7 +15,7 @@ class LessonsTimeDB(Base):
     endtime = Column(String)
 
 
-class GroupDB(Base):
+class RealGroup(Base):
     __tablename__ = 'real_groups'
 
     id_7 = Column(Integer, primary_key=True)
@@ -26,7 +26,7 @@ class GroupDB(Base):
     faculty_title = Column(String)
 
 
-class TeacherDB(Base):
+class Prepod(Base):
     __tablename__ = 'prepods'
 
     id_61 = Column(Integer, primary_key=True)
@@ -34,14 +34,14 @@ class TeacherDB(Base):
     prep = Column(String)
 
 
-class ClassroomDB(Base):
+class Auditorie(Base):
     __tablename__ = 'auditories'
 
     id_60 = Column(Integer, primary_key=True)
     obozn = Column(String)
 
 
-class DisciplinesDB(Base):
+class DisciplineDB(Base):
     __tablename__ = 'disciplines'
 
     id = Column(Integer, primary_key=True)
@@ -49,7 +49,7 @@ class DisciplinesDB(Base):
     real_title = Column(String)
 
 
-class OtherDisciplineDB(Base):
+class ScheduleMetaprogramDiscipline(Base):
     __tablename__ = 'schedule_metaprogramdiscipline'
 
     id = Column(Integer, primary_key=True)
@@ -60,7 +60,7 @@ class OtherDisciplineDB(Base):
     project_active = Column(Boolean)
 
 
-class ScheduleDB(Base):
+class ScheduleV2(Base):
     __tablename__ = 'schedule_v2'
 
     id = Column(Integer, primary_key=True)

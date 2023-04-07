@@ -8,9 +8,9 @@ import pendulum as pendulum
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
-from db.models.postgres_models import LessonsTimeDB, GroupDB, TeacherDB, ClassroomDB, DisciplinesDB, OtherDisciplineDB, \
-    ScheduleDB
-from db.models.response_models import LessonsTime, Institute, Group, Teacher, Classroom, Disciplines, OtherDiscipline, \
+from db.models.postgres_models import Vacpara, RealGroup, Prepod, Auditorie, DisciplineDB, \
+    ScheduleMetaprogramDiscipline, ScheduleV2
+from db.models.response_models import LessonsTime, Institute, Group, Teacher, Classroom, Discipline, OtherDiscipline, \
     Schedule
 
 dotenv.load_dotenv()
@@ -46,57 +46,71 @@ def is_even_week(start_date: date):
 
 def get_lessons_time() -> list:
     with Session(engine) as session:
-        lessons_time = session.query(LessonsTimeDB).order_by(LessonsTimeDB.id_66).all()
+        lessons_time = session.query(Vacpara)\
+            .order_by(Vacpara.id_66)\
+            .all()
 
-        return list(map(lambda x: LessonsTime(
-            id_66=x.id_66, para=x.para, begtime=x.begtime, endtime=x.endtime), lessons_time))
+        return [LessonsTime(lt) for lt in lessons_time]
 
 
 def get_institutes() -> list:
     with Session(engine) as session:
-        institutes = session.query(GroupDB).distinct(GroupDB.faculty_title).where(GroupDB.faculty_title != '').all()
+        institutes = session.query(RealGroup) \
+            .distinct(RealGroup.faculty_title)\
+            .where(RealGroup.faculty_title != '') \
+            .all()
 
-        return sorted(list(map(lambda x: Institute(
-            faculty_id=x.faculty_id, faculty_title=x.faculty_title), institutes)), key=lambda i: i.institute_id)
+        return sorted([Institute(i) for i in institutes], key=lambda i: i.institute_id)
 
 
 def get_groups() -> list:
     with Session(engine) as session:
-        groups = session.query(GroupDB).where(GroupDB.is_active == True).order_by(GroupDB.id_7).all()
+        groups = session.query(RealGroup)\
+            .where(RealGroup.is_active == True)\
+            .order_by(RealGroup.id_7)\
+            .all()
 
-        return list(map(lambda x: Group(id_7=x.id_7, obozn=x.obozn, kurs=x.kurs, faculty_id=x.faculty_id), groups))
+        return [Group(g) for g in groups]
 
 
 def get_teachers() -> list:
     with Session(engine) as session:
-        teacher = session.query(TeacherDB).where(TeacherDB.preps != '').order_by(TeacherDB.id_61).all()
+        teachers = session.query(Prepod)\
+            .where(Prepod.preps != '')\
+            .order_by(Prepod.id_61)\
+            .all()
 
-        return list(map(lambda x: Teacher(id_61=x.id_61, preps=x.preps, prep=x.prep), teacher))
+        return [Teacher(t) for t in teachers]
 
 
 def get_classrooms() -> list:
     with Session(engine) as session:
-        classrooms = session.query(ClassroomDB).where(ClassroomDB.obozn != '' and ClassroomDB.obozn != '-') \
-            .order_by(ClassroomDB.id_60).all()
+        classrooms = session.query(Auditorie)\
+            .where(Auditorie.obozn != '' and Auditorie.obozn != '-') \
+            .order_by(Auditorie.id_60).all()
 
-        return list(map(lambda x: Classroom(id_60=x.id_60, obozn=x.obozn), classrooms))
+        return [Classroom(c) for c in classrooms]
 
 
 def get_disciplines() -> list:
     with Session(engine) as session:
-        disciplines = session.query(DisciplinesDB).where(DisciplinesDB.title != '').order_by(DisciplinesDB.id).all()
+        disciplines = session.query(DisciplineDB)\
+            .where(DisciplineDB.title != '')\
+            .order_by(DisciplineDB.id)\
+            .all()
 
-        return list(map(lambda x: Disciplines(id=x.id, title=x.title, real_title=x.real_title), disciplines))
+        return [Discipline(d) for d in disciplines]
 
 
 def get_other_disciplines() -> list:
     with Session(engine) as session:
-        other_disciplines = session.query(OtherDisciplineDB) \
-            .where(OtherDisciplineDB.is_active == True and OtherDisciplineDB.project_active == True) \
-            .order_by(OtherDisciplineDB.id).all()
+        other_disciplines = session.query(ScheduleMetaprogramDiscipline) \
+            .where(ScheduleMetaprogramDiscipline.is_active == True and
+                   ScheduleMetaprogramDiscipline.project_active == True) \
+            .order_by(ScheduleMetaprogramDiscipline.id)\
+            .all()
 
-        return list(map(lambda x: OtherDiscipline(
-            id=x.id, discipline_title=x.discipline_title, type=x.type, is_online=x.is_online), other_disciplines))
+        return [OtherDiscipline(od) for od in other_disciplines]
 
 
 def get_schedule(start_date: datetime) -> list:
@@ -104,33 +118,16 @@ def get_schedule(start_date: datetime) -> list:
     start_of_second_week = pendulum.instance(start_of_first_week).add(weeks=1)
 
     with Session(engine) as session:
-        schedules = session.query(ScheduleDB) \
-            .where(start_of_first_week.date() <= ScheduleDB.dbeg) \
-            .where(ScheduleDB.dbeg <= start_of_second_week.date()) \
-            .order_by(ScheduleDB.id).all()
+        schedules = session.query(ScheduleV2) \
+            .where(start_of_first_week.date() <= ScheduleV2.dbeg) \
+            .where(ScheduleV2.dbeg <= start_of_second_week.date()) \
+            .order_by(ScheduleV2.id)\
+            .all()
 
         schedules = list(filter(lambda s: (s.everyweek == 2 or s.everyweek == 1 and s.day > 7) if is_even_week(s.dbeg)
                 else (s.everyweek == 2 or s.everyweek == 1 and s.day <= 7), schedules))
 
-        return list(map(lambda x: Schedule(
-            id=x.id,
-            groups=x.groups,
-            groups_verbose=x.groups_verbose,
-            teachers=x.teachers,
-            teachers_verbose=x.teachers_verbose,
-            auditories=x.auditories,
-            auditories_verbose=x.auditories_verbose,
-            discipline=x.discipline,
-            discipline_verbose=x.discipline_verbose,
-            meta_program_discipline_id=x.meta_program_discipline_id,
-            para=x.para,
-            type=x.type,
-            ngroup=x.ngroup,
-            nt=x.nt,
-            dbeg=x.dbeg,
-            day=x.day,
-            everyweek=x.everyweek
-        ), schedules))
+        return [Schedule(s) for s in schedules]
 
 
 def get_schedule_month(year: int, month: int) -> list:
@@ -138,30 +135,13 @@ def get_schedule_month(year: int, month: int) -> list:
     end_day_of_month = date(year, month, calendar.monthrange(year, month)[1])
 
     with Session(engine) as session:
-        schedules = session.query(ScheduleDB) \
-            .where(start_day_of_month <= ScheduleDB.dbeg) \
-            .where(ScheduleDB.dbeg <= end_day_of_month) \
-            .order_by(ScheduleDB.id).all()
+        schedules = session.query(ScheduleV2) \
+            .where(start_day_of_month <= ScheduleV2.dbeg) \
+            .where(ScheduleV2.dbeg <= end_day_of_month) \
+            .order_by(ScheduleV2.id)\
+            .all()
 
         schedules = list(filter(lambda s: (s.everyweek == 2 or s.everyweek == 1 and s.day > 7) if is_even_week(s.dbeg)
                 else (s.everyweek == 2 or s.everyweek == 1 and s.day <= 7), schedules))
 
-        return list(map(lambda x: Schedule(
-            id=x.id,
-            groups=x.groups,
-            groups_verbose=x.groups_verbose,
-            teachers=x.teachers,
-            teachers_verbose=x.teachers_verbose,
-            auditories=x.auditories,
-            auditories_verbose=x.auditories_verbose,
-            discipline=x.discipline,
-            discipline_verbose=x.discipline_verbose,
-            meta_program_discipline_id=x.meta_program_discipline_id,
-            para=x.para,
-            type=x.type,
-            ngroup=x.ngroup,
-            nt=x.nt,
-            dbeg=x.dbeg,
-            day=x.day,
-            everyweek=x.everyweek
-        ), schedules))
+        return [Schedule(s) for s in schedules]

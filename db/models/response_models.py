@@ -1,14 +1,16 @@
 from datetime import date, timedelta
+from db.models.postgres_models import Vacpara, RealGroup, Prepod, Auditorie, DisciplineDB, ScheduleMetaprogramDiscipline, \
+    ScheduleV2
 
 
 class LessonsTime:
-    def __init__(self, id_66: int, para: str, begtime: str, endtime: str):
-        self.lesson_id = id_66
-        self.lesson_number = para
-        self.begtime = begtime
-        self.endtime = endtime
+    def __init__(self, vacpara: Vacpara):
+        self.lesson_id = vacpara.id_66
+        self.lesson_number = vacpara.para
+        self.begtime = vacpara.begtime
+        self.endtime = vacpara.endtime
 
-    def __dict__(self):
+    def dict(self):
         return {
             'lesson_id': self.lesson_id,
             'lesson_number': self.lesson_number,
@@ -18,11 +20,11 @@ class LessonsTime:
 
 
 class Institute:
-    def __init__(self, faculty_id: int, faculty_title: str):
-        self.institute_id = faculty_id
-        self.institute_title = faculty_title
+    def __init__(self, real_group: RealGroup):
+        self.institute_id = real_group.faculty_id
+        self.institute_title = real_group.faculty_title
 
-    def __dict__(self):
+    def dict(self):
         return {
             'institute_id': self.institute_id,
             'institute_title': self.institute_title
@@ -30,13 +32,13 @@ class Institute:
 
 
 class Group:
-    def __init__(self, id_7: int, obozn: str, kurs: int, faculty_id: int):
-        self.group_id = id_7
-        self.name = obozn
-        self.course = kurs
-        self.institute_id = faculty_id
+    def __init__(self, real_group: RealGroup):
+        self.group_id = real_group.id_7
+        self.name = real_group.obozn
+        self.course = real_group.kurs
+        self.institute_id = real_group.faculty_id
 
-    def __dict__(self):
+    def dict(self):
         return {
             'group_id': self.group_id,
             'name': self.name,
@@ -46,12 +48,12 @@ class Group:
 
 
 class Teacher:
-    def __init__(self, id_61: int, preps: str, prep: str):
-        self.teacher_id = id_61
-        self.fullname = preps
-        self.shortname = prep
+    def __init__(self, prepod: Prepod):
+        self.teacher_id = prepod.id_61
+        self.fullname = prepod.preps
+        self.shortname = prepod.prep
 
-    def __dict__(self):
+    def dict(self):
         return {
             'teacher_id': self.teacher_id,
             'fullname': self.fullname,
@@ -60,24 +62,24 @@ class Teacher:
 
 
 class Classroom:
-    def __init__(self, id_60: int, obozn: str):
-        self.classroom_id = id_60
-        self.name = obozn
+    def __init__(self, auditorie: Auditorie):
+        self.classroom_id = auditorie.id_60
+        self.name = auditorie.obozn
 
-    def __dict__(self):
+    def dict(self):
         return {
             'classroom_id': self.classroom_id,
             'name': self.name
         }
 
 
-class Disciplines:
-    def __init__(self, id: int, title: str, real_title: str):
-        self.discipline_id = id
-        self.title = title
-        self.real_title = real_title
+class Discipline:
+    def __init__(self, discipline_db: DisciplineDB):
+        self.discipline_id = discipline_db.id
+        self.title = discipline_db.title
+        self.real_title = discipline_db.real_title
 
-    def __dict__(self):
+    def dict(self):
         return {
             'discipline_id': self.discipline_id,
             'title': self.title,
@@ -86,13 +88,13 @@ class Disciplines:
 
 
 class OtherDiscipline:
-    def __init__(self, id: int, discipline_title: str, type: int, is_online: bool):
-        self.other_discipline_id = id
-        self.discipline_title = discipline_title
-        self.is_online = is_online
-        self.type = type
+    def __init__(self, schedule_metaprogram_discipline: ScheduleMetaprogramDiscipline):
+        self.other_discipline_id = schedule_metaprogram_discipline.id
+        self.discipline_title = schedule_metaprogram_discipline.discipline_title
+        self.is_online = schedule_metaprogram_discipline.is_online
+        self.type = schedule_metaprogram_discipline.type
 
-    def __dict__(self):
+    def dict(self):
         return {
             'other_discipline_id': self.other_discipline_id,
             'discipline_title': self.discipline_title,
@@ -102,30 +104,27 @@ class OtherDiscipline:
 
 
 class Schedule:
-    def __init__(self, id: int, groups: list, groups_verbose: str, teachers: list,
-                 teachers_verbose: str, auditories: list, auditories_verbose: str, discipline: int,
-                 discipline_verbose: str, meta_program_discipline_id: int, para: int, type: str, ngroup: int,
-                 nt: int, dbeg: date, day: int, everyweek: int):
-        self.schedule_id = id
-        self.groups_ids = groups
-        self.groups_verbose = groups_verbose
-        self.teachers_ids = teachers
-        self.teachers_verbose = teachers_verbose
-        if auditories is not None:
-            self.auditories_id = auditories[0] if any(auditories) else None
+    def __init__(self, schedule_v2: ScheduleV2):
+        self.schedule_id = schedule_v2.id
+        self.groups_ids = schedule_v2.groups
+        self.groups_verbose = schedule_v2.groups_verbose
+        self.teachers_ids = schedule_v2.teachers
+        self.teachers_verbose = schedule_v2.teachers_verbose
+        if schedule_v2.auditories is not None:
+            self.auditories_id = schedule_v2.auditories[0] if any(schedule_v2.auditories) else None
         else:
             self.auditories_id = None
-        self.auditories_verbose = auditories_verbose
-        self.discipline_id = discipline
-        self.discipline_verbose = discipline_verbose
-        self.other_discipline = meta_program_discipline_id
-        self.lesson_id = para
-        self.subgroup = ngroup
-        self.lesson_type = nt
-        self.schedule_type = type
-        self.date = dbeg + timedelta(days=(day - 1) % 7)
+        self.auditories_verbose = schedule_v2.auditories_verbose
+        self.discipline_id = schedule_v2.discipline
+        self.discipline_verbose = schedule_v2.discipline_verbose
+        self.other_discipline = schedule_v2.meta_program_discipline_id
+        self.lesson_id = schedule_v2.para
+        self.subgroup = schedule_v2.ngroup
+        self.lesson_type = schedule_v2.nt
+        self.schedule_type = schedule_v2.type
+        self.date = schedule_v2.dbeg + timedelta(days=(schedule_v2.day - 1) % 7)
 
-    def __dict__(self):
+    def dict(self):
         return {
             'schedule_id': self.schedule_id,
             'groups_ids': self.groups_ids,
