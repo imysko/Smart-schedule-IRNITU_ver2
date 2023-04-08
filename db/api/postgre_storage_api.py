@@ -3,7 +3,7 @@ import calendar
 from datetime import datetime, date
 
 import dotenv
-import pendulum as pendulum
+import pendulum
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
@@ -24,6 +24,17 @@ PG_DB_PORT = os.environ.get('PG_DB_PORT', default='5432')
 POSTGRES_DATABASE = f"postgresql+psycopg2://{PG_DB_USER}:{PG_DB_PASSWORD}@{PG_DB_HOST}:{PG_DB_PORT}/{PG_DB_DATABASE}"
 
 engine = create_engine(POSTGRES_DATABASE, echo=True)
+
+
+def get_start_date_of_study_year(study_date: date) -> date:
+    september_first = datetime(study_date.year, 9, 1)
+
+    if study_date.month >= 9 or study_date.isocalendar()[1] == september_first.isocalendar()[1]:
+        september_first = datetime(study_date.year, 9, 1)
+    else:
+        september_first = datetime(study_date.year - 1, 9, 1)
+
+    return pendulum.instance(september_first).start_of("week").date()
 
 
 def is_even_week(start_date: date):
@@ -114,13 +125,14 @@ def get_other_disciplines() -> list:
 
 
 def get_schedule(start_date: datetime) -> list:
-    start_of_first_week = pendulum.instance(start_date).start_of("week")
-    start_of_second_week = pendulum.instance(start_of_first_week).add(weeks=1)
+    start_of_first_week = pendulum.instance(start_date).start_of("week").date()
+    start_of_second_week = pendulum.instance(start_of_first_week).add(weeks=1).date()
+    start_date_of_study_year = get_start_date_of_study_year(start_date)
 
     with Session(engine) as session:
         schedules = session.query(ScheduleV2) \
-            .where(start_of_first_week.date() <= ScheduleV2.dbeg) \
-            .where(ScheduleV2.dbeg <= start_of_second_week.date()) \
+            .where(start_of_first_week <= ScheduleV2.dbeg) \
+            .where(ScheduleV2.dbeg <= start_of_second_week) \
             .order_by(ScheduleV2.id)\
             .all()
 
@@ -133,6 +145,7 @@ def get_schedule(start_date: datetime) -> list:
 def get_schedule_month(year: int, month: int) -> list:
     start_day_of_month = date(year, month, 1)
     end_day_of_month = date(year, month, calendar.monthrange(year, month)[1])
+    start_date_of_study_year = get_start_date_of_study_year(datetime(year, month, end_day_of_month.day))
 
     with Session(engine) as session:
         schedules = session.query(ScheduleV2) \
