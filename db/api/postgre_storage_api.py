@@ -5,7 +5,7 @@ from datetime import datetime, date
 import dotenv
 import pendulum
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text, func, extract, TIMESTAMP, DATETIME
 from sqlalchemy.orm import Session
 
 from db.models.postgres_models import Vacpara, RealGroup, Prepod, Auditorie, DisciplineDB, \
@@ -26,7 +26,7 @@ POSTGRES_DATABASE = f"postgresql+psycopg2://{PG_DB_USER}:{PG_DB_PASSWORD}@{PG_DB
 engine = create_engine(POSTGRES_DATABASE, echo=True)
 
 
-def get_start_date_of_study_year(study_date: date) -> date:
+def get_start_date_of_study_year(study_date: date) -> datetime:
     september_first = datetime(study_date.year, 9, 1)
 
     if study_date.month >= 9 or study_date.isocalendar()[1] == september_first.isocalendar()[1]:
@@ -34,7 +34,7 @@ def get_start_date_of_study_year(study_date: date) -> date:
     else:
         september_first = datetime(study_date.year - 1, 9, 1)
 
-    return pendulum.instance(september_first).start_of("week").date()
+    return datetime.fromisoformat(pendulum.instance(september_first).start_of("week").to_datetime_string())
 
 
 def is_even_week(start_date: date):
@@ -97,7 +97,7 @@ def get_teachers() -> list:
 def get_classrooms() -> list:
     with Session(engine) as session:
         classrooms = session.query(Auditorie)\
-            .where(Auditorie.obozn != '' and Auditorie.obozn != '-') \
+            .where((Auditorie.obozn != '') & (Auditorie.obozn != '-')) \
             .order_by(Auditorie.id_60).all()
 
         return [Classroom(c) for c in classrooms]
@@ -116,8 +116,8 @@ def get_disciplines() -> list:
 def get_other_disciplines() -> list:
     with Session(engine) as session:
         other_disciplines = session.query(ScheduleMetaprogramDiscipline) \
-            .where(ScheduleMetaprogramDiscipline.is_active == True and
-                   ScheduleMetaprogramDiscipline.project_active == True) \
+            .where((ScheduleMetaprogramDiscipline.is_active == True) &
+                   (ScheduleMetaprogramDiscipline.project_active == True)) \
             .order_by(ScheduleMetaprogramDiscipline.id)\
             .all()
 
@@ -125,19 +125,28 @@ def get_other_disciplines() -> list:
 
 
 def get_schedule(start_date: datetime) -> list:
-    start_of_first_week = pendulum.instance(start_date).start_of("week").date()
+    start_of_first_week = pendulum.instance(start_date).start_of("week")
     start_of_second_week = pendulum.instance(start_of_first_week).add(weeks=1).date()
+    start_of_first_week = start_of_first_week.date()
+
     start_date_of_study_year = get_start_date_of_study_year(start_date)
 
     with Session(engine) as session:
         schedules = session.query(ScheduleV2) \
             .where(start_of_first_week <= ScheduleV2.dbeg) \
             .where(ScheduleV2.dbeg <= start_of_second_week) \
+            .where(
+                func.trunc(
+                    func.date_part(text('day'), (ScheduleV2.dbeg - start_date_of_study_year).cast(TIMESTAMP)) / 7) % 2 == 1) \
             .order_by(ScheduleV2.id)\
             .all()
 
-        schedules = list(filter(lambda s: (s.everyweek == 2 or s.everyweek == 1 and s.day > 7) if is_even_week(s.dbeg)
-                else (s.everyweek == 2 or s.everyweek == 1 and s.day <= 7), schedules))
+        # (text('week'), start_of_study_year, ScheduleV2.dbeg) % 2 == 1
+        # func.trunk(func.date_part(text('day'), ScheduleV2.dbeg - start_of_study_year) / 7) % 2 == 1
+        # .where(func.extract('week', ScheduleV2.dbeg - start_date_of_study_year) % 2 == 1) \
+
+        # schedules = list(filter(lambda s: (s.everyweek == 2 or s.everyweek == 1 and s.day > 7) if is_even_week(s.dbeg)
+        #         else (s.everyweek == 2 or s.everyweek == 1 and s.day <= 7), schedules))
 
         return [Schedule(s) for s in schedules]
 
