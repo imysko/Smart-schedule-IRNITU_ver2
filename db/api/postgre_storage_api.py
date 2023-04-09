@@ -112,51 +112,32 @@ def get_schedule(start_date: datetime) -> list:
 
     start_date_of_study_year = get_start_date_of_study_year(start_date)
 
-    with Session(engine) as session:
-        schedules = session.query(ScheduleV2) \
-            .where((start_of_first_week <= ScheduleV2.dbeg) & (ScheduleV2.dbeg <= start_of_second_week)) \
-            .where((ScheduleV2.everyweek == 2) | ((ScheduleV2.everyweek == 1) & (ScheduleV2.day > 7) &
-                (cast(func.trunc(
-                    func.date_part(
-                        'day',
-                        ScheduleV2.dbeg - start_date_of_study_year
-                    ) / 7
-                ), Numeric) % 2 == 1))
-                | ((ScheduleV2.everyweek == 1) & (ScheduleV2.day <= 7) &
-                (cast(func.trunc(
-                    func.date_part(
-                        'day',
-                        ScheduleV2.dbeg - start_date_of_study_year
-                    ) / 7
-                ), Numeric) % 2 == 0))) \
-            .order_by(ScheduleV2.id) \
-            .all()
-
-        return [Schedule(s) for s in schedules]
+    return extract_schedule(start_date_of_study_year, start_of_first_week, start_of_second_week)
 
 
 def get_schedule_month(year: int, month: int) -> list:
-    start_day_of_month = date(year, month, 1)
+    start_day_of_month = pendulum.instance(datetime(year, month, 1)).start_of("week")
     end_day_of_month = date(year, month, calendar.monthrange(year, month)[1])
     start_date_of_study_year = get_start_date_of_study_year(datetime(year, month, end_day_of_month.day))
 
+    return extract_schedule(start_date_of_study_year, start_day_of_month, end_day_of_month)
+
+
+def extract_schedule(start_date_of_study_year, start_date, end_date):
     with Session(engine) as session:
+        difference_of_weeks = cast(
+            func.trunc(
+                func.date_part(
+                    'day',
+                    ScheduleV2.dbeg - start_date_of_study_year
+                ) / 7
+            ), Numeric)
+
         schedules = session.query(ScheduleV2) \
-            .where((start_day_of_month <= ScheduleV2.dbeg) & (ScheduleV2.dbeg <= end_day_of_month)) \
-            .where((ScheduleV2.everyweek == 2) | ((ScheduleV2.everyweek == 1) & (ScheduleV2.day > 7) &
-                (cast(func.trunc(
-                    func.date_part(
-                        'day',
-                        ScheduleV2.dbeg - start_date_of_study_year
-                    ) / 7
-                ), Numeric) % 2 == 1))
-                | ((ScheduleV2.everyweek == 1) & (ScheduleV2.day <= 7) &
-                (cast(func.trunc(
-                    func.date_part(
-                        'day',
-                        ScheduleV2.dbeg - start_date_of_study_year
-                    ) / 7
-                ), Numeric) % 2 == 0))) \
+            .where((start_date <= ScheduleV2.dbeg) & (ScheduleV2.dbeg <= end_date)) \
+            .where((ScheduleV2.everyweek == 2) |
+                   ((ScheduleV2.everyweek == 1) & (ScheduleV2.day > 7) & (difference_of_weeks % 2 == 1)) |
+                   ((ScheduleV2.everyweek == 1) & (ScheduleV2.day <= 7) & (difference_of_weeks % 2 == 0))) \
             .order_by(ScheduleV2.id) \
             .all()
 
