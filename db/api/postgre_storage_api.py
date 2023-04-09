@@ -5,7 +5,7 @@ from datetime import datetime, date
 import dotenv
 import pendulum
 
-from sqlalchemy import create_engine, text, func, extract, TIMESTAMP, DATETIME
+from sqlalchemy import create_engine, text, func, cast, Date, TIMESTAMP, Interval, Numeric
 from sqlalchemy.orm import Session
 
 from db.models.postgres_models import Vacpara, RealGroup, Prepod, Auditorie, DisciplineDB, \
@@ -136,8 +136,12 @@ def get_schedule(start_date: datetime) -> list:
             .where(start_of_first_week <= ScheduleV2.dbeg) \
             .where(ScheduleV2.dbeg <= start_of_second_week) \
             .where(
-                func.trunc(
-                    func.date_part(text('day'), (ScheduleV2.dbeg - start_date_of_study_year).cast(TIMESTAMP)) / 7) % 2 == 1) \
+                cast(func.trunc(
+                    func.date_part(
+                        'day',
+                        ScheduleV2.dbeg - start_date_of_study_year
+                    ) / 7
+                ), Numeric) % 2 == 1) \
             .order_by(ScheduleV2.id)\
             .all()
 
