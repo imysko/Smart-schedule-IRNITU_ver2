@@ -90,13 +90,16 @@ async def processing_api(bot, message):
                 response = data_conversion_api.convert_groups_dict(postgre_storage_api.get_groups())
             case '/api/lessons_time':
                 file_name = 'lessons_time.json'
-                response = data_conversion_api.convert_lessons_dict(postgre_storage_api.get_lessons())
+                response = data_conversion_api.convert_lessons_dict(postgre_storage_api.get_lessons_time())
             case '/api/teachers':
                 file_name = 'teachers.json'
                 response = data_conversion_api.convert_teachers_dict(postgre_storage_api.get_teachers())
-            case '/api/lessons_names':
-                file_name = 'lessons_names.json'
+            case '/api/disciplines':
+                file_name = 'disciplines.json'
                 response = data_conversion_api.convert_disciplines_dict(postgre_storage_api.get_disciplines())
+            case '/api/other_disciplines':
+                file_name = 'other_disciplines.json'
+                response = data_conversion_api.convert_other_disciplines_dict(postgre_storage_api.get_other_disciplines())
             case '/api/classrooms':
                 file_name = 'classrooms.json'
                 response = data_conversion_api.convert_classrooms_dict(postgre_storage_api.get_classrooms())

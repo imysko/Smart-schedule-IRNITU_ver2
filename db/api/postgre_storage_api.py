@@ -1,13 +1,16 @@
-import os
 import calendar
-from contextlib import closing
+import os
 from datetime import datetime, date
 
 import dotenv
-import pytz
-import pendulum as pendulum
-import psycopg2
-from psycopg2.extras import DictCursor
+import pendulum
+from sqlalchemy import create_engine, func, cast, Numeric
+from sqlalchemy.orm import Session
+
+from db.models.postgres_models import Vacpara, RealGroup, Prepod, Auditorie, DisciplineDB, \
+    ScheduleMetaprogramDiscipline, ScheduleV2
+from db.models.response_models import LessonsTime, Institute, Group, Teacher, Classroom, Discipline, OtherDiscipline, \
+    Schedule
 
 dotenv.load_dotenv()
 
@@ -17,209 +20,125 @@ PG_DB_PASSWORD = os.environ.get('PG_DB_PASSWORD')
 PG_DB_HOST = os.environ.get('PG_DB_HOST')
 PG_DB_PORT = os.environ.get('PG_DB_PORT', default='5432')
 
+POSTGRES_DATABASE = f"postgresql+psycopg2://{PG_DB_USER}:{PG_DB_PASSWORD}@{PG_DB_HOST}:{PG_DB_PORT}/{PG_DB_DATABASE}"
 
-db_params = {
-    'database': PG_DB_DATABASE,
-    'user': PG_DB_USER,
-    'password': PG_DB_PASSWORD,
-    'host': PG_DB_HOST,
-    'port': PG_DB_PORT
-}
+engine = create_engine(POSTGRES_DATABASE, echo=True)
 
 
-def get_week_even(start_date: datetime):
-    september_1st = datetime(start_date.year, 9, 1)
+def get_start_date_of_study_year(study_date: date) -> datetime:
+    september_first = datetime(study_date.year, 9, 1)
 
-    if start_date.month >= 9 or start_date.isocalendar()[1] == september_1st.isocalendar()[1]:
-        september_1st = datetime(start_date.year, 9, 1)
+    if study_date.month >= 9 or study_date.isocalendar()[1] == september_first.isocalendar()[1]:
+        september_first = datetime(study_date.year, 9, 1)
     else:
-        september_1st = datetime(start_date.year - 1, 9, 1)
+        september_first = datetime(study_date.year - 1, 9, 1)
 
-    if isinstance(start_date, date):
-        start_date = datetime.combine(start_date, datetime.min.time())
-    start_date = pendulum.instance(start_date)
-    study_year_start = pendulum.instance(september_1st).start_of("week")
-    weeks = (start_date - study_year_start).days // 7
-
-    return weeks % 2
+    return datetime.fromisoformat(pendulum.instance(september_first).start_of("week").to_datetime_string())
 
 
-def get_lessons() -> list:
-    query = """
-        SELECT id_66 AS lesson_id,
-               para  AS lesson_number,
-               begtime,
-               endtime
-        FROM vacpara
-        ORDER BY lesson_number
-    """
+def get_lessons_time() -> list:
+    with Session(engine) as session:
+        lessons_time = session.query(Vacpara) \
+            .order_by(Vacpara.id_66) \
+            .all()
 
-    with closing(psycopg2.connect(**db_params)) as conn:
-        with conn.cursor(cursor_factory=DictCursor) as cursor:
-            cursor.execute(query)
-            rows = cursor.fetchall()
-            lessons = [dict(lesson) for lesson in rows]
-            return lessons
+        return [LessonsTime(lt) for lt in lessons_time]
 
 
 def get_institutes() -> list:
-    query = """
-        SELECT DISTINCT faculty_id    AS institute_id,
-                        faculty_title AS institute_title
-        FROM real_groups
-        WHERE faculty_title NOT LIKE ''
-        ORDER BY institute_title
-    """
+    with Session(engine) as session:
+        institutes = session.query(RealGroup) \
+            .distinct(RealGroup.faculty_title) \
+            .where(RealGroup.faculty_title != '') \
+            .all()
 
-    with closing(psycopg2.connect(**db_params)) as conn:
-        with conn.cursor(cursor_factory=DictCursor) as cursor:
-            cursor.execute(query)
-            rows = cursor.fetchall()
-            institutes = [dict(institute) for institute in rows]
-            return institutes
+        return sorted([Institute(i) for i in institutes], key=lambda i: i.institute_id)
 
 
 def get_groups() -> list:
-    query = """
-        SELECT id_7       AS group_id,
-               obozn      AS name,
-               kurs       AS course,
-               faculty_id AS institute_id
-        FROM real_groups
-        WHERE is_active IS TRUE
-        ORDER BY name
-    """
+    with Session(engine) as session:
+        groups = session.query(RealGroup) \
+            .where(RealGroup.is_active == True) \
+            .order_by(RealGroup.id_7) \
+            .all()
 
-    with closing(psycopg2.connect(**db_params)) as conn:
-        with conn.cursor(cursor_factory=DictCursor) as cursor:
-            cursor.execute(query)
-            rows = cursor.fetchall()
-            groups = [dict(group) for group in rows]
-            return groups
+        return [Group(g) for g in groups]
 
 
 def get_teachers() -> list:
-    query = """
-        SELECT id_61  AS teacher_id,
-               preps  AS fullname,
-               prep   AS shortname
-        FROM prepods
-        WHERE NOT preps = ''
-        ORDER BY fullname
-    """
+    with Session(engine) as session:
+        teachers = session.query(Prepod) \
+            .where(Prepod.preps != '') \
+            .order_by(Prepod.id_61) \
+            .all()
 
-    with closing(psycopg2.connect(**db_params)) as conn:
-        with conn.cursor(cursor_factory=DictCursor) as cursor:
-            cursor.execute(query)
-            rows = cursor.fetchall()
-            teachers = [dict(teacher) for teacher in rows]
-            return teachers
+        return [Teacher(t) for t in teachers]
 
 
 def get_classrooms() -> list:
-    query = """
-        SELECT id_60 AS classroom_id,
-               obozn AS name
-        FROM auditories
-        WHERE NOT obozn = '-'
-          AND NOT obozn = ''
-        ORDER BY name
-    """
+    with Session(engine) as session:
+        classrooms = session.query(Auditorie) \
+            .where((Auditorie.obozn != '') & (Auditorie.obozn != '-')) \
+            .order_by(Auditorie.id_60).all()
 
-    with closing(psycopg2.connect(**db_params)) as conn:
-        with conn.cursor(cursor_factory=DictCursor) as cursor:
-            cursor.execute(query)
-            rows = cursor.fetchall()
-            classrooms = [dict(classroom) for classroom in rows]
-            return classrooms
+        return [Classroom(c) for c in classrooms]
 
 
 def get_disciplines() -> list:
-    query = """
-        SELECT id AS discipline_id,
-               title,
-               real_title
-        FROM disciplines
-        WHERE NOT title = ''
-        ORDER BY title
-    """
+    with Session(engine) as session:
+        disciplines = session.query(DisciplineDB) \
+            .where(DisciplineDB.title != '') \
+            .order_by(DisciplineDB.id) \
+            .all()
 
-    with closing(psycopg2.connect(**db_params)) as conn:
-        with conn.cursor(cursor_factory=DictCursor) as cursor:
-            cursor.execute(query)
-            rows = cursor.fetchall()
-            disciplines = [dict(discipline) for discipline in rows]
-            return disciplines
+        return [Discipline(d) for d in disciplines]
+
+
+def get_other_disciplines() -> list:
+    with Session(engine) as session:
+        other_disciplines = session.query(ScheduleMetaprogramDiscipline) \
+            .where((ScheduleMetaprogramDiscipline.is_active == True) &
+                   (ScheduleMetaprogramDiscipline.project_active == True)) \
+            .order_by(ScheduleMetaprogramDiscipline.id) \
+            .all()
+
+        return [OtherDiscipline(od) for od in other_disciplines]
 
 
 def get_schedule(start_date: datetime) -> list:
     start_of_first_week = pendulum.instance(start_date).start_of("week")
-    start_of_second_week = pendulum.instance(start_of_first_week).add(weeks=1)
+    start_of_second_week = pendulum.instance(start_of_first_week).add(weeks=1).date()
+    start_of_first_week = start_of_first_week.date()
 
-    is_even = get_week_even(start_date)
-    if is_even == 1:
-        odd_week = start_of_second_week
-        even_week = start_of_first_week
-    else:
-        even_week = start_of_second_week
-        odd_week = start_of_first_week
+    start_date_of_study_year = get_start_date_of_study_year(start_date)
 
-    query = """
-        SELECT id                            AS schedule_id,
-               groups                        AS groups_ids,
-               groups_verbose,
-               teachers                      AS teachers_ids,
-               teachers_verbose,
-               auditories                    AS auditories_ids,
-               auditories_verbose,
-               discipline                    AS discipline_id,
-               discipline_verbose,
-               para                          AS lesson_id,
-               dbeg,
-               (schedule_v2.day - 1) % 7 + 1 AS day,
-               ngroup                        AS subgroup,
-               nt                            AS lesson_type
-        FROM schedule_v2
-        WHERE ((dbeg = '{odd_week:%Y-%m-%d}' AND (everyweek = 2 OR everyweek = 1 AND day <= 7))
-            OR (dbeg = '{even_week:%Y-%m-%d}' AND (everyweek = 2 OR everyweek = 1 AND day > 7)))
-        ORDER BY dbeg, day, lesson_id, subgroup
-    """.format(odd_week=odd_week, even_week=even_week)
-
-    with closing(psycopg2.connect(**db_params)) as conn:
-        with conn.cursor(cursor_factory=DictCursor) as cursor:
-            cursor.execute(query)
-            rows = cursor.fetchall()
-            schedules = [dict(schedule) for schedule in rows]
-            return schedules
+    return extract_schedule(start_date_of_study_year, start_of_first_week, start_of_second_week)
 
 
 def get_schedule_month(year: int, month: int) -> list:
-    start_day_of_month = date(year, month, 1)
+    start_day_of_month = pendulum.instance(datetime(year, month, 1)).start_of("week")
     end_day_of_month = date(year, month, calendar.monthrange(year, month)[1])
+    start_date_of_study_year = get_start_date_of_study_year(datetime(year, month, end_day_of_month.day))
 
-    query = """
-        SELECT id                            AS schedule_id,
-               groups                        AS groups_ids,
-               groups_verbose,
-               teachers                      AS teachers_ids,
-               teachers_verbose,
-               auditories                    AS auditories_ids,
-               auditories_verbose,
-               discipline                    AS discipline_id,
-               discipline_verbose,
-               para                          AS lesson_id,
-               dbeg,
-               (schedule_v2.day - 1) % 7 + 1 AS day,
-               ngroup                        AS subgroup,
-               nt                            AS lesson_type
-        FROM schedule_v2
-        WHERE dbeg BETWEEN '{start_day_of_month}' AND '{end_day_of_month}'
-        ORDER BY dbeg, day, lesson_id, subgroup
-    """.format(start_day_of_month=start_day_of_month, end_day_of_month=end_day_of_month)
+    return extract_schedule(start_date_of_study_year, start_day_of_month, end_day_of_month)
 
-    with closing(psycopg2.connect(**db_params)) as conn:
-        with conn.cursor(cursor_factory=DictCursor) as cursor:
-            cursor.execute(query)
-            rows = cursor.fetchall()
-            schedules = [dict(schedule) for schedule in rows]
-            return schedules
+
+def extract_schedule(start_date_of_study_year, start_date, end_date):
+    with Session(engine) as session:
+        difference_of_weeks = cast(
+            func.trunc(
+                func.date_part(
+                    'day',
+                    ScheduleV2.dbeg - start_date_of_study_year
+                ) / 7
+            ), Numeric)
+
+        schedules = session.query(ScheduleV2) \
+            .where((start_date <= ScheduleV2.dbeg) & (ScheduleV2.dbeg <= end_date)) \
+            .where((ScheduleV2.everyweek == 2) |
+                   ((ScheduleV2.everyweek == 1) & (ScheduleV2.day > 7) & (difference_of_weeks % 2 == 1)) |
+                   ((ScheduleV2.everyweek == 1) & (ScheduleV2.day <= 7) & (difference_of_weeks % 2 == 0))) \
+            .order_by(ScheduleV2.id) \
+            .all()
+
+        return [Schedule(s) for s in schedules]
