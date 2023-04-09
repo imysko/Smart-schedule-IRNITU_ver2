@@ -1,11 +1,10 @@
-import os
 import calendar
+import os
 from datetime import datetime, date
 
 import dotenv
 import pendulum
-
-from sqlalchemy import create_engine, text, func, cast, Date, TIMESTAMP, Interval, Numeric
+from sqlalchemy import create_engine, func, cast, Numeric
 from sqlalchemy.orm import Session
 
 from db.models.postgres_models import Vacpara, RealGroup, Prepod, Auditorie, DisciplineDB, \
@@ -37,28 +36,10 @@ def get_start_date_of_study_year(study_date: date) -> datetime:
     return datetime.fromisoformat(pendulum.instance(september_first).start_of("week").to_datetime_string())
 
 
-def is_even_week(start_date: date):
-    september_1st = datetime(start_date.year, 9, 1)
-
-    if start_date.month >= 9 or start_date.isocalendar()[1] == september_1st.isocalendar()[1]:
-        september_1st = datetime(start_date.year, 9, 1)
-    else:
-        september_1st = datetime(start_date.year - 1, 9, 1)
-
-    if isinstance(start_date, date):
-        start_date = datetime.combine(start_date, datetime.min.time())
-
-    start_date = pendulum.instance(start_date)
-    study_year_start = pendulum.instance(september_1st).start_of("week")
-    weeks = (start_date - study_year_start).days // 7
-
-    return weeks % 2 == 1
-
-
 def get_lessons_time() -> list:
     with Session(engine) as session:
-        lessons_time = session.query(Vacpara)\
-            .order_by(Vacpara.id_66)\
+        lessons_time = session.query(Vacpara) \
+            .order_by(Vacpara.id_66) \
             .all()
 
         return [LessonsTime(lt) for lt in lessons_time]
@@ -67,7 +48,7 @@ def get_lessons_time() -> list:
 def get_institutes() -> list:
     with Session(engine) as session:
         institutes = session.query(RealGroup) \
-            .distinct(RealGroup.faculty_title)\
+            .distinct(RealGroup.faculty_title) \
             .where(RealGroup.faculty_title != '') \
             .all()
 
@@ -76,9 +57,9 @@ def get_institutes() -> list:
 
 def get_groups() -> list:
     with Session(engine) as session:
-        groups = session.query(RealGroup)\
-            .where(RealGroup.is_active == True)\
-            .order_by(RealGroup.id_7)\
+        groups = session.query(RealGroup) \
+            .where(RealGroup.is_active == True) \
+            .order_by(RealGroup.id_7) \
             .all()
 
         return [Group(g) for g in groups]
@@ -86,9 +67,9 @@ def get_groups() -> list:
 
 def get_teachers() -> list:
     with Session(engine) as session:
-        teachers = session.query(Prepod)\
-            .where(Prepod.preps != '')\
-            .order_by(Prepod.id_61)\
+        teachers = session.query(Prepod) \
+            .where(Prepod.preps != '') \
+            .order_by(Prepod.id_61) \
             .all()
 
         return [Teacher(t) for t in teachers]
@@ -96,7 +77,7 @@ def get_teachers() -> list:
 
 def get_classrooms() -> list:
     with Session(engine) as session:
-        classrooms = session.query(Auditorie)\
+        classrooms = session.query(Auditorie) \
             .where((Auditorie.obozn != '') & (Auditorie.obozn != '-')) \
             .order_by(Auditorie.id_60).all()
 
@@ -105,9 +86,9 @@ def get_classrooms() -> list:
 
 def get_disciplines() -> list:
     with Session(engine) as session:
-        disciplines = session.query(DisciplineDB)\
-            .where(DisciplineDB.title != '')\
-            .order_by(DisciplineDB.id)\
+        disciplines = session.query(DisciplineDB) \
+            .where(DisciplineDB.title != '') \
+            .order_by(DisciplineDB.id) \
             .all()
 
         return [Discipline(d) for d in disciplines]
@@ -118,7 +99,7 @@ def get_other_disciplines() -> list:
         other_disciplines = session.query(ScheduleMetaprogramDiscipline) \
             .where((ScheduleMetaprogramDiscipline.is_active == True) &
                    (ScheduleMetaprogramDiscipline.project_active == True)) \
-            .order_by(ScheduleMetaprogramDiscipline.id)\
+            .order_by(ScheduleMetaprogramDiscipline.id) \
             .all()
 
         return [OtherDiscipline(od) for od in other_disciplines]
@@ -133,24 +114,23 @@ def get_schedule(start_date: datetime) -> list:
 
     with Session(engine) as session:
         schedules = session.query(ScheduleV2) \
-            .where(start_of_first_week <= ScheduleV2.dbeg) \
-            .where(ScheduleV2.dbeg <= start_of_second_week) \
-            .where(
-                cast(func.trunc(
+            .where((start_of_first_week <= ScheduleV2.dbeg) & (ScheduleV2.dbeg <= start_of_second_week)) \
+            .where((ScheduleV2.everyweek == 2) | ((ScheduleV2.everyweek == 1) & (ScheduleV2.day > 7) &
+                (cast(func.trunc(
                     func.date_part(
                         'day',
                         ScheduleV2.dbeg - start_date_of_study_year
                     ) / 7
-                ), Numeric) % 2 == 1) \
-            .order_by(ScheduleV2.id)\
+                ), Numeric) % 2 == 1))
+                | ((ScheduleV2.everyweek == 1) & (ScheduleV2.day <= 7) &
+                (cast(func.trunc(
+                    func.date_part(
+                        'day',
+                        ScheduleV2.dbeg - start_date_of_study_year
+                    ) / 7
+                ), Numeric) % 2 == 0))) \
+            .order_by(ScheduleV2.id) \
             .all()
-
-        # (text('week'), start_of_study_year, ScheduleV2.dbeg) % 2 == 1
-        # func.trunk(func.date_part(text('day'), ScheduleV2.dbeg - start_of_study_year) / 7) % 2 == 1
-        # .where(func.extract('week', ScheduleV2.dbeg - start_date_of_study_year) % 2 == 1) \
-
-        # schedules = list(filter(lambda s: (s.everyweek == 2 or s.everyweek == 1 and s.day > 7) if is_even_week(s.dbeg)
-        #         else (s.everyweek == 2 or s.everyweek == 1 and s.day <= 7), schedules))
 
         return [Schedule(s) for s in schedules]
 
@@ -162,12 +142,22 @@ def get_schedule_month(year: int, month: int) -> list:
 
     with Session(engine) as session:
         schedules = session.query(ScheduleV2) \
-            .where(start_day_of_month <= ScheduleV2.dbeg) \
-            .where(ScheduleV2.dbeg <= end_day_of_month) \
-            .order_by(ScheduleV2.id)\
+            .where((start_day_of_month <= ScheduleV2.dbeg) & (ScheduleV2.dbeg <= end_day_of_month)) \
+            .where((ScheduleV2.everyweek == 2) | ((ScheduleV2.everyweek == 1) & (ScheduleV2.day > 7) &
+                (cast(func.trunc(
+                    func.date_part(
+                        'day',
+                        ScheduleV2.dbeg - start_date_of_study_year
+                    ) / 7
+                ), Numeric) % 2 == 1))
+                | ((ScheduleV2.everyweek == 1) & (ScheduleV2.day <= 7) &
+                (cast(func.trunc(
+                    func.date_part(
+                        'day',
+                        ScheduleV2.dbeg - start_date_of_study_year
+                    ) / 7
+                ), Numeric) % 2 == 0))) \
+            .order_by(ScheduleV2.id) \
             .all()
-
-        schedules = list(filter(lambda s: (s.everyweek == 2 or s.everyweek == 1 and s.day > 7) if is_even_week(s.dbeg)
-                else (s.everyweek == 2 or s.everyweek == 1 and s.day <= 7), schedules))
 
         return [Schedule(s) for s in schedules]
