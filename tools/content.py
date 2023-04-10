@@ -13,4 +13,4 @@ content_search_teachers = ["current_week_teacher", "next_week_teacher", "today_t
 content_search_groups = ["current_week_group", "next_week_group", "today_group",
                          "tomorrow_group"]
 content_api = ['/api/institutes', '/api/groups', '/api/lessons_time',
-               '/api/teachers', '/api/classrooms', '/api/lessons_names']
+               '/api/teachers', '/api/classrooms', '/api/disciplines', '/api/other_disciplines']
