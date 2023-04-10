@@ -140,5 +140,5 @@ class Schedule:
             'subgroup': self.subgroup,
             'lesson_type': self.lesson_type,
             'schedule_type': self.schedule_type,
-            'date': self.date
+            'date': self.date.isoformat()
         }
