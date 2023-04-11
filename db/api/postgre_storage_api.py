@@ -115,9 +115,9 @@ def get_schedule(start_date: datetime) -> list:
     return extract_schedule(start_date_of_study_year, start_of_first_week, start_of_second_week)
 
 
-def get_schedule_month(year: int, month: int, month_count: int = 1) -> list:
+def get_schedule_month(year: int, month: int) -> list:
     start_day_of_month = pendulum.instance(datetime(year, month, 1)).start_of("week")
-    end_day_of_month = date(year, month + month_count - 1, calendar.monthrange(year, month + month_count - 1)[1])
+    end_day_of_month = date(year, month, calendar.monthrange(year, month)[1])
     start_date_of_study_year = get_start_date_of_study_year(datetime(year, month, end_day_of_month.day))
 
     return extract_schedule(start_date_of_study_year, start_day_of_month, end_day_of_month)
