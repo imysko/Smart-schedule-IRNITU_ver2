@@ -46,15 +46,17 @@ async def processing_api_schedule_month(bot, message):
         text = message.text
 
         words = text.split('?')
-        if len(words) > 2:
-            year = int(words[1])
-            month = int(words[2])
+        if len(words) == 2:
+            date=words[1].split('=')[1]
+            year = int(date.split('-')[0])
+            month = int(date.split('-')[1])
         else:
-            month = get_now().month
             year = get_now().year
+            month = get_now().month
 
         file_name = f'month-{year}-{month}.json'
-        response = data_conversion_api.convert_schedule_dict(postgre_storage_api.get_schedule_month(year, month))
+        response = data_conversion_api.convert_schedule_dict(
+            postgre_storage_api.get_schedule_month(year, month))
 
         current_dir = pathlib.Path().resolve()
 
