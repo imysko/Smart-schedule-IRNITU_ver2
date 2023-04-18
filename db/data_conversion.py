@@ -4,6 +4,8 @@ import re
 from db import postgre_storage
 from datetime import timedelta, datetime
 
+from tools.schedule_tools.utils import cleanhtml
+
 DAY_OF_WEEK = {
     1: 'Понедельник',
     2: 'Вторник',
@@ -128,9 +130,3 @@ def convert_schedule(pg_schedule: list,
         schedule_list = schedule_group_by_date(schedule_list)
 
     return schedule_list
-
-
-def cleanhtml(html_str: str):
-    regex = re.compile('<img.*?></img>')
-    cleantext = re.sub(regex, '', html_str)
-    return cleantext

@@ -1,3 +1,5 @@
+from tools.schedule_tools.utils import cleanhtml
+
 TYPE_OF_LESSON = {
     1: 'Лекция',
     2: 'Практика',
@@ -23,7 +25,7 @@ def format_lesson_group(lesson) -> str:
     format_day = f'\t{lesson["lesson_start"]} - {lesson["lesson_end"]}\n'
     if lesson['lesson_type'] is not None and lesson['lesson_type'] != 0:
         format_day += f'\t{TYPE_OF_LESSON[lesson["lesson_type"]]}\n'
-    format_day += f'👉{lesson["name"]}'
+    format_day += f'👉{cleanhtml(lesson["name"])}'
     for teacher in lesson['teacher_fullname']:
         if teacher is not None and teacher != '':
             format_day += f'\n{teacher}'
@@ -54,7 +56,7 @@ def format_lesson_teacher(lesson) -> str:
     format_day = f'\t{lesson["lesson_start"]} - {lesson["lesson_end"]}\n'
     if lesson['lesson_type'] is not None and lesson['lesson_type'] != 0:
         format_day += f'\t{TYPE_OF_LESSON[lesson["lesson_type"]]}\n'
-    format_day += f'👉{lesson["name"]}'
+    format_day += f'👉{cleanhtml(lesson["name"])}'
     for teacher in lesson['teacher_fullname']:
         if teacher is not None and teacher != '':
             if len(lesson['teacher_fullname']) == 1:
@@ -87,7 +89,7 @@ def convert_lessons_classrooms(schedule_list: list) -> list:
             if lesson['lesson_type'] is not None and lesson['lesson_type'] != 0:
                 format_day += f'\t{TYPE_OF_LESSON[lesson["lesson_type"]]}\n'
 
-            format_day += f'👉{lesson["name"]}'
+            format_day += f'👉{cleanhtml(lesson["name"])}'
 
             for teacher in lesson['teacher_fullname']:
                 if teacher is not None and teacher != '':
@@ -118,7 +120,7 @@ def convert_lessons_reminder(lessons) -> str:
         lessons_for_reminders += f'Начало в {lesson["lesson_start"]}\n'
         if lesson['lesson_type'] is not None and lesson['lesson_type'] != 0:
             lessons_for_reminders += f'{TYPE_OF_LESSON[lesson["lesson_type"]]}\n'
-        lessons_for_reminders += f'👉{lesson["name"]}\n'
+        lessons_for_reminders += f'👉{cleanhtml(lesson["name"])}\n'
         auditory = lesson['classroom']
         if auditory:
             lessons_for_reminders += f'Аудитория: {auditory}\n'
