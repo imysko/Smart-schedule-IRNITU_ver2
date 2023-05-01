@@ -102,6 +102,9 @@ async def processing_api(bot, message):
             case '/api/other_disciplines':
                 file_name = 'other_disciplines.json'
                 response = data_conversion_api.convert_other_disciplines_dict(postgre_storage_api.get_other_disciplines())
+            case '/api/queries':
+                file_name = 'queries.json'
+                response = data_conversion_api.convert_other_disciplines_dict(postgre_storage_api.get_other_disciplines())
             case '/api/classrooms':
                 file_name = 'classrooms.json'
                 response = data_conversion_api.convert_classrooms_dict(postgre_storage_api.get_classrooms())

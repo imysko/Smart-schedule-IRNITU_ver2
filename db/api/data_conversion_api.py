@@ -47,6 +47,13 @@ def convert_other_disciplines_dict(pg_other_disciplines: list):
     return {'other_disciplines': [other_discipline.dict() for other_discipline in pg_other_disciplines]}
 
 
+def convert_queries_dict(pg_queries: list):
+    if not pg_queries:
+        raise ValueError('Данные не могут быть пустыми')
+
+    return {'queries': [query.dict() for query in pg_queries]}
+
+
 def convert_schedule_dict(pg_schedule: list):
     if not pg_schedule:
         raise ValueError('Данные не могут быть пустыми')

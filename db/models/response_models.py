@@ -1,6 +1,8 @@
-from datetime import date, timedelta
-from db.models.postgres_models import Vacpara, RealGroup, Prepod, Auditorie, DisciplineDB, ScheduleMetaprogramDiscipline, \
-    ScheduleV2
+from datetime import timedelta
+
+from db.models.postgres_models import Vacpara, RealGroup, Prepod, Auditorie, DisciplineDB, \
+    ScheduleMetaprogramDiscipline, \
+    ScheduleV2, QueryDB
 
 
 class LessonsTime:
@@ -37,13 +39,15 @@ class Group:
         self.name = real_group.obozn
         self.course = real_group.kurs
         self.institute_id = real_group.faculty_id
+        self.is_active = real_group.is_active
 
     def dict(self):
         return {
             'group_id': self.group_id,
             'name': self.name,
             'course': self.course,
-            'institute_id': self.institute_id
+            'institute_id': self.institute_id,
+            'is_active': self.is_active
         }
 
 
@@ -93,13 +97,29 @@ class OtherDiscipline:
         self.discipline_title = schedule_metaprogram_discipline.discipline_title
         self.is_online = schedule_metaprogram_discipline.is_online
         self.type = schedule_metaprogram_discipline.type
+        self.is_active = schedule_metaprogram_discipline.is_active
+        self.project_active = schedule_metaprogram_discipline.project_active
 
     def dict(self):
         return {
             'other_discipline_id': self.other_discipline_id,
             'discipline_title': self.discipline_title,
             'is_online': self.is_online,
-            'type': self.type
+            'type': self.type,
+            'is_active': self.is_active,
+            'project_active': self.project_active
+        }
+
+
+class Query:
+    def __init__(self, query: QueryDB):
+        self.query_id = query.id
+        self.description = query.description
+
+    def dict(self):
+        return {
+            'query_id': self.query_id,
+            'description': self.description
         }
 
 
@@ -117,7 +137,8 @@ class Schedule:
         self.auditories_verbose = schedule_v2.auditories_verbose
         self.discipline_id = schedule_v2.discipline
         self.discipline_verbose = schedule_v2.discipline_verbose
-        self.other_discipline = schedule_v2.meta_program_discipline_id
+        self.other_discipline_id = schedule_v2.meta_program_discipline_id
+        self.query_id = schedule_v2.query_id
         self.lesson_id = schedule_v2.para
         self.subgroup = schedule_v2.ngroup
         self.lesson_type = schedule_v2.nt
@@ -135,7 +156,8 @@ class Schedule:
             'auditories_verbose': self.auditories_verbose,
             'discipline_id': self.discipline_id,
             'discipline_verbose': self.discipline_verbose,
-            'other_discipline': self.other_discipline,
+            'other_discipline_id': self.other_discipline_id,
+            'query_id': self.query_id,
             'lesson_id': self.lesson_id,
             'subgroup': self.subgroup,
             'lesson_type': self.lesson_type,

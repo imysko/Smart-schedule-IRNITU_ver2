@@ -60,6 +60,13 @@ class ScheduleMetaprogramDiscipline(Base):
     project_active = Column(Boolean)
 
 
+class QueryDB(Base):
+    __tablename__ = 'queries'
+
+    id = Column(Integer, primary_key=True)
+    description = Column(String)
+
+
 class ScheduleV2(Base):
     __tablename__ = 'schedule_v2'
 
@@ -73,6 +80,7 @@ class ScheduleV2(Base):
     discipline = Column(Integer)
     discipline_verbose = Column(String)
     meta_program_discipline_id = Column(Integer)
+    query_id = Column(Integer)
     para = Column(Integer)
     type = Column(String)
     nt = Column(Integer)

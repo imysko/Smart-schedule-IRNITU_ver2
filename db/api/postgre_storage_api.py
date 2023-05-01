@@ -8,9 +8,9 @@ from sqlalchemy import create_engine, func, cast, Numeric
 from sqlalchemy.orm import Session
 
 from db.models.postgres_models import Vacpara, RealGroup, Prepod, Auditorie, DisciplineDB, \
-    ScheduleMetaprogramDiscipline, ScheduleV2
+    ScheduleMetaprogramDiscipline, ScheduleV2, QueryDB
 from db.models.response_models import LessonsTime, Institute, Group, Teacher, Classroom, Discipline, OtherDiscipline, \
-    Schedule
+    Schedule, Query
 
 dotenv.load_dotenv()
 
@@ -58,7 +58,6 @@ def get_institutes() -> list:
 def get_groups() -> list:
     with Session(engine) as session:
         groups = session.query(RealGroup) \
-            .where(RealGroup.is_active == True) \
             .order_by(RealGroup.id_7) \
             .all()
 
@@ -97,12 +96,19 @@ def get_disciplines() -> list:
 def get_other_disciplines() -> list:
     with Session(engine) as session:
         other_disciplines = session.query(ScheduleMetaprogramDiscipline) \
-            .where((ScheduleMetaprogramDiscipline.is_active == True) &
-                   (ScheduleMetaprogramDiscipline.project_active == True)) \
             .order_by(ScheduleMetaprogramDiscipline.id) \
             .all()
 
         return [OtherDiscipline(od) for od in other_disciplines]
+
+
+def get_queries() -> list:
+    with Session(engine) as session:
+        queries = session.query(QueryDB) \
+            .order_by(QueryDB.id) \
+            .all()
+
+        return [Query(q) for q in queries]
 
 
 def get_schedule(start_date: datetime) -> list:
