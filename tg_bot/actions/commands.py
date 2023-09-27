@@ -1,13 +1,6 @@
-import os
-import zipfile
-from tempfile import TemporaryFile, NamedTemporaryFile
-
-from pytz import timezone
 from telebot import TeleBot
 
 from db.mongo_storage import MongodbServiceTG
-from db.postgre_storage import PostgresStorageCursor
-from db.sqlite_generator import sqlite_generate
 from tools.messages import registration_messages, other_messages
 from tools.tg_tools import inline_keyboards, reply_keyboards
 

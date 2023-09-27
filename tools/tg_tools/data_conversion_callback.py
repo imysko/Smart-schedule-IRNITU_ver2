@@ -32,5 +32,8 @@ def convert_groups(pg_groups: list) -> list:
         group[group['name']] = json.dumps({"register_group_id": str(group['group_id'])})
         del group['name']
         del group['group_id']
+        del group['course']
+        del group['institute_id']
+        del group['is_active']
 
     return list_groups

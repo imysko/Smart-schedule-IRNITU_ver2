@@ -1,14 +1,13 @@
 import asyncio
 import json
 import os
-import sentry_sdk
-import time
-from dotenv import load_dotenv
 
+import sentry_sdk
+from dotenv import load_dotenv
 
 load_dotenv()
 
-SENTRY_DSN=os.environ.get('SENTRY_DSN')
+SENTRY_DSN = os.environ.get('SENTRY_DSN')
 
 if SENTRY_DSN:
     sentry_sdk.init(
@@ -36,8 +35,6 @@ from tools.logger import logger
 from tools.messages import error_messages, default_messages
 from tools.tg_tools import reply_keyboards
 from tools.content import *
-
-
 
 TOKEN = os.environ.get('TG_TOKEN')
 
@@ -80,12 +77,14 @@ def help_handler(message):
         storage=storage
     )
 
+
 @bot.message_handler(func=lambda message: message.text in ['sqlite', '/sqlite'], content_types=['text'])
 def sqlite_handler(message):
     commands.sqlite(
         bot=bot,
         message=message
     )
+
 
 # /about
 @bot.message_handler(func=lambda message: message.text in ['О проекте', 'о проекте', '/about', 'about'],

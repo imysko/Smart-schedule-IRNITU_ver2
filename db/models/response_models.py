@@ -124,7 +124,8 @@ class Query:
 
 
 class Schedule:
-    def __init__(self, schedule_v2: ScheduleV2):
+    def __init__(self, schedule_v2: ScheduleV2, vacpara: Vacpara = None, groups: list[RealGroup] = [],
+                 teachers: list[Prepod] = []):
         self.schedule_id = schedule_v2.id
         self.groups_ids = schedule_v2.groups
         self.groups_verbose = schedule_v2.groups_verbose
@@ -144,6 +145,10 @@ class Schedule:
         self.lesson_type = schedule_v2.nt
         self.schedule_type = schedule_v2.type
         self.date = schedule_v2.dbeg + timedelta(days=(schedule_v2.day - 1) % 7)
+
+        self.lesson = LessonsTime(vacpara)
+        self.groups = [Group(g) for g in groups]
+        self.teachers = [Teacher(t) for t in teachers]
 
     def dict(self):
         return {
